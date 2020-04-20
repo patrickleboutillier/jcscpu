@@ -37,6 +37,18 @@ sub wires {
 }
 
 
+sub power {
+    my $this = shift ;
+    my $pstr = shift ;
+
+    die("Invalid bus power string '$pstr'") unless $pstr =~ /^[01]{8}$/ ;
+    my @ps = split(//, $pstr) ;
+    for (my $j = 0 ; $j < 8 ; $j++){
+        $this->{wires}->[$j]->power($ps[$j]) ;
+    }
+}
+
+
 sub connect {
     my $this = shift ;
     my @bundles = @_ ;
