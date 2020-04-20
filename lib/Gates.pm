@@ -3,6 +3,7 @@ use strict ;
 
 package WIRE ;
 use strict ;
+$WIRE::nb = 0 ;
 
 
 sub new {
@@ -16,7 +17,8 @@ sub new {
     bless $this, $class ;
 
     $this->connect(@pins) ;
-
+    $WIRE::nb++ ;
+    
     return $this ;
 }
 
@@ -106,6 +108,7 @@ sub output {
 
 package NAND ; 
 use strict ;
+$NAND::nb = 0  ;
 
 
 sub new {
@@ -117,6 +120,7 @@ sub new {
     $this->{c} = new PIN($this, 1) ;
     $this->{name} = $name ;
     bless $this, $class ;
+    $NAND::nb++ ;
     return $this ;
 }
 
@@ -161,6 +165,7 @@ sub eval {
 
 package PASS ; 
 use strict ;
+$PASS::nb = 0 ;
 
 # A PASS gate is just a dummy gate used to expose wires from internal circuits
 # via pins in the enclosing circuit. 
@@ -172,6 +177,7 @@ sub new {
     $this->{a} = new PIN($this) ;
     $this->{b} = new PIN($this, 1) ;
     bless $this, $class ;
+    $PASS::nb++ ;
     return $this ;
 }
 
