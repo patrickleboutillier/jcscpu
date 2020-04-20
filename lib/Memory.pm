@@ -1,19 +1,12 @@
+package MEMORY ;
+
 use strict ;
 use Gates ;
-
-
-package MEMORY ;
 
 
 sub new {
     my $class = shift ;
     my $name = shift ;
-
-    my $this = {} ;
-    $this->{i} = new PIN($this) ;
-    $this->{s} = new PIN($this) ;
-    $this->{o} = new PIN($this, 1) ;
-    $this->{name} = $name ;
 
     # Build the memory circuit, and record the wires.
     my $g1 = new NAND("g1") ;
@@ -32,10 +25,13 @@ sub new {
     $wb->connect($g2->c(), $g4->b()) ;
     $wc->connect($g3->b(), $g4->c()) ;
     $wo->connect($g3->c(), $g4->a()) ;
-  
-    $this->{wi} = $wi ;
-    $this->{ws} = $ws ;
-    $this->{wo} = $wo ;
+
+    my $this = {
+        i => PASS->in($wi),
+        s => PASS->in($ws),
+        o => PASS->out($wo),
+        name => $name
+    } ;
 
     bless $this, $class ;
     return $this ;
@@ -58,24 +54,5 @@ sub o {
     my $this = shift ;
     return $this->{o} ;
 }
-
-
-sub eval {
-    my $this = shift ;
-
-    return unless $this->i()->wire() ;
-    return unless $this->s()->wire() ;
-    return unless $this->o()->wire() ;
-
-    my $i = $this->i()->wire()->power() ;
-    $this->{wi}->power($i) ;
-    my $s = $this->s()->wire()->power() ;
-    $this->{ws}->power($s) ;
-
-    my $o = $this->{wo}->power() ;
-    $this->o()->wire()->power($o) ;
-    #warn "M[$this->{name}]: (is:$i, s:$s) -> os:$o\n" ;
-}
-
 
 return 1 ;

@@ -2,6 +2,7 @@ use strict ;
 
 
 package WIRE ;
+use strict ;
 
 
 sub new {
@@ -49,6 +50,7 @@ sub connect {
 
 
 package PIN ;
+use strict ;
 
 
 sub new {
@@ -70,6 +72,7 @@ sub wire {
 
     if ($wire){
         # New wire attached
+        die "Pin already has wire attached! " if ($this->{wire}) ;
         $this->{wire} = $wire ;
         $this->gate()->eval() ;
     }
@@ -90,6 +93,7 @@ sub output {
 
 
 package NAND ; 
+use strict ;
 
 
 sub new {
@@ -140,6 +144,65 @@ sub eval {
  
     $this->c()->wire()->power($c) ;
     # warn "NAND[$this->{name}]: (a:$a, b:$b) -> c:$c\n" ;
+}
+
+
+package PASS ; 
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+    my $name = shift ;
+    my $this = {} ;
+    $this->{a} = new PIN($this) ;
+    $this->{b} = new PIN($this, 1) ;
+    bless $this, $class ;
+    return $this ;
+}
+
+
+sub a {
+    my $this = shift ;
+    return $this->{a} ;
+}
+
+
+sub b {
+    my $this = shift ;
+    return $this->{b} ;
+}
+
+
+sub eval {
+    my $this = shift ;
+
+    return unless $this->a()->wire() ;
+    return unless $this->b()->wire() ;
+
+    my $a = $this->a()->wire()->power() ;
+    $this->b()->wire()->power($a) ;
+    # warn "PASS[$this->{name}]: a:$a -> b:$a\n" ;
+}
+
+
+sub in {
+    my $class = shift ;
+    my $wire = shift ;
+
+    my $pi = new PASS() ;
+    $wire->connect($pi->b()) ;
+    return $pi->a() ;
+}
+
+
+sub out {
+    my $class = shift ;
+    my $wire = shift ;
+    
+    my $po = new PASS() ;
+    $wire->connect($po->a()) ;
+    return $po->b() ;
 }
 
 
