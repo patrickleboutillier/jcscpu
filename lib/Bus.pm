@@ -1,7 +1,7 @@
-package BYTE ;
+package BUS ;
 
 use strict ;
-use Memory ;
+use Gates ;
 
 
 sub new {
@@ -16,9 +16,15 @@ sub new {
 
     # Foreach memory circuit, connect a wire and a PASS to i and o, and connect s to ws.
     for (my $j = 0 ; $j < 8 ; $j++){
-        push @is, PASS->in(new WIRE($ms[$j]->i())) ;
+        my $wi = new WIRE() ;
+        $wi->connect($ms[$j]->i()) ;
+        push @is, PASS->in($wi) ;
+
         $ws->connect($ms[$j]->s()) ;
-        push @os, PASS->out(new WIRE($ms[$j]->o())) ;    
+        
+        my $wo = new WIRE() ;
+        $wo->connect($ms[$j]->o()) ;
+        push @os, PASS->out($wo) ;    
     }
     
     my $this = {

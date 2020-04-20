@@ -3,3 +3,4 @@ _build
 Build
 Build.bat
 *.bak
+cover_db

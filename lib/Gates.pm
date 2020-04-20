@@ -7,11 +7,16 @@ use strict ;
 
 sub new {
     my $class = shift ;
+    my @pins = @_ ;
+
     my $this = {
         power => 0,
         pins => [],
     } ;
     bless $this, $class ;
+
+    $this->connect(@pins) ;
+
     return $this ;
 }
 
@@ -46,6 +51,13 @@ sub connect {
         $pin->wire($this) ;
         push @{$this->{pins}}, $pin ;
     }
+}
+
+
+sub show {
+    my $class = shift ;
+    my @wires = @_ ;
+    return join '', map { $_->power() } @wires ;
 }
 
 
@@ -150,6 +162,8 @@ sub eval {
 package PASS ; 
 use strict ;
 
+# A PASS gate is just a dummy gate used to expose wires from internal circuits
+# via pins in the enclosing circuit. 
 
 sub new {
     my $class = shift ;
@@ -203,6 +217,82 @@ sub out {
     my $po = new PASS() ;
     $wire->connect($po->a()) ;
     return $po->b() ;
+}
+
+
+package NOT ; 
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+
+    my $g = new NAND() ;
+    my $wa = new WIRE($g->a(), $g->b()) ;
+    my $wb = new WIRE($g->c()) ;
+
+    my $this = {
+        a => PASS->in($wa),
+        b => PASS->out($wb)
+    } ;
+
+    bless $this, $class ;
+    return $this ;
+}
+
+
+sub a {
+    my $this = shift ;
+    return $this->{a} ;
+}
+
+
+sub b {
+    my $this = shift ;
+    return $this->{b} ;
+}
+
+
+package AND ; 
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+
+    my $g = new NAND() ;
+    my $n = new NOT() ;
+    my $wa = new WIRE($g->a()) ; 
+    my $wb = new WIRE($g->b()) ;
+    my $wn = new WIRE($g->c(), $n->a()) ;
+    my $wc = new WIRE($n->b()) ;
+
+    my $this = {
+        a => PASS->in($wa),
+        b => PASS->in($wb),
+        c => PASS->out($wc)
+    } ;
+
+    bless $this, $class ;
+    return $this ;
+}
+
+
+sub a {
+    my $this = shift ;
+    return $this->{a} ;
+}
+
+
+sub b {
+    my $this = shift ;
+    return $this->{b} ;
+}
+
+
+sub c {
+    my $this = shift ;
+    return $this->{c} ;
 }
 
 

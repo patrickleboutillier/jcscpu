@@ -1,7 +1,7 @@
-package BYTE ;
+package ENABLER ;
 
 use strict ;
-use Memory ;
+use Gates ;
 
 
 sub new {
@@ -9,21 +9,21 @@ sub new {
     my $name = shift ;
 
     # Build the byte circuit
-    my @ms = map { new MEMORY($_ - 1) } (0..7) ;
+    my @as = map { new AND() } (0..7) ;
     my @is = () ;
     my @os = () ;
-    my $ws = new WIRE() ;
+    my $we = new WIRE() ;
 
-    # Foreach memory circuit, connect a wire and a PASS to i and o, and connect s to ws.
+    # For each AND, connect a wire and a PASS to i and o, and connect e to we.
     for (my $j = 0 ; $j < 8 ; $j++){
-        push @is, PASS->in(new WIRE($ms[$j]->i())) ;
-        $ws->connect($ms[$j]->s()) ;
-        push @os, PASS->out(new WIRE($ms[$j]->o())) ;    
+        push @is, PASS->in(new WIRE($as[$j]->a())) ;
+        $we->connect($as[$j]->b()) ;
+        push @os, PASS->out(new WIRE($as[$j]->c())) ;    
     }
     
     my $this = {
         is => \@is,
-        s => PASS->in($ws),
+        e => PASS->in($we),
         os => \@os,
         name => $name
     } ;
@@ -39,9 +39,9 @@ sub is {
 }
 
 
-sub s {
+sub e {
     my $this = shift ;
-    return $this->{s} ;
+    return $this->{e} ;
 }
 
 

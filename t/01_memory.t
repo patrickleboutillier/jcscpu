@@ -6,12 +6,9 @@ plan(tests => 7) ;
 
 # Basic test for MEMORY circuit.
 my $m = new MEMORY() ;
-my $i = new WIRE() ;
-my $s = new WIRE() ;
-my $o = new WIRE() ;
-$i->connect($m->i()) ;
-$s->connect($m->s()) ;
-$o->connect($m->o()) ;
+my $i = new WIRE($m->i()) ;
+my $s = new WIRE($m->s()) ;
+my $o = new WIRE($m->o()) ;
 
 $s->power(1) ;
 is($o->power(), 0, "M(i:0,s:1)=o:0, s=on, i should equal o") ;
