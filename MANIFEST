@@ -1,0 +1,6 @@
+Build.PL
+lib/Gates.pm
+lib/jcscpu.pm
+lib/Memory.pm
+lib/Byte.pm
+MANIFEST

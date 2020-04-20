@@ -1,0 +1,28 @@
+---
+abstract: 'Implementation of the JSC Computer'
+author:
+  - unknown
+build_requires: {}
+dynamic_config: 0
+generated_by: 'Module::Build version 0.4224, CPAN::Meta::Converter version 2.150010'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: '1.4'
+name: jcscpu
+provides:
+  MEMORY:
+    file: lib/Memory.pm
+  NAND:
+    file: lib/Gates.pm
+  PIN:
+    file: lib/Gates.pm
+  WIRE:
+    file: lib/Gates.pm
+  jcscpu:
+    file: lib/jcscpu.pm
+    version: '1.0'
+resources:
+  license: http://dev.perl.org/licenses/
+version: '1.0'
+x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
