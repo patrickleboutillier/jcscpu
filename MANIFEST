@@ -3,4 +3,9 @@ lib/Gates.pm
 lib/jcscpu.pm
 lib/Memory.pm
 lib/Byte.pm
+lib/Enabler.pm
+t/00_gates.t
+t/01_memory.t
+t/02_byte.t
+t/03_enabler.t
 MANIFEST

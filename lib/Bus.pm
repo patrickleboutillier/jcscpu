@@ -4,57 +4,59 @@ use strict ;
 use Gates ;
 
 
+# A 'bundle' is a collection of 8 pins
 sub new {
     my $class = shift ;
-    my $name = shift ;
+    my @bundles = @_ ;
 
-    # Build the byte circuit
-    my @ms = map { new MEMORY($_ - 1) } (0..7) ;
-    my @is = () ;
-    my @os = () ;
-    my $ws = new WIRE() ;
-
-    # Foreach memory circuit, connect a wire and a PASS to i and o, and connect s to ws.
-    for (my $j = 0 ; $j < 8 ; $j++){
-        my $wi = new WIRE() ;
-        $wi->connect($ms[$j]->i()) ;
-        push @is, PASS->in($wi) ;
-
-        $ws->connect($ms[$j]->s()) ;
-        
-        my $wo = new WIRE() ;
-        $wo->connect($ms[$j]->o()) ;
-        push @os, PASS->out($wo) ;    
-    }
-    
     my $this = {
-        is => \@is,
-        s => PASS->in($ws),
-        os => \@os,
-        name => $name
+        bundles => [],
+        wires => [map { new WIRE() } (0..7)]
     } ;
-
     bless $this, $class ;
+
+    $this->connect(@bundles) ;
+
     return $this ;
 }
 
 
-sub is {
+sub wire {
     my $this = shift ;
-    return @{$this->{is}} ;
+    my $n = shift ;
+    die("Bad wire index $n") unless (($n >= 0)&&($n <= 7)) ;
+
+    return $this->{wires}->[$n] ;
 }
 
 
-sub s {
+sub wires {
     my $this = shift ;
-    return $this->{s} ;
+
+    return @{$this->{wires}} ;
 }
 
 
-sub os {
+sub connect {
     my $this = shift ;
-    return @{$this->{os}} ;
+    my @bundles = @_ ;
+
+    foreach my $bundle (@bundles){
+        die("Invalid bundle count!") if scalar(@{$bundle}) != 8 ;
+        for (my $j = 0 ; $j < 8 ; $j++){
+            my $pin = $bundle->[$j] ;
+            my $wire = $this->{wires}->[$j] ;
+            $wire->connect($pin) ;
+        }
+    }
 }
 
 
-return 1 ;
+sub show {
+    my $this = shift ;
+    
+    return join '', map { $_->power() } @{$this->{wires}} ;
+}
+
+
+1 ;
