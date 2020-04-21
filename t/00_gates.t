@@ -6,7 +6,7 @@ use Gates ;
 
 
 my $max_andn_tests = 8 ;
-plan(tests => (15 + nb_andn_tests())) ;
+plan(tests => (16 + nb_andn_tests())) ;
 
 
 # Basic tests for NAND gate.
@@ -28,6 +28,10 @@ eval {
     $wt->connect($g->c()) ;
 } ;
 like($@, qr/Pin already has wire attached!/, "Attaching wire on an already used pin.") ;
+eval {
+    WIRE->power_wires($wt, []) ;
+} ;
+like($@, qr/Length mismatch/, "Length mismatch") ;
 
 my $n = new NOT() ;
 $wa = new WIRE($n->a()) ;
@@ -69,9 +73,7 @@ sub make_andn_test {
 
     my @ts = tuples_with_repetition([0, 1], $n) ;
     foreach my $t (@ts){
-        for (my $j = 0 ; $j < $n ; $j++){
-            $wis[$j]->power($t->[$j]) ;
-        }
+        WIRE->power_wires(@wis, $t) ;
         my $res = (all { $_ } @{$t}) || 0 ;
         is($wo->power(), $res, "AND$n(" . join(", ", @{$t}) . ")=$res") ;
     }

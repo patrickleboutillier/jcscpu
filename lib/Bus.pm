@@ -42,10 +42,7 @@ sub power {
     my $pstr = shift ;
 
     die("Invalid bus power string '$pstr'") unless $pstr =~ /^[01]{8}$/ ;
-    my @ps = split(//, $pstr) ;
-    for (my $j = 0 ; $j < 8 ; $j++){
-        $this->{wires}->[$j]->power($ps[$j]) ;
-    }
+    WIRE->power_wires(@{$this->{wires}}, [split(//, $pstr)])
 }
 
 

@@ -79,7 +79,7 @@ sub os {
 sub o {
     my $this = shift ;
     my $n = shift ;
-    die ("Invalid output index $n") unless (($n >= 0)&&($n < $this->{n})) ;
+    die ("Invalid output index $n") unless (($n >= 0)&&($n < 2**$this->{n})) ;
     return $this->{os}->[$n] ;
 }
 
