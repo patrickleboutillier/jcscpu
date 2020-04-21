@@ -32,8 +32,7 @@ sub new {
         my $label = sprintf("%0${n}b", $j) ;
 
         my $ag = new ANDn($n, $label) ;
-        my $wo = new WIRE($ag->o()) ;
-        push @os, PASS->out($wo) ;
+        push @os, $ag->o() ;
         
         # Now we must hook up the $n inputs of $a.
         my @path = split(//, $label) ;

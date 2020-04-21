@@ -16,9 +16,9 @@ sub new {
 
     # For each AND, connect a wire and a PASS to i and o, and connect e to we.
     for (my $j = 0 ; $j < 8 ; $j++){
-        push @is, PASS->in(new WIRE($as[$j]->a())) ;
+        push @is, $as[$j]->a() ;
         $we->connect($as[$j]->b()) ;
-        push @os, PASS->out(new WIRE($as[$j]->c())) ;    
+        push @os, $as[$j]->c() ;    
     }
     
     my $this = {

@@ -176,11 +176,10 @@ sub new {
 
     my $g = new NAND() ;
     my $wa = new WIRE($g->a(), $g->b()) ;
-    my $wb = new WIRE($g->c()) ;
 
     my $this = {
         a => PASS->in($wa),
-        b => PASS->out($wb)
+        b => $g->c(),
     } ;
 
     bless $this, $class ;
@@ -209,15 +208,12 @@ sub new {
 
     my $g = new NAND() ;
     my $n = new NOT() ;
-    my $wa = new WIRE($g->a()) ; 
-    my $wb = new WIRE($g->b()) ;
     my $wn = new WIRE($g->c(), $n->a()) ;
-    my $wc = new WIRE($n->b()) ;
 
     my $this = {
-        a => PASS->in($wa),
-        b => PASS->in($wb),
-        c => PASS->out($wc)
+        a => $g->a(),
+        b => $g->b(),
+        c => $n->b(),
     } ;
 
     bless $this, $class ;

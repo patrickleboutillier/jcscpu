@@ -15,13 +15,11 @@ sub new {
     my $E = new ENABLER() ;
 
     my $bus = new BUS([$B->os()], [$E->is()]) ;
-    my $we = new WIRE($E->e()) ;
-    my $ws = new WIRE($B->s()) ;
     
     my $this = {
         is => [$B->is()],
-        e => PASS->in($we),
-        s => PASS->in($ws),
+        e => $E->e(),
+        s => $B->s(),
         os => [$E->os()],
         name => $name
     } ;
