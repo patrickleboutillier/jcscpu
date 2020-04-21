@@ -13,12 +13,37 @@
       "version" : "2"
    },
    "name" : "jcscpu",
-   "prereqs" : {},
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "Algorithm::Combinatorics" : "0",
+            "Devel::Cover" : "0"
+         }
+      }
+   },
    "provides" : {
+      "AND" : {
+         "file" : "lib/Gates.pm"
+      },
+      "ANDn" : {
+         "file" : "lib/Gates.pm"
+      },
+      "BYTE" : {
+         "file" : "lib/Byte.pm"
+      },
+      "ENABLER" : {
+         "file" : "lib/Enabler.pm"
+      },
       "MEMORY" : {
          "file" : "lib/Memory.pm"
       },
       "NAND" : {
+         "file" : "lib/Gates.pm"
+      },
+      "NOT" : {
+         "file" : "lib/Gates.pm"
+      },
+      "PASS" : {
          "file" : "lib/Gates.pm"
       },
       "PIN" : {

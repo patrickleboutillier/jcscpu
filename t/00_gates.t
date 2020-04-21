@@ -1,8 +1,13 @@
 use strict ;
 use Test::More ;
+use Algorithm::Combinatorics qw(tuples_with_repetition) ;
+use List::Util qw(all) ;
 use Gates ;
 
-plan(tests => 11) ;
+
+my $max_andn_tests = 8 ;
+plan(tests => (15 + nb_andn_tests())) ;
+
 
 # Basic tests for NAND gate.
 my $g = new NAND() ;
@@ -44,3 +49,45 @@ $wb->power(1) ;
 is($wc->power(), 1, "AND(1, 1)=1") ;
 $wa->power(0) ;
 is($wc->power(), 0, "AND(0, 1)=0") ;
+
+
+# ANDn
+sub nb_andn_tests {
+    my $sum = 0 ;
+    for (my $j = 2 ; $j <= $max_andn_tests ; $j++){
+        $sum += 2 ** $j ;    
+    }    
+    return $sum ;
+}
+
+sub make_andn_test {
+    my $n = shift ;
+
+    my $a = new ANDn($n) ;
+    my @wis = map { new WIRE($_) } $a->is() ;
+    my $wo = new WIRE($a->o()) ;
+
+    my @ts = tuples_with_repetition([0, 1], $n) ;
+    foreach my $t (@ts){
+        for (my $j = 0 ; $j < $n ; $j++){
+            $wis[$j]->power($t->[$j]) ;
+        }
+        my $res = (all { $_ } @{$t}) || 0 ;
+        is($wo->power(), $res, "AND$n(" . join(", ", @{$t}) . ")=$res") ;
+    }
+}
+
+map { make_andn_test($_) } (2..$max_andn_tests) ;
+
+eval {
+    new ANDn(1) ;
+} ;
+like($@, qr/Invalid ANDn number of inputs/, "Invalid ANDn number of inputs <=2") ;
+$a = new ANDn(4) ;
+$a->i(0) ;
+is($a->n(), 4) ;
+eval { $a->i(-1) ;} ;
+like($@, qr/Invalid input index/, "Invalid input index <0") ;
+eval { $a->i(6) ;} ;
+like($@, qr/Invalid input index/, "Invalid input index >n") ;
+

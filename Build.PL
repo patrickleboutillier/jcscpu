@@ -9,6 +9,8 @@ my $builder = Module::Build->new(
     license             => 'perl',
     dist_abstract       => 'Implementation of the JSC Computer',
     build_requires      => {
+        'Devel::Cover' => 0,
+        'Algorithm::Combinatorics' => 0
     },
 );
  

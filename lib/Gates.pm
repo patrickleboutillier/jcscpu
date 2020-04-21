@@ -18,7 +18,7 @@ sub new {
 
     $this->connect(@pins) ;
     $WIRE::nb++ ;
-    
+
     return $this ;
 }
 
@@ -299,6 +299,61 @@ sub b {
 sub c {
     my $this = shift ;
     return $this->{c} ;
+}
+
+
+package ANDn ; 
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+    my $n = shift ;
+
+    die ("Invalid ANDn number of inputs $n") unless ($n >= 2) ;
+    my $last = new AND() ;
+    my @is = (PASS->in(new WIRE($last->a())), PASS->in(new WIRE($last->b()))) ;
+    for (my $j = 0 ; $j < ($n-2) ; $j++){
+            my $next = new AND() ;
+            my $w = new WIRE($last->c(), $next->a()) ;
+            push @is, PASS->in(new WIRE($next->b())) ;
+            $last = $next ;
+    }
+
+    my $this = {
+        is => \@is,
+        o => PASS->out(new WIRE($last->c())),
+        n => $n,
+    } ;
+
+    bless $this, $class ;
+    return $this ;
+}
+
+
+sub is {
+    my $this = shift ;
+    return @{$this->{is}} ;
+}
+
+
+sub i {
+    my $this = shift ;
+    my $n = shift ;
+    die ("Invalid input index $n") unless (($n >= 0)&&($n < $this->{n})) ;
+    return $this->{is}->[$n] ;
+}
+
+
+sub n {
+    my $this = shift ;
+    return $this->{n} ;
+}
+
+
+sub o {
+    my $this = shift ;
+    return $this->{o} ;
 }
 
 

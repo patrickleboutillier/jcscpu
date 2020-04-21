@@ -2,7 +2,9 @@
 abstract: 'Implementation of the JSC Computer'
 author:
   - unknown
-build_requires: {}
+build_requires:
+  Algorithm::Combinatorics: '0'
+  Devel::Cover: '0'
 dynamic_config: 0
 generated_by: 'Module::Build version 0.4224, CPAN::Meta::Converter version 2.150010'
 license: perl
@@ -11,9 +13,21 @@ meta-spec:
   version: '1.4'
 name: jcscpu
 provides:
+  AND:
+    file: lib/Gates.pm
+  ANDn:
+    file: lib/Gates.pm
+  BYTE:
+    file: lib/Byte.pm
+  ENABLER:
+    file: lib/Enabler.pm
   MEMORY:
     file: lib/Memory.pm
   NAND:
+    file: lib/Gates.pm
+  NOT:
+    file: lib/Gates.pm
+  PASS:
     file: lib/Gates.pm
   PIN:
     file: lib/Gates.pm
