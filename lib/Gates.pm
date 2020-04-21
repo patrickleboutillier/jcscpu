@@ -23,6 +23,14 @@ sub new {
 }
 
 
+sub news {
+    my $class = shift ;
+    my @pins = @_ ;
+
+    map { new WIRE($_) } @pins ;
+}
+
+
 sub power {
     my $this = shift ;
     my $v = shift ;
@@ -59,6 +67,7 @@ sub connect {
 sub show {
     my $class = shift ;
     my @wires = @_ ;
+    
     return join '', map { $_->power() } @wires ;
 }
 
