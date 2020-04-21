@@ -27,6 +27,7 @@ sub wire {
         $this->{wire} = $wire ;
         $this->gate()->eval() ;
     }
+
     return $this->{wire} ;   
 }
 
@@ -83,19 +84,20 @@ sub c {
 sub eval {
     my $this = shift ;
 
-    return unless $this->a()->wire() ;
-    return unless $this->b()->wire() ;
-    return unless $this->c()->wire() ;
+    my $wa = $this->{a}->wire() ;
+    return unless $wa ;
+    my $wb = $this->{b}->wire() ;
+    return unless $wb ;
+    my $wc = $this->{c}->wire() ;
+    return unless $wc ;
 
     # This code could be replaced by a truth table. No need to actually the language operators to perform
     # the boolean and and the not.
-    my $a = $this->a()->wire()->power() ;
-    my $b = $this->b()->wire()->power() ;
+    my $a = $wa->power() ;
+    my $b = $wb->power() ;
     my $c = ! ($a && $b) ;
-    $c = ($c ? 1 : 0) ;
 
- 
-    $this->c()->wire()->power($c) ;
+    $wc->power($c) ;
     # warn "NAND[$this->{name}]: (a:$a, b:$b) -> c:$c\n" ;
 }
 
@@ -134,11 +136,13 @@ sub b {
 sub eval {
     my $this = shift ;
 
-    return unless $this->a()->wire() ;
-    return unless $this->b()->wire() ;
+    my $wa = $this->{a}->wire() ;
+    return unless $wa ;
+    my $wb = $this->{b}->wire() ;
+    return unless $wb ;
 
-    my $a = $this->a()->wire()->power() ;
-    $this->b()->wire()->power($a) ;
+    my $a = $wa->power() ;
+    $wb->power($a) ;
     # warn "PASS[$this->{name}]: a:$a -> b:$a\n" ;
 }
 

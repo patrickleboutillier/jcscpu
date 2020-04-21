@@ -4,4 +4,6 @@ Build
 Build.bat
 *.bak
 cover_db
+nytprof
+nytprof.out
 t.pl
