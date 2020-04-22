@@ -12,9 +12,9 @@ my $we = new WIRE($E->e()) ;
 my @wos = WIRE->new_wires($E->os()) ;
 
 $wis[0]->power(1) ;
-is(WIRE->power_wires(@wos), "00000000", "B(i:10001000,e:0)=o:00000000, e=off, no output") ;
+is(WIRE->power_wires(@wos), "00000000", "B(i:10000000,e:0)=o:00000000, e=off, no output") ;
 $wis[4]->power(1) ;
-is(WIRE->power_wires(@wos), "00000000", "B(i:10001000,e:0)=o:00000000, e=off, i should equal o") ;
+is(WIRE->power_wires(@wos), "00000000", "B(i:10001000,e:0)=o:00000000, e=off, no output") ;
 $we->power(1) ;
 is(WIRE->power_wires(@wos), "10001000", "B(i:10001000,e:1)=o:10001000, e=on, i goes through") ;
 $wis[4]->power(0) ;

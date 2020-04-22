@@ -111,13 +111,11 @@ $PASS::nb = 0 ;
 
 sub new {
     my $class = shift ;
-    my $aout = shift ;
-    my $bout = shift ;
-
+    my $io = shift ;
     my $this = {} ;
-    $this->{a} = new PIN($this, $aout) ;
-    $this->{b} = new PIN($this, $bout) ;
-    $this->{io} = 1 unless ($aout || $bout) ;
+    $this->{a} = new PIN($this, 0) ;
+    $this->{b} = new PIN($this, !$io) ;
+    $this->{io} = $io ;
     bless $this, $class ;
     $PASS::nb++ ;
     return $this ;
@@ -158,7 +156,7 @@ sub in {
     my $class = shift ;
     my $wire = shift ;
 
-    my $pi = new PASS(0, 1) ;
+    my $pi = new PASS(0) ;
     $wire->connect($pi->b()) ;
     return $pi->a() ;
 }
@@ -168,7 +166,7 @@ sub out {
     my $class = shift ;
     my $wire = shift ;
     
-    my $po = new PASS(0, 1) ;
+    my $po = new PASS(0) ;
     $wire->connect($po->a()) ;
     return $po->b() ;
 }
@@ -178,7 +176,7 @@ sub io {
     my $class = shift ;
     my $wire = shift ;
     
-    my $po = new PASS(0, 0) ;
+    my $po = new PASS(1) ;
     $wire->connect($po->b()) ;
     return $po->a() ;
 }
