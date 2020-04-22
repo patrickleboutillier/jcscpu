@@ -41,8 +41,13 @@ sub power {
     my $this = shift ;
     my $pstr = shift ;
 
-    die("Invalid bus power string '$pstr'") unless $pstr =~ /^[01]{8}$/ ;
-    WIRE->power_wires(@{$this->{wires}}, [split(//, $pstr)])
+    my @args = @{$this->{wires}} ;
+    if (defined($pstr)){
+        die("Invalid bus power string '$pstr'") unless $pstr =~ /^[01]{8}$/ ;
+        push @args, [split(//, $pstr)] ;
+    }
+
+    return WIRE->power_wires(@args) ;
 }
 
 
@@ -58,13 +63,6 @@ sub connect {
             $wire->connect($pin) ;
         }
     }
-}
-
-
-sub show {
-    my $this = shift ;
-    
-    return join '', map { $_->power() } @{$this->{wires}} ;
 }
 
 

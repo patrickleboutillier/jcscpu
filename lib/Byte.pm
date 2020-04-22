@@ -16,9 +16,9 @@ sub new {
 
     # Foreach memory circuit, connect a wire and a PASS to i and o, and connect s to ws.
     for (my $j = 0 ; $j < 8 ; $j++){
-        push @is, PASS->in(new WIRE($ms[$j]->i())) ;
+        push @is, $ms[$j]->i() ;
         $ws->connect($ms[$j]->s()) ;
-        push @os, PASS->out(new WIRE($ms[$j]->o())) ;    
+        push @os, $ms[$j]->o() ;    
     }
     
     my $this = {

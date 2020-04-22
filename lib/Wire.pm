@@ -42,7 +42,7 @@ sub power {
             $this->{power} = $v ;
             foreach my $pin (@{$this->{pins}}){
                 if (! $pin->output()){ 
-                    $pin->gate()->eval() ;  
+                    $pin->gate()->eval($this) ;  
                 }
             }
         }

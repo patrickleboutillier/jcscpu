@@ -21,7 +21,10 @@ sub new {
         e => $E->e(),
         s => $B->s(),
         os => [$E->os()],
-        name => $name
+        name => $name,
+        B => $B, 
+        E => $E, 
+        bus => $bus,
     } ;
 
     bless $this, $class ;
@@ -50,6 +53,18 @@ sub e {
 sub os {
     my $this = shift ;
     return @{$this->{os}} ;
+}
+
+
+sub show {
+    my $this = shift ;
+
+    my $is = WIRE->power_wires(map { $_->wire() } $this->{B}->is()) ;
+    my $bus = $this->{bus}->power() ;
+    my $os = WIRE->power_wires(map { $_->wire() } $this->{E}->os()) ;
+    my $e = $this->e()->wire()->power() ;
+    my $s = $this->s()->wire()->power() ;
+    return "REGISTER($this->{name}): e:$e, s:$s, is:$is, bus:$bus, os:$os" ;
 }
 
 

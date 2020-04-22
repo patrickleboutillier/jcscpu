@@ -25,7 +25,7 @@ sub wire {
         # New wire attached
         die "Pin already has wire attached! " if ($this->{wire}) ;
         $this->{wire} = $wire ;
-        $this->gate()->eval() ;
+        $this->gate()->eval($wire) ;
     }
 
     return $this->{wire} ;   
@@ -111,10 +111,13 @@ $PASS::nb = 0 ;
 
 sub new {
     my $class = shift ;
-    my $name = shift ;
+    my $aout = shift ;
+    my $bout = shift ;
+
     my $this = {} ;
-    $this->{a} = new PIN($this) ;
-    $this->{b} = new PIN($this, 1) ;
+    $this->{a} = new PIN($this, $aout) ;
+    $this->{b} = new PIN($this, $bout) ;
+    $this->{io} = 1 unless ($aout || $bout) ;
     bless $this, $class ;
     $PASS::nb++ ;
     return $this ;
@@ -135,15 +138,19 @@ sub b {
 
 sub eval {
     my $this = shift ;
+    my $origin = shift ;
 
     my $wa = $this->{a}->wire() ;
     return unless $wa ;
     my $wb = $this->{b}->wire() ;
     return unless $wb ;
 
-    my $a = $wa->power() ;
-    $wb->power($a) ;
-    # warn "PASS[$this->{name}]: a:$a -> b:$a\n" ;
+    if (($this->{io})&&($origin eq $wb)){
+        $wa->power($wb->power()) ;
+    }
+    else {
+        $wb->power($wa->power()) ;  
+    }
 }
 
 
@@ -151,7 +158,7 @@ sub in {
     my $class = shift ;
     my $wire = shift ;
 
-    my $pi = new PASS() ;
+    my $pi = new PASS(0, 1) ;
     $wire->connect($pi->b()) ;
     return $pi->a() ;
 }
@@ -161,9 +168,19 @@ sub out {
     my $class = shift ;
     my $wire = shift ;
     
-    my $po = new PASS() ;
+    my $po = new PASS(0, 1) ;
     $wire->connect($po->a()) ;
     return $po->b() ;
+}
+
+
+sub io {
+    my $class = shift ;
+    my $wire = shift ;
+    
+    my $po = new PASS(0, 0) ;
+    $wire->connect($po->b()) ;
+    return $po->a() ;
 }
 
 
