@@ -34,8 +34,11 @@ sub power {
             }
         }
     }
+    else {
+        $v = $this->{power} ;
+    }
 
-    return $this->{power} ;
+    return $v ;
 }
 
 

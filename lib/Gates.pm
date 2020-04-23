@@ -3,14 +3,15 @@ use Wire ;
 package PIN ;
 use strict ;
 
+# Using an arrayrey here to see if it's faster.
+my $GATE = 0 ;
+my $WIRE = 1 ;
 
 sub new {
     my $class = shift ;
     my $gate = shift ;
 
-    my $this = {
-        gate => $gate,
-    } ;
+    my $this = [$gate, undef] ;
 
     bless $this, $class ;
     return $this ;
@@ -20,7 +21,7 @@ sub new {
 sub wire {
     my $this = shift ;
 
-    return $this->{wire} ;   
+    return $this->[$WIRE] ;   
 }
 
 
@@ -29,16 +30,16 @@ sub connect {
     my $wire = shift ;
 
     # New wire attached
-    die "Pin already has wire attached! " if ($this->{wire}) ;
-    $this->{wire} = $wire ;
+    die "Pin already has wire attached! " if ($this->[$WIRE]) ;
+    $this->[$WIRE] = $wire ;
 
-    return $this->{wire} ;   
+    return $wire ;   
 }
 
 
 sub gate {
     my $this = shift ;
-    return $this->{gate} ;
+    return $this->[$GATE] ;
 }
 
 
@@ -115,11 +116,9 @@ sub signal {
         else {
             if ($pin eq $this->{a}){
                 $wb->reset($this->{b}) ;
-                #$wa->power($wb->power(), $reset) ;
             }
             else {
                 $wa->reset($this->{a}) ;
-                #$wb->power($wa->power(), $reset) ;
             }
         }
     }
