@@ -33,13 +33,15 @@ eval {
 } ;
 like($@, qr/Length mismatch/, "Length mismatch") ;
 
-my $n = new NOT() ;
+
+my $n = new NOT("TEST") ;
 $wa = new WIRE($n->a()) ;
 $wb = new WIRE($n->b()) ;
 
 is($wb->power(), 1, "NOT(0)=1") ;
 $wa->power(1) ;
 is($wb->power(), 0, "NOT(1)=0") ;
+
 
 my $a = new AND() ;
 $wa = new WIRE($a->a()) ;
@@ -87,7 +89,7 @@ eval {
 like($@, qr/Invalid ANDn number of inputs/, "Invalid ANDn number of inputs <=2") ;
 $a = new ANDn(4) ;
 $a->i(0) ;
-is($a->n(), 4) ;
+is($a->n(), 4, "Size of ANDn") ;
 eval { $a->i(-1) ;} ;
 like($@, qr/Invalid input index/, "Invalid input index <0") ;
 eval { $a->i(6) ;} ;

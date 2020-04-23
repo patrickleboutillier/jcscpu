@@ -6,7 +6,7 @@ use Gates ;
 
 sub new {
     my $class = shift ;
-    my $name = shift ;
+    my $name = "ENABLER[" . shift . "]" ;
 
     # Build the byte circuit
     my @as = map { new AND() } (0..7) ;

@@ -6,7 +6,7 @@ use Memory ;
 
 sub new {
     my $class = shift ;
-    my $name = shift ;
+    my $name = "BYTE[" . shift . "]"  ;
 
     # Build the byte circuit
     my @ms = map { new MEMORY($_ - 1) } (0..7) ;

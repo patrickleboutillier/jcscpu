@@ -24,7 +24,7 @@ sub new {
     my $bus = new BUS() ;
     my $ws = new WIRE() ;
     my $we = new WIRE() ;
-    my @ios = map { PASS->io($_) } $bus->wires() ;
+    my @ios = map { PASS->thru($_) } $bus->wires() ;
 
     # Attach wires to all decoder outputs.
     my @wxs = map { new WIRE($TD->o($_)) ; } (0..15) ;

@@ -4,7 +4,7 @@ use RAM ;
 use Data::Dumper ;
 use Algorithm::Combinatorics qw(tuples_with_repetition) ;
 
-plan(tests => 6 + 3) ;
+plan(tests => 3) ;
 
 my $RAM = new RAM("System memory") ;
 my $ba = new BUS([$RAM->as()]) ;
@@ -12,7 +12,7 @@ my $wsa = new WIRE($RAM->sa()) ;
 my $bio = new BUS([$RAM->ios()]) ;
 my $ws = new WIRE($RAM->s()) ;
 my $we = new WIRE($RAM->e()) ;
-$RAM->show("00000000") ;
+# warn $RAM->show("00000000") ;
 
 # First, setup an address on the MAR input bus and let it in the MAR 
 my $addr1 = "10101010" ;
@@ -76,11 +76,12 @@ $we->power(1) ;
 is($bio->power(), $data1) ;
 $we->power(0) ;
 
+exit() ;
 
 my @ts = tuples_with_repetition([0, 1], 8) ;
-splice(@ts, 6) ;
+# splice(@ts, 6) ;
 # warn Dumper(\@ts) ;
-# my @ts = ([0,0,0,0,0,0,0,0], [1,1,1,1,1,1,1,1], [1,0,1,0,1,0,1,0]) ;
+my @ts = ([0,0,0,0,0,0,0,0] , [1,1,1,1,1,1,1,1]) ; # , [1,0,1,0,1,0,1,0]) ;
 foreach my $t (@ts){
     my $addr = join('', @{$t}) ;
     $ba->power($addr) ;
@@ -91,20 +92,25 @@ foreach my $t (@ts){
     $bio->power($data) ;
     $ws->power(1) ;
     $ws->power(0) ;
+    # warn $RAM->show("$addr") ;
 }
+
 foreach my $t (@ts){
     my $addr = join('', @{$t}) ;
     warn $RAM->show("$addr") ;
     $ba->power($addr) ;
     $wsa->power(1) ;
     $wsa->power(0) ;
-    # Now if we turn on the e, we should get our data back on the bus.
     warn $RAM->show("$addr") ;
+
+    # Now if we turn on the e, we should get our data back on the bus.
+    $GATES::DEBUG = 0 ;
     $we->power(1) ;
     warn $RAM->show("$addr") ;
     my $data = join('', reverse @{$t}) ;
     is($bio->power(), $data) ;
     $we->power(0) ;
     warn $RAM->show("$addr") ;
+    exit ;
 }
 

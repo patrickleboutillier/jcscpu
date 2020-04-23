@@ -7,7 +7,7 @@ use Gates ;
 sub new {
     my $class = shift ;
     my $n = shift ;
-    my $name = shift ;
+    my $name = "DECODER${n}[" . shift . "]" ;
 
     die ("Invalid DECODER number of inputs $n") unless ($n >= 2) ;
     
@@ -16,10 +16,10 @@ sub new {
     my @os = () ;
     my @map = () ;
     for (my $j = 0 ; $j < $n ; $j++){
-        my $ng = new NOT() ;
+        my $ng = new NOT("$name/NOT[$j]") ;
         my $w1 = new WIRE($ng->a()) ;
         my $w0 = new WIRE($ng->b()) ;
-        push @is, PASS->in($w1) ;
+        push @is, PASS->in($w1, "$name/PASS[i$j]") ;
         
         # Now we want to classify the wires w1 and w0 and store them in a map to be able to
         # hook them up to the AND gates later.

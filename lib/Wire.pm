@@ -1,7 +1,6 @@
 package WIRE ;
 
 use strict ;
-$WIRE::nb = 0 ;
 
 
 sub new {
@@ -15,9 +14,42 @@ sub new {
     bless $this, $class ;
 
     $this->connect(@pins) ;
-    $WIRE::nb++ ;
 
     return $this ;
+}
+
+
+# Get or set power on a wire.
+sub power {
+    my $this = shift ;
+    my $v = shift ;
+    my $suppress_signal = shift ;
+
+    if (defined($v)){
+        $v = ($v ? 1 : 0) ;
+        if ($v != $this->{power}){
+            # There is a change in power. Record it and propagate the effect.
+            $this->{power} = $v ;
+            foreach my $pin (@{$this->{pins}}){
+                 $pin->gate()->signal($pin, 0) unless $suppress_signal;  
+            }
+        }
+    }
+
+    return $this->{power} ;   
+}
+
+
+# Connect the pins to the current wire.
+sub connect {
+    my $this = shift ;
+    my @pins = @_ ;
+
+    foreach my $pin (@pins){
+        push @{$this->{pins}}, $pin ;
+        $pin->connect($this) ;
+        $pin->gate()->signal($pin, 1) ;
+    }
 }
 
 
@@ -27,28 +59,6 @@ sub new_wires {
     my @pins = @_ ;
 
     map { new WIRE($_) } @pins ;
-}
-
-
-# Get or set power on a wire.
-sub power {
-    my $this = shift ;
-    my $v = shift ;
-
-    if (defined($v)){
-        $v = ($v ? 1 : 0) ;
-        if ($v != $this->{power}){
-            # There is a change in power. Record it and propagate the effect.
-            $this->{power} = $v ;
-            foreach my $pin (@{$this->{pins}}){
-                if (! $pin->output()){ 
-                    $pin->gate()->eval($this) ;  
-                }
-            }
-        }
-    }
-
-    return $this->{power} ;   
 }
 
 
@@ -71,18 +81,6 @@ sub power_wires {
     }
 
     return join '', map { $_->power() } @wires ;
-}
-
-
-# Connect the pins to the current wire.
-sub connect {
-    my $this = shift ;
-    my @pins = @_ ;
-
-    foreach my $pin (@pins){
-        $pin->wire($this) ;
-        push @{$this->{pins}}, $pin ;
-    }
 }
 
 

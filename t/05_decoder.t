@@ -41,6 +41,7 @@ sub make_decoder_test {
 
 map { make_decoder_test($_) } (2..$max_decoder_tests) ;
 
+
 eval { my $D = new DECODER(0) ; } ;
 like($@, qr/Invalid DECODER number of inputs/, "Invalid DECODER number of inputs <2") ;
 my $D = new DECODER(2) ;

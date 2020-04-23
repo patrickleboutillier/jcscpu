@@ -6,7 +6,7 @@ use Gates ;
 
 sub new {
     my $class = shift ;
-    my $name = shift ;
+    my $name = "MEMORY[" . shift . "]" ;
 
     # Build the memory circuit, and record the wires.
     my $g1 = new NAND("g1") ;
