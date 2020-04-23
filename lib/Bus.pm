@@ -51,12 +51,21 @@ sub power {
 }
 
 
+sub reset {
+    my $this = shift ;
+
+    foreach my $w (@{$this->{wires}}){
+        $w->reset() ;
+    }
+}
+
+
 sub connect {
     my $this = shift ;
     my @bundles = @_ ;
 
     foreach my $bundle (@bundles){
-        die("Invalid bundle count!") if scalar(@{$bundle}) != 8 ;
+        die("Invalid bundle wire count!") if scalar(@{$bundle}) != 8 ;
         for (my $j = 0 ; $j < 8 ; $j++){
             my $pin = $bundle->[$j] ;
             my $wire = $this->{wires}->[$j] ;

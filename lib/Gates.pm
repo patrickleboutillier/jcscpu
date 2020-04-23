@@ -80,34 +80,53 @@ sub b {
 sub signal {
     my $this = shift ;
     my $pin = shift ;
-    my $connection = shift ; # Does this signal come from a connection to the pin as opposed to a power change on the wire.
+    my $reset = shift ;
+    my $newconn = shift ;
 
-    
     # Do nothing unless both sides are connected
     my $wa = $this->{a}->wire() ;
     return unless $wa ;
     my $wb = $this->{b}->wire() ;
     return unless $wb ;
-    
-    # warn "$this $connection $this->{io} $pin a:$this->{a} b:$this->{b} " . $wa->power() . " " . $wb->power() ;
-    
+
+    # warn "PASS $pin $this->{a} $this->{b} $this->{io} $reset\n" ;
+
     if (! $this->{io}){
-        # Only react to events from $pin 'a', or connections
-        return unless (($pin eq $this->{a})||($connection)) ;
-        $wb->power($wa->power()) ;
-    }
-    else {
-        if ($pin eq $this->{a}){
-            $wb->power($wa->power(), $connection) ;
+        if (! $reset){
+            # Ignore signals from our output pin (always b), unless it is a reset
+            return if (($pin eq $this->{b})&&(! $newconn)) ;
+            $wb->power($wa->power()) ;
         }
         else {
-            $wa->power($wb->power(), $connection) ;
+            # Reset on uni-directional PASS?
+            return if ($pin eq $this->{b}) ;
+            $wb->reset($this->{b}) ;
+        }
+    }
+    else {
+        if (! $reset){
+            if ($pin eq $this->{a}){
+                $wb->power($wa->power()) ;
+            }
+            else {
+                $wa->power($wb->power()) ;
+            }
+        }
+        else {
+            if ($pin eq $this->{a}){
+                $wb->reset($this->{b}) ;
+                #$wa->power($wb->power(), $reset) ;
+            }
+            else {
+                $wa->reset($this->{a}) ;
+                #$wb->power($wa->power(), $reset) ;
+            }
         }
     }
 
     if ($GATES::DEBUG){
-        my $srca = ($pin eq $this->{a} ? ($connection ? '+' : '*') : '') ;
-        my $srcb = ($pin eq $this->{b} ? ($connection ? '+' : '*') : '') ;
+        my $srca = ($pin eq $this->{a} ? ($reset ? '+' : '*') : '') ;
+        my $srcb = ($pin eq $this->{b} ? ($reset ? '+' : '*') : '') ;
         my $a = $wa->power() ;
         my $b = $wb->power() ;
         warn "$this->{name}: ${srca}a:$a <-> ${srcb}b:$b\n" ;
@@ -188,29 +207,32 @@ sub c {
 sub signal {
     my $this = shift ;
     my $pin = shift ;
-    my $connection = shift ; # Does this signal come from a connection to the pin as opposed to a power change on the wire.
-
-    # Ignore signals from our output pin, unless this is a new connection
-    return if (($pin eq $this->{c})&&(! $connection)) ;
+    my $reset = shift ;
+    my $newconn = shift ;
 
     # Do nothing if our output is not connected
     my $wc = $this->{c}->wire() ;
     return unless $wc ;
+ 
+    if (! $reset){
+        # Ignore signals from our output pin, unless it is a new connection
+        return if (($pin eq $this->{c})&&(! $newconn)) ;
+    }
 
     my $wa = $this->{a}->wire() ;
     my $a = ($wa ? $wa->power() : 0) ;
     my $wb = $this->{b}->wire() ;
     my $b = ($wb ? $wb->power() : 0) ;
- 
+
     # This code could be replaced by a truth table. No need to actually the language operators to perform
     # the boolean and and the not.
     my $c = ! ($a && $b) ;
 
     $wc->power($c) ;
     if ($GATES::DEBUG){
-        my $srca = ($pin eq $this->{a} ? ($connection ? '+' : '*') : '') ;
-        my $srcb = ($pin eq $this->{b} ? ($connection ? '+' : '*') : '') ;
-        my $srcc = ($pin eq $this->{c} ? ($connection ? '+' : '*') : '') ;
+        my $srca = ($pin eq $this->{a} ? ($reset ? '+' : '*') : '') ;
+        my $srcb = ($pin eq $this->{b} ? ($reset ? '+' : '*') : '') ;
+        my $srcc = ($pin eq $this->{c} ? ($reset ? '+' : '*') : '') ;
         $c = ($c ? 1 : 0) ;
         warn "$this->{name} : (${srca}a:$a, ${srcb}b:$b) -> ${srcc}c:$c\n" ;
     }

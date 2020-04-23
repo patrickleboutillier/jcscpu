@@ -1,3 +1,5 @@
+- Create WIRES class to work on wires
+- Add BUS::reset
 - The current problem is figuring out how to reset wires when they are used bi-directionally.
   - Attach both input and output of a register to a bus
   - Write on the bus
@@ -5,7 +7,7 @@
     - Bus is not reset (because the va;ue inside the register was not changed so there is no updated data
         to propagate along the wires)
   - Maybe bus resets before setting e are the solution?
-  
+
 Ex:
 use strict ;
 use RAM ;

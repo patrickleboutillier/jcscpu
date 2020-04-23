@@ -23,7 +23,6 @@ sub new {
 sub power {
     my $this = shift ;
     my $v = shift ;
-    my $suppress_signal = shift ;
 
     if (defined($v)){
         $v = ($v ? 1 : 0) ;
@@ -31,12 +30,12 @@ sub power {
             # There is a change in power. Record it and propagate the effect.
             $this->{power} = $v ;
             foreach my $pin (@{$this->{pins}}){
-                 $pin->gate()->signal($pin, 0) unless $suppress_signal;  
+                 $pin->gate()->signal($pin, 0, 0) ;  
             }
         }
     }
 
-    return $this->{power} ;   
+    return $this->{power} ;
 }
 
 
@@ -48,7 +47,19 @@ sub connect {
     foreach my $pin (@pins){
         push @{$this->{pins}}, $pin ;
         $pin->connect($this) ;
-        $pin->gate()->signal($pin, 1) ;
+        $pin->gate()->signal($pin, 0, 1) ;
+    }
+}
+
+
+# To reset a wire, we need to "poke" the connected pins and asks them to resend their signals.  
+sub reset {
+    my $this = shift ;
+    my $skip = shift ;
+
+    foreach my $pin (@{$this->{pins}}){
+        next if $pin eq $skip ; # This prevents infinite loops with bi-directioal PASS gates.
+        $pin->gate()->signal($pin, 1, 0) ;
     }
 }
 

@@ -50,7 +50,7 @@ eval {
     pop @is ;
     $bin->connect([@is]) ;
 } ;
-like($@, qr/Invalid bundle count/, "Invalid bundle count (7)") ;
+like($@, qr/Invalid bundle wire count/, "Invalid bundle count (7)") ;
 
 
 # Tests using a REGISTRY with input and output on the same BUS.

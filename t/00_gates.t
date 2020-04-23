@@ -5,7 +5,7 @@ use List::Util qw(all) ;
 use Gates ;
 
 
-plan(tests => 20) ;
+plan(tests => 30) ;
 
 
 # Basic tests for NAND gate.
@@ -32,6 +32,26 @@ eval {
 } ;
 like($@, qr/Length mismatch/, "Length mismatch") ;
 
+# Tests for wire reset
+$wa->power(0) ;
+$wb->power(1) ;
+is($wc->power(), 1, "c=1 to start") ;
+$wc->power(0) ;
+is($wa->power(), 0, "a unchanged") ;
+is($wb->power(), 1, "b unchanged") ;
+is($wc->power(), 0, "c=0 forced on the wire") ;
+$wc->reset() ;
+is($wc->power(), 1, "c=1, wire reset") ;
+
+# Add a PASS to see if it still works
+my $wcp = new WIRE(PASS->thru($wc)) ;
+$wcp->power(0) ;
+is($wa->power(), 0, "a unchanged") ;
+is($wb->power(), 1, "b unchanged") ;
+is($wcp->power(), 0, "cp=0 forced on the wire") ;
+is($wc->power(), 0, "cp change propagated to c") ;
+$wcp->reset() ;
+is($wcp->power(), 1, "c=1, wire reset") ;
 
 my $n = new NOT() ;
 $wa = new WIRE($n->a()) ;
