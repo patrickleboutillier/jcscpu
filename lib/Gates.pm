@@ -42,76 +42,6 @@ sub gate {
 }
 
 
-package NAND ; 
-use strict ;
-
-
-sub new {
-    my $class = shift ;
-    my $name = "NAND[" . shift . "]" ;
-
-    my $this = {
-        name => $name,
-    } ;
-    $this->{a} = new PIN($this) ;
-    $this->{b} = new PIN($this) ;
-    $this->{c} = new PIN($this) ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-sub a {
-    my $this = shift ;
-    return $this->{a} ;
-}
-
-
-sub b {
-    my $this = shift ;
-    return $this->{b} ;
-}
-
-
-sub c {
-    my $this = shift ;
-    return $this->{c} ;
-}
-
-
-sub signal {
-    my $this = shift ;
-    my $pin = shift ;
-    my $connection = shift ; # Does this signal come from a connection to the pin as opposed to a power change on the wire.
-
-    # Ignore signals from our output pin, unless this is a new connection
-    return if (($pin eq $this->{c})&&(! $connection)) ;
-
-    # Do nothing if our output is not connected
-    my $wc = $this->{c}->wire() ;
-    return unless $wc ;
-
-    my $wa = $this->{a}->wire() ;
-    my $a = ($wa ? $wa->power() : 0) ;
-    my $wb = $this->{b}->wire() ;
-    my $b = ($wb ? $wb->power() : 0) ;
- 
-    # This code could be replaced by a truth table. No need to actually the language operators to perform
-    # the boolean and and the not.
-    my $c = ! ($a && $b) ;
-
-    $wc->power($c) ;
-    if ($GATES::DEBUG){
-        my $srca = ($pin eq $this->{a} ? ($connection ? '+' : '*') : '') ;
-        my $srcb = ($pin eq $this->{b} ? ($connection ? '+' : '*') : '') ;
-        my $srcc = ($pin eq $this->{c} ? ($connection ? '+' : '*') : '') ;
-        $c = ($c ? 1 : 0) ;
-        warn "$this->{name} : (${srca}a:$a, ${srcb}b:$b) -> ${srcc}c:$c\n" ;
-    }
-}
-
-
 package PASS ; 
 use strict ;
 
@@ -217,6 +147,76 @@ sub thru {
 }
 
 
+package NAND ; 
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+    my $name = "NAND[" . shift . "]" ;
+
+    my $this = {
+        name => $name,
+    } ;
+    $this->{a} = new PIN($this) ;
+    $this->{b} = new PIN($this) ;
+    $this->{c} = new PIN($this) ;
+    bless $this, $class ;
+
+    return $this ;
+}
+
+
+sub a {
+    my $this = shift ;
+    return $this->{a} ;
+}
+
+
+sub b {
+    my $this = shift ;
+    return $this->{b} ;
+}
+
+
+sub c {
+    my $this = shift ;
+    return $this->{c} ;
+}
+
+
+sub signal {
+    my $this = shift ;
+    my $pin = shift ;
+    my $connection = shift ; # Does this signal come from a connection to the pin as opposed to a power change on the wire.
+
+    # Ignore signals from our output pin, unless this is a new connection
+    return if (($pin eq $this->{c})&&(! $connection)) ;
+
+    # Do nothing if our output is not connected
+    my $wc = $this->{c}->wire() ;
+    return unless $wc ;
+
+    my $wa = $this->{a}->wire() ;
+    my $a = ($wa ? $wa->power() : 0) ;
+    my $wb = $this->{b}->wire() ;
+    my $b = ($wb ? $wb->power() : 0) ;
+ 
+    # This code could be replaced by a truth table. No need to actually the language operators to perform
+    # the boolean and and the not.
+    my $c = ! ($a && $b) ;
+
+    $wc->power($c) ;
+    if ($GATES::DEBUG){
+        my $srca = ($pin eq $this->{a} ? ($connection ? '+' : '*') : '') ;
+        my $srcb = ($pin eq $this->{b} ? ($connection ? '+' : '*') : '') ;
+        my $srcc = ($pin eq $this->{c} ? ($connection ? '+' : '*') : '') ;
+        $c = ($c ? 1 : 0) ;
+        warn "$this->{name} : (${srca}a:$a, ${srcb}b:$b) -> ${srcc}c:$c\n" ;
+    }
+}
+
+
 package NOT ; 
 use strict ;
 
@@ -266,6 +266,100 @@ sub new {
         a => $g->a(),
         b => $g->b(),
         c => $n->b(),
+        name => $name,
+    } ;
+
+    bless $this, $class ;
+    return $this ;
+}
+
+
+sub a {
+    my $this = shift ;
+    return $this->{a} ;
+}
+
+
+sub b {
+    my $this = shift ;
+    return $this->{b} ;
+}
+
+
+sub c {
+    my $this = shift ;
+    return $this->{c} ;
+}
+
+
+package OR ;
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+    my $name = "OR[" . shift . "]" ;
+
+ 
+    my $na = new NOT("$name/NOT[a]") ;
+    my $nb = new NOT("$name/NOT[b]") ;
+    my $g = new NAND("$name/NAND") ;
+    new WIRE($na->b(), $g->a()) ;
+    new WIRE($nb->b(), $g->b()) ;
+    my $this = {
+        a => $na->a(),
+        b => $nb->a(),
+        c => $g->c(),
+        name => $name,
+    } ;
+
+    bless $this, $class ;
+    return $this ;
+}
+
+
+sub a {
+    my $this = shift ;
+    return $this->{a} ;
+}
+
+
+sub b {
+    my $this = shift ;
+    return $this->{b} ;
+}
+
+
+sub c {
+    my $this = shift ;
+    return $this->{c} ;
+}
+
+
+package XOR ;
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+    my $name = "XOR[" . shift . "]" ;
+
+ 
+    my $na = new NOT("$name/NOT[a]") ;
+    my $nb = new NOT("$name/NOT[b]") ;
+    my $g1 = new NAND("$name/NAND[g1]") ;
+    my $g2 = new NAND("$name/NAND[g2]") ;
+    my $g3 = new NAND("$name/NAND[g3]") ;
+    my $wa = new WIRE($na->a(), $g2->a()) ;
+    my $wb = new WIRE($nb->a(), $g1->b()) ;
+    new WIRE($na->b(), $g1->a()) ;
+    new WIRE($nb->b(), $g2->b()) ;
+    new WIRE($g1->c(), $g3->a()) ;
+    new WIRE($g2->c(), $g3->b()) ;
+    my $this = {
+        a => PASS->in($wa),
+        b => PASS->in($wb),
+        c => $g3->c(),
         name => $name,
     } ;
 
@@ -346,6 +440,9 @@ sub o {
     my $this = shift ;
     return $this->{o} ;
 }
+
+
+
 
 
 return 1 ;

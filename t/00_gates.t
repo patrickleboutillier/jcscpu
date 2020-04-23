@@ -5,8 +5,7 @@ use List::Util qw(all) ;
 use Gates ;
 
 
-my $max_andn_tests = 8 ;
-plan(tests => (16 + nb_andn_tests())) ;
+plan(tests => 20) ;
 
 
 # Basic tests for NAND gate.
@@ -34,7 +33,7 @@ eval {
 like($@, qr/Length mismatch/, "Length mismatch") ;
 
 
-my $n = new NOT("TEST") ;
+my $n = new NOT() ;
 $wa = new WIRE($n->a()) ;
 $wb = new WIRE($n->b()) ;
 
@@ -57,41 +56,30 @@ $wa->power(0) ;
 is($wc->power(), 0, "AND(0, 1)=0") ;
 
 
-# ANDn
-sub nb_andn_tests {
-    my $sum = 0 ;
-    for (my $j = 2 ; $j <= $max_andn_tests ; $j++){
-        $sum += 2 ** $j ;    
-    }    
-    return $sum ;
-}
+my $o = new OR() ;
+$wa = new WIRE($o->a()) ;
+$wb = new WIRE($o->b()) ;
+$wc = new WIRE($o->c()) ;
 
-sub make_andn_test {
-    my $n = shift ;
+is($wc->power(), 0, "OR(0, 0)=0") ;
+$wa->power(1) ;
+is($wc->power(), 1, "OR(1, 0)=1") ;
+$wb->power(1) ;
+is($wc->power(), 1, "OR(1, 1)=1") ;
+$wa->power(0) ;
+is($wc->power(), 1, "OR(0, 1)=1") ;
 
-    my $a = new ANDn($n) ;
-    my @wis = map { new WIRE($_) } $a->is() ;
-    my $wo = new WIRE($a->o()) ;
 
-    my @ts = tuples_with_repetition([0, 1], $n) ;
-    foreach my $t (@ts){
-        WIRE->power_wires(@wis, $t) ;
-        my $res = (all { $_ } @{$t}) || 0 ;
-        is($wo->power(), $res, "AND$n(" . join(", ", @{$t}) . ")=$res") ;
-    }
-}
+my $xo = new XOR() ;
+$wa = new WIRE($xo->a()) ;
+$wb = new WIRE($xo->b()) ;
+$wc = new WIRE($xo->c()) ;
 
-map { make_andn_test($_) } (2..$max_andn_tests) ;
-
-eval {
-    new ANDn(1) ;
-} ;
-like($@, qr/Invalid ANDn number of inputs/, "Invalid ANDn number of inputs <=2") ;
-$a = new ANDn(4) ;
-$a->i(0) ;
-is($a->n(), 4, "Size of ANDn") ;
-eval { $a->i(-1) ;} ;
-like($@, qr/Invalid input index/, "Invalid input index <0") ;
-eval { $a->i(6) ;} ;
-like($@, qr/Invalid input index/, "Invalid input index >n") ;
+is($wc->power(), 0, "XOR(0, 0)=0") ;
+$wa->power(1) ;
+is($wc->power(), 1, "XOR(1, 0)=1") ;
+$wb->power(1) ;
+is($wc->power(), 0, "XOR(1, 1)=0") ;
+$wa->power(0) ;
+is($wc->power(), 1, "XOR(0, 1)=1") ;
 
