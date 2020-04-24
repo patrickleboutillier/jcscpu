@@ -476,6 +476,62 @@ sub o {
 }
 
 
+package ORn ; 
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+    my $n = shift ;
+    my $name = "OR${n}[" . shift . "]" ;
+
+    die ("Invalid ORn number of inputs $n") unless ($n >= 2) ;
+    my $last = new OR("$name/OR[0]") ;
+    my @is = (PASS->in(new WIRE($last->a()), "$name/OR[0]/PASS[a]"), PASS->in(new WIRE($last->b()), "$name/OR[0]/PASS[b]")) ;
+    for (my $j = 0 ; $j < ($n-2) ; $j++){
+            my $next = new OR("$name/OR[" . ($j+1) . "]") ;
+            my $w = new WIRE($last->c(), $next->a()) ;
+            push @is, PASS->in(new WIRE($next->b()), "$name/OR[" . ($j+1) . "]/PASS[b]") ;
+            $last = $next ;
+    }
+
+    my $this = {
+        is => \@is,
+        o => PASS->out(new WIRE($last->c()), "$name/PASS[c]"),
+        n => $n,
+    } ;
+
+    bless $this, $class ;
+    return $this ;
+}
+
+
+sub is {
+    my $this = shift ;
+    return @{$this->{is}} ;
+}
+
+
+sub i {
+    my $this = shift ;
+    my $n = shift ;
+    die ("Invalid input index $n") unless (($n >= 0)&&($n < $this->{n})) ;
+    return $this->{is}->[$n] ;
+}
+
+
+sub n {
+    my $this = shift ;
+    return $this->{n} ;
+}
+
+
+sub o {
+    my $this = shift ;
+    return $this->{o} ;
+}
+
+
 package ADD ;
 use strict ;
 

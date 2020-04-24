@@ -5,6 +5,7 @@ use ANDDER ;
 use ORER ;
 use XORER ;
 use ADDER ;
+use ZERO ;
 use Bus ;
 use Algorithm::Combinatorics qw(tuples_with_repetition) ;
 use List::Util qw(shuffle) ;
@@ -21,6 +22,14 @@ my $bb = new BUS([$n->bs()]) ;
 
 make_notter_test(0) ;
 make_notter_test(1) ;
+
+
+my $z = new ZERO() ;
+my $bi = new BUS([$z->is()]) ;
+my $wz = new WIRE($z->z()) ;
+
+make_zero_test(0) ;
+make_zero_test(1) ;
 
 
 my $a = new ANDDER() ;
@@ -58,7 +67,7 @@ make_adder_test(1) ;
 
 
 sub nb_xxxer_tests { 
-    return 256*2 + ($make_xxer_size**2)*5  ;
+    return 256*4 + ($make_xxer_size**2)*5  ;
 }
 
 
@@ -180,5 +189,20 @@ sub make_adder_test {
             is($bsum->power(), $res, "ADDER($bin1,$bin2,$ci)=($co,$res)") ;
             is($wco->power(), $co, "ADDER($bin1,$bin2,$ci)=($co,$res) (carry out)") ;
         }
+    }
+}
+
+sub make_zero_test {
+    my $random = shift ;
+
+    my @ts = tuples_with_repetition([0, 1], 8) ;
+    @ts = shuffle @ts if $random ;
+    foreach my $t (@ts){
+        my $bin = join('', @{$t}) ;
+        $bi->power($bin) ;
+
+        my @res = map { ($_ ? 1 : 0) } map {! $_ } @{$t} ;
+        my $res = ($bin eq "00000000" ? 1 : 0) ;
+        is($wz->power(), $res, "ZERO($bin)=$res") ;
     }
 }
