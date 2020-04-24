@@ -5,7 +5,7 @@ use List::Util qw(all) ;
 use Gates ;
 
 
-plan(tests => 30) ;
+plan(tests => 28) ;
 
 
 # Basic tests for NAND gate.
@@ -40,8 +40,9 @@ $wc->power(0) ;
 is($wa->power(), 0, "a unchanged") ;
 is($wb->power(), 1, "b unchanged") ;
 is($wc->power(), 0, "c=0 forced on the wire") ;
-$wc->reset() ;
-is($wc->power(), 1, "c=1, wire reset") ;
+# Not sure if there is a future for this...
+# $wc->reset() ;
+# is($wc->power(), 1, "c=1, wire reset") ;
 
 # Add a PASS to see if it still works
 my $wcp = new WIRE(PASS->thru($wc)) ;
@@ -50,8 +51,9 @@ is($wa->power(), 0, "a unchanged") ;
 is($wb->power(), 1, "b unchanged") ;
 is($wcp->power(), 0, "cp=0 forced on the wire") ;
 is($wc->power(), 0, "cp change propagated to c") ;
-$wcp->reset() ;
-is($wcp->power(), 1, "c=1, wire reset") ;
+# Not sure if there is a future for this...
+# $wcp->reset() ;
+# is($wcp->power(), 1, "c=1, wire reset") ;
 
 my $n = new NOT() ;
 $wa = new WIRE($n->a()) ;

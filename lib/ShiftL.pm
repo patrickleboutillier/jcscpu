@@ -9,22 +9,21 @@ sub new {
     my $class = shift ;
     my $name = shift ;
 
-    # Build the register circuit
-    my $this = {
-        name => $name,
-    } ;
-    bless $this, $class ;
-
+    # Build the shifter circuit
     my @wires = map { new WIRE() } (0..6) ;
     my $sow = new WIRE() ;
     my $siw = new WIRE() ;
     my @is = (PASS->in($sow), (map { PASS->in($wires[$_]) } (0..6))) ;
     my @os = ((map { PASS->out($wires[$_]) } (0..6)), PASS->out($siw)) ;
-
-    $this->{is} = \@is ;
-    $this->{os} = \@os ;
-    $this->{so} = PASS->out($sow) ;
-    $this->{si} = PASS->in($siw) ;
+    
+    my $this = {
+        name => $name,
+        is => \@is,
+        os => \@os,
+        so => PASS->out($sow),
+        si => PASS->in($siw),
+    } ;
+    bless $this, $class ;
 
     return $this ;
 }

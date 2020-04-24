@@ -57,7 +57,7 @@ sub connect {
 
 
 # To reset a wire, we need to "poke" the connected pins and asks them to resend their signals.  
-sub reset {
+sub _reset {
     my $this = shift ;
     my $skip = shift ;
 
