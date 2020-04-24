@@ -5,7 +5,7 @@ use List::Util qw(all) ;
 use Gates ;
 
 
-plan(tests => 44) ;
+plan(tests => 60) ;
 
 
 # Basic tests for NAND gate.
@@ -155,3 +155,75 @@ $wb->power(1) ;
 $wci->power(1) ;
 is($wsum->power(), 1, "SUM(1,1,1)=(1,1)") ;
 is($wco->power(),  1, "SUM(1,1,1)=(1,1)") ;
+
+
+# Basic tests for CMP gate.
+my $c = new CMP() ;
+my $wa = new WIRE($c->a()) ;
+my $wb = new WIRE($c->b()) ;
+my $weqi = new WIRE($c->eqi()) ;
+my $wali = new WIRE($c->ali()) ;
+my $wc = new WIRE($c->c()) ;
+my $weqo = new WIRE($c->eqo()) ;
+my $walo = new WIRE($c->alo()) ;
+
+$weqi->power(0) ;
+$wali->power(0) ;
+$wa->power(0) ;
+$wb->power(0) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [0,0,0], "CMP(a:0,b:0,eqi:0,ali:0)=(c:0,eqo:0,alo:0)") ;
+$wa->power(0) ;
+$wb->power(1) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [1,0,0], "CMP(a:0,b:1,eqi:0,ali:0)=(c:1,eqo:0,alo:0)") ;
+$wa->power(1) ;
+$wb->power(0) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [1,0,0], "CMP(a:1,b:0,eqi:0,ali:0)=(c:1,eqo:0,alo:0)") ;
+$wa->power(1) ;
+$wb->power(1) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [0,0,0], "CMP(a:1,b:1,eqi:0,ali:0)=(c:0,eqo:0,alo:0)") ;
+
+$weqi->power(0) ;
+$wali->power(1) ;
+$wa->power(0) ;
+$wb->power(0) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [0,0,1], "CMP(a:0,b:0,eqi:0,ali:1)=(c:0,eqo:0,alo:1)") ;
+$wa->power(0) ;
+$wb->power(1) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [1,0,1], "CMP(a:0,b:1,eqi:0,ali:1)=(c:1,eqo:0,alo:1)") ;
+$wa->power(1) ;
+$wb->power(0) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [1,0,1], "CMP(a:1,b:0,eqi:0,ali:1)=(c:1,eqo:0,alo:1)") ;
+$wa->power(1) ;
+$wb->power(1) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [0,0,1], "CMP(a:1,b:1,eqi:0,ali:1)=(c:0,eqo:0,alo:1)") ;
+
+$weqi->power(1) ;
+$wali->power(0) ;
+$wa->power(0) ;
+$wb->power(0) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [0,1,0], "CMP(a:0,b:0,eqi:1,ali:0)=(c:0,eqo:1,alo:0)") ;
+$wa->power(0) ;
+$wb->power(1) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [1,0,0], "CMP(a:0,b:1,eqi:1,ali:0)=(c:1,eqo:0,alo:0)") ;
+$wa->power(1) ;
+$wb->power(0) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [1,0,1], "CMP(a:1,b:0,eqi:1,ali:0)=(c:1,eqo:0,alo:1)") ;
+$wa->power(1) ;
+$wb->power(1) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [0,1,0], "CMP(a:1,b:1,eqi:1,ali:0)=(c:0,eqo:1,alo:0)") ;
+
+
+$weqi->power(1) ;
+$wali->power(1) ;
+$wa->power(0) ;
+$wb->power(0) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [0,1,1], "CMP(a:0,b:0,eqi:1,ali:1)=(c:0,eqo:1,alo:1)") ;
+$wa->power(0) ;
+$wb->power(1) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [1,0,1], "CMP(a:0,b:1,eqi:1,ali:1)=(c:1,eqo:0,alo:1)") ;
+$wa->power(1) ;
+$wb->power(0) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [1,0,1], "CMP(a:1,b:0,eqi:1,ali:1)=(c:1,eqo:0,alo:1)") ;
+$wa->power(1) ;
+$wb->power(1) ;
+is_deeply([$wc->power(),$weqo->power(),$walo->power()], [0,1,1], "CMP(a:1,b:1,eqi:1,ali:1)=(c:0,eqo:1,alo:1)") ;

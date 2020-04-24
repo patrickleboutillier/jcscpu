@@ -420,6 +420,86 @@ sub c {
 }
 
 
+package CMP ;
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+    my $name = "CMP[" . shift . "]" ;
+ 
+    my $x1 = new XOR("$name/XOR[1]") ;
+    my $n2 = new NOT("$name/NOT[2]") ;
+    my $a3 = new AND("$name/AND[3]") ;
+    my $a34 = new ANDn(3, "$name/AND3[4]") ;
+    my $o5 = new OR("$name/NAND[g3]") ;
+    my $wa = new WIRE($x1->a(), $a34->i(1)) ;
+    my $wc = new WIRE($x1->c(), $n2->a(), $a34->i(2)) ;
+    new WIRE($a34->o(), $o5->b()) ;
+    new WIRE($n2->b(), $a3->b()) ;
+    my $weqi = new WIRE($a34->i(0), $a3->a()) ;
+
+    my $this = {
+        a => PASS->in($wa),
+        b => $x1->b(),
+        c => PASS->out($wc),
+        eqi => PASS->in($weqi),
+        ali => $o5->a(),
+        eqo => $a3->c(),
+        alo => $o5->c(),
+        name => $name,
+    } ;
+
+    bless $this, $class ;
+    return $this ;
+}
+
+
+sub a {
+    my $this = shift ;
+    return $this->{a} ;
+}
+
+
+sub b {
+    my $this = shift ;
+    return $this->{b} ;
+}
+
+
+sub c {
+    my $this = shift ;
+    return $this->{c} ;
+}
+
+
+# 'a' larger in
+sub ali {
+    my $this = shift ;
+    return $this->{ali} ;
+}
+
+
+# 'a' larger out
+sub alo {
+    my $this = shift ;
+    return $this->{alo} ;
+}
+
+# 'equal so far' in
+sub eqi {
+    my $this = shift ;
+    return $this->{eqi} ;
+}
+
+
+# 'equal so far' out
+sub eqo {
+    my $this = shift ;
+    return $this->{eqo} ;
+}
+
+
 package ANDn ; 
 use strict ;
 
