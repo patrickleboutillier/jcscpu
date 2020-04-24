@@ -11,7 +11,7 @@ use Algorithm::Combinatorics qw(tuples_with_repetition) ;
 use List::Util qw(shuffle) ;
 
 my $make_xxer_size = 64 ;
-# my $make_xxer_size = 8 ;
+$make_xxer_size = 8 ;
 plan(tests => nb_xxxer_tests()) ;
 
 
@@ -52,6 +52,8 @@ my $x = new XORER() ;
 $ba = new BUS([$x->as()]) ;
 $bb = new BUS([$x->bs()]) ;
 $bc = new BUS([$x->cs()]) ;
+my $weqo = new WIRE($x->eqo()) ;
+my $walo = new WIRE($x->alo()) ;
 
 make_xorer_test(1) ;
 
@@ -67,7 +69,7 @@ make_adder_test(1) ;
 
 
 sub nb_xxxer_tests { 
-    return 256*4 + ($make_xxer_size**2)*5  ;
+    return 256*4 + ($make_xxer_size*($make_xxer_size+1))*5  ;
 }
 
 
@@ -92,7 +94,7 @@ sub make_andder_test {
     my @ts = tuples_with_repetition([0, 1], 8) ;
     @ts = shuffle @ts if $random ;
     my @ts1 = @ts[0..($make_xxer_size-1)] ;
-    my @ts2 = @ts[$make_xxer_size..($make_xxer_size*2-1)] ;
+    my @ts2 = @ts[($make_xxer_size-1)..($make_xxer_size*2-1)] ;
 
     foreach my $t1 (@ts1){
         foreach my $t2 (@ts2){
@@ -117,7 +119,7 @@ sub make_orer_test {
     my @ts = tuples_with_repetition([0, 1], 8) ;
     @ts = shuffle @ts if $random ;
     my @ts1 = @ts[0..($make_xxer_size-1)] ;
-    my @ts2 = @ts[$make_xxer_size..($make_xxer_size*2-1)] ;
+    my @ts2 = @ts[($make_xxer_size-1)..($make_xxer_size*2-1)] ;
 
     foreach my $t1 (@ts1){
         foreach my $t2 (@ts2){
@@ -142,7 +144,7 @@ sub make_xorer_test {
     my @ts = tuples_with_repetition([0, 1], 8) ;
     @ts = shuffle @ts if $random ;
     my @ts1 = @ts[0..($make_xxer_size-1)] ;
-    my @ts2 = @ts[$make_xxer_size..($make_xxer_size*2-1)] ;
+    my @ts2 = @ts[($make_xxer_size-1)..($make_xxer_size*2-1)] ;
 
     foreach my $t1 (@ts1){
         foreach my $t2 (@ts2){
@@ -156,7 +158,12 @@ sub make_xorer_test {
                 push @res, map { ($_ ? 1 : 0) } ($t1->[$j] xor $t2->[$j]) ;
             }
             my $res = join('', @res) ;
-            is($bc->power(), $res, "XORER($bin1,$bin2)=$res") ;
+
+            # eqo and alo
+            my $alo = ($bin1 gt $bin2) || 0 ;
+            my $eqo = ($bin1 eq $bin2) || 0 ;
+
+            is_deeply([$bc->power(),$weqo->power(),$walo->power()], [$res,$eqo,$alo], "XORER($bin1,$bin2)=($res,eqo:$eqo,alo:$alo)") or exit ;
         }
     }
 }
@@ -167,7 +174,7 @@ sub make_adder_test {
     my @ts = tuples_with_repetition([0, 1], 8) ;
     @ts = shuffle @ts if $random ;
     my @ts1 = @ts[0..($make_xxer_size-1)] ;
-    my @ts2 = @ts[$make_xxer_size..($make_xxer_size*2-1)] ;
+    my @ts2 = @ts[($make_xxer_size-1)..($make_xxer_size*2-1)] ;
     foreach my $t1 (@ts1){
         foreach my $t2 (@ts2){
             my $bin1 = join('', @{$t1}) ;
