@@ -378,7 +378,6 @@ use strict ;
 sub new {
     my $class = shift ;
     my $name = "XOR[" . shift . "]" ;
-
  
     my $na = new NOT("$name/NOT[a]") ;
     my $nb = new NOT("$name/NOT[b]") ;
@@ -477,6 +476,68 @@ sub o {
 }
 
 
+package ADD ;
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+    my $name = "ADD[" . shift . "]" ;
+ 
+    my $x1 = new XOR("$name/XOR[1]") ;
+    my $x2 = new XOR("$name/XOR[2]") ;
+    my $a1 = new AND("$name/AND[1]") ;
+    my $a2 = new AND("$name/AND[2]") ;
+    my $o = new OR("$name/OR[]") ;
+    my $wa = new WIRE($x1->a(), $a2->a()) ;
+    my $wb = new WIRE($x1->b(), $a2->b()) ;
+    my $wxic = new WIRE($x1->c(), $x2->a(), $a1->b()) ;
+    my $wci = new WIRE($x2->b(), $a1->a()) ;
+    new WIRE($a1->c(), $o->a()) ;
+    new WIRE($a2->c(), $o->b()) ;
+
+    my $this = {
+        a => PASS->in($wa),
+        b => PASS->in($wb),
+        carry_in => PASS->in($wci),
+        carry_out => $o->c(),
+        sum => $x2->c(),
+        name => $name,
+    } ;
+
+    bless $this, $class ;
+    return $this ;
+}
+
+
+sub a {
+    my $this = shift ;
+    return $this->{a} ;
+}
+
+
+sub b {
+    my $this = shift ;
+    return $this->{b} ;
+}
+
+
+sub carry_in {
+    my $this = shift ;
+    return $this->{carry_in} ;
+}
+
+
+sub carry_out {
+    my $this = shift ;
+    return $this->{carry_out} ;
+}
+
+
+sub sum {
+    my $this = shift ;
+    return $this->{sum} ;
+}
 
 
 

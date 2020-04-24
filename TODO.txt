@@ -1,1 +1,3 @@
 - BUS reset works, but is f***ing slow...
+
+- Do ADDER and test like XXers

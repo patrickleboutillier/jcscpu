@@ -5,7 +5,7 @@ use List::Util qw(all) ;
 use Gates ;
 
 
-plan(tests => 28) ;
+plan(tests => 44) ;
 
 
 # Basic tests for NAND gate.
@@ -105,3 +105,53 @@ is($wc->power(), 0, "XOR(1, 1)=0") ;
 $wa->power(0) ;
 is($wc->power(), 1, "XOR(0, 1)=1") ;
 
+
+# Basic tests for ADD gate.
+my $a = new ADD() ;
+my $wa = new WIRE($a->a()) ;
+my $wb = new WIRE($a->b()) ;
+my $wsum = new WIRE($a->sum()) ;
+my $wci = new WIRE($a->carry_in()) ;
+my $wco = new WIRE($a->carry_out()) ;
+
+$wa->power(0) ;
+$wb->power(0) ;
+$wci->power(0) ;
+is($wsum->power(), 0, "SUM(0,0,0)=(0,0)") ;
+is($wco->power(),  0, "SUM(0,0,0)=(0,0)") ;
+$wa->power(1) ;
+$wb->power(0) ;
+$wci->power(0) ;
+is($wsum->power(), 1, "SUM(1,0,0)=(1,0)") ;
+is($wco->power(),  0, "SUM(1,0,0)=(1,0)") ;
+$wa->power(0) ;
+$wb->power(1) ;
+$wci->power(0) ;
+is($wsum->power(), 1, "SUM(0,1,0)=(1,0)") ;
+is($wco->power(),  0, "SUM(0,1,0)=(1,0)") ;
+$wa->power(1) ;
+$wb->power(1) ;
+$wci->power(0) ;
+is($wsum->power(), 0, "SUM(1,1,0)=(0,1)") ;
+is($wco->power(),  1, "SUM(1,1,0)=(0,1)") ;
+
+$wa->power(0) ;
+$wb->power(0) ;
+$wci->power(1) ;
+is($wsum->power(), 1, "SUM(0,0,1)=(1,0)") ;
+is($wco->power(),  0, "SUM(0,0,1)=(1,0)") ;
+$wa->power(1) ;
+$wb->power(0) ;
+$wci->power(1) ;
+is($wsum->power(), 0, "SUM(1,0,1)=(0,1)") ;
+is($wco->power(),  1, "SUM(1,0,1)=(0,1)") ;
+$wa->power(0) ;
+$wb->power(1) ;
+$wci->power(1) ;
+is($wsum->power(), 0, "SUM(0,1,1)=(0,1)") ;
+is($wco->power(),  1, "SUM(0,1,1)=(0,1)") ;
+$wa->power(1) ;
+$wb->power(1) ;
+$wci->power(1) ;
+is($wsum->power(), 1, "SUM(1,1,1)=(1,1)") ;
+is($wco->power(),  1, "SUM(1,1,1)=(1,1)") ;
