@@ -6,12 +6,13 @@ use strict ;
 # Using an arrayrey here to see if it's faster.
 my $GATE = 0 ;
 my $WIRE = 1 ;
+my $PREP = 2 ;
 
 sub new {
     my $class = shift ;
     my $gate = shift ;
 
-    my $this = [$gate, undef] ;
+    my $this = [$gate, undef, undef] ;
 
     bless $this, $class ;
     return $this ;
@@ -20,7 +21,6 @@ sub new {
 
 sub wire {
     my $this = shift ;
-
     return $this->[$WIRE] ;   
 }
 
@@ -40,6 +40,20 @@ sub connect {
 sub gate {
     my $this = shift ;
     return $this->[$GATE] ;
+}
+
+
+sub prepare {
+    my $this = shift ;
+    my $sub = shift ;
+    my $v = shift ;
+
+    if ($sub){
+        $this->[$PREP] = $sub ;
+    }
+    if ($this->[$PREP]){
+        $this->[$PREP]->($v) ;
+    }
 }
 
 

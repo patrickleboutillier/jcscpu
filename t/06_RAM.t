@@ -3,8 +3,9 @@ use Test::More ;
 use RAM ;
 use Data::Dumper ;
 use Algorithm::Combinatorics qw(tuples_with_repetition) ;
+use List::Util qw(shuffle) ;
 
-plan(tests => 3 + 256) ;
+plan(tests => 3 + 256*2) ;
 
 my $RAM = new RAM("System memory") ;
 my $ba = new BUS([$RAM->as()]) ;
@@ -28,7 +29,7 @@ $ws->power(0) ;
 
 # Now if we turn on the e, we should get our data back on the bus.
 # Reset the data bus
-$bio->reset() ;
+# $bio->reset() ;
 $we->power(1) ;
 is($bio->power(), $data1) ;
 $we->power(0) ;
@@ -47,7 +48,7 @@ $ws->power(0) ;
 
 # Now if we turn on the e, we should get our data back on the bus.
 # Reset the data bus
-$bio->reset() ;
+# bio->reset() ;
 $we->power(1) ;
 is($bio->power(), $data2) ;
 $we->power(0) ;
@@ -62,38 +63,43 @@ $we->power(1) ;
 is($bio->power(), $data1) ;
 $we->power(0) ;
 
+make_ram_test(0) ;
+make_ram_test(1) ;
 
-my @ts = tuples_with_repetition([0, 1], 8) ;
-# splice(@ts, 6) ;
-# warn Dumper(\@ts) ;
-# my @ts = ([0,0,0,0,0,0,0,0] , [1,1,1,1,1,1,1,1]) ; # , [1,0,1,0,1,0,1,0]) ;
-foreach my $t (@ts){
-    my $addr = join('', @{$t}) ;
-    $ba->power($addr) ;
-    $wsa->power(1) ;
-    $wsa->power(0) ;
-    # Then setup some data on the I/O bus and store it.
-    my $data = join('', reverse @{$t}) ;
-    $bio->power($data) ;
-    $ws->power(1) ;
-    $ws->power(0) ;
-}
+sub make_ram_test {
+    my $random = shift ;
 
-foreach my $t (@ts){
-    my $addr = join('', @{$t}) ;
-    # warn $RAM->show("$addr") ;
-    $ba->power($addr) ;
-    $wsa->power(1) ;
-    $wsa->power(0) ;
-    # warn $RAM->show("$addr") ;
+    my @ts = tuples_with_repetition([0, 1], 8) ;
+    @ts = shuffle @ts if $random ;
 
-    # Now if we turn on the e, we should get our data back on the bus.
-    $bio->reset() ;
-    $we->power(1) ;
-    # warn $RAM->show("$addr") ;
-    my $data = join('', reverse @{$t}) ;
-    is($bio->power(), $data) ;
-    $we->power(0) ;
-    # warn $RAM->show("$addr") ;
+    foreach my $t (@ts){
+        my $addr = join('', @{$t}) ;
+        $ba->power($addr) ;
+        $wsa->power(1) ;
+        $wsa->power(0) ;
+        # Then setup some data on the I/O bus and store it.
+        my $data = join('', reverse @{$t}) ;
+        $bio->power($data) ;
+        $ws->power(1) ;
+        $ws->power(0) ;
+    }
+
+    foreach my $t (@ts){
+        my $addr = join('', @{$t}) ;
+        # warn $RAM->show("$addr") ;
+        $ba->power($addr) ;
+        $wsa->power(1) ;
+        $wsa->power(0) ;
+        # warn $RAM->show("$addr") ;
+
+        # Now if we turn on the e, we should get our data back on the bus.
+        # $bio->reset() ;
+        $we->power(1) ;
+        # warn $RAM->show("$addr") ;
+        my $data = join('', reverse @{$t}) ;
+        is($bio->power(), $data) ;
+        $we->power(0) ;
+        # warn $RAM->show("$addr") ;
+    }
 }
 

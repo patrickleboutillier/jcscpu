@@ -30,7 +30,8 @@ sub power {
             # There is a change in power. Record it and propagate the effect.
             $this->{power} = $v ;
             foreach my $pin (@{$this->{pins}}){
-                 $pin->gate()->signal($pin, 0, 0) ;  
+                $pin->prepare(undef, $v) ;
+                $pin->gate()->signal($pin, 0, 0) ;  
             }
         }
     }

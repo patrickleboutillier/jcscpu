@@ -24,6 +24,7 @@ sub new {
 sub wire {
     my $this = shift ;
     my $n = shift ;
+    
     die("Bad wire index $n") unless (($n >= 0)&&($n <= 7)) ;
 
     return $this->{wires}->[$n] ;
@@ -51,7 +52,7 @@ sub power {
 }
 
 
-sub reset {
+sub _reset {
     my $this = shift ;
 
     foreach my $w (@{$this->{wires}}){

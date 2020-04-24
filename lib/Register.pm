@@ -15,7 +15,7 @@ sub new {
     my $E = new ENABLER() ;
 
     my $bus = new BUS([$B->os()], [$E->is()]) ;
-    
+
     my $this = {
         is => [$B->is()],
         e => $E->e(),
@@ -26,8 +26,11 @@ sub new {
         E => $E, 
         bus => $bus,
     } ;
-
     bless $this, $class ;
+    
+    # Setup the hook when e changes
+    $this->{e}->prepare(sub { $this->clear_os_before_e(@_) } ) ;
+
     return $this ;
 }
 
@@ -65,6 +68,22 @@ sub show {
     my $e = $this->e()->wire()->power() ;
     my $s = $this->s()->wire()->power() ;
     return "REGISTER($this->{name}): e:$e, s:$s, is:$is, bus:$bus, os:$os" ;
+}
+
+
+sub clear_os_before_e {
+    my $this = shift ;
+    my $v = shift ;
+
+    if ($v){
+        # warn "e is turning on for register $this->{name}!" ;
+        foreach my $pin ($this->{E}->os()){
+            my $w = $pin->wire() ;
+            if ($w){
+                $w->power(0) ;
+            }    
+        }
+    }
 }
 
 
