@@ -17,8 +17,8 @@ sub new {
         as => [map { $_->a() } @adds],
         bs => [map { $_->b() } @adds],
         sums => [map { $_->sum() } @adds],
-        carry_in => $add[7]->carry_in(), 
-        carry_out => $add[0]->carry_out(), 
+        carry_in => $adds[7]->carry_in(), 
+        carry_out => $adds[0]->carry_out(), 
     } ;
     bless $this, $class ;
 
