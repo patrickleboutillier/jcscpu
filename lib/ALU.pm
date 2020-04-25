@@ -35,9 +35,9 @@ sub new {
         #ops => ,
         #carry_in => ,
         #carry_out => ,
-        #eqo => ,
-        #alo => ,
-        #z => ,
+        eqo => PASS->out($xor->eqo()),
+        alo => PASS->out($xor->alo()),
+        z => PASS->out($zero->z()),
         name => $name,
     } ;
     bless $this, $class ;
