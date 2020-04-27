@@ -7,5 +7,14 @@ use List::Util qw(shuffle) ;
 
 plan(tests => 1) ;
 
-my $ALU = new ALU("Arithmetic and Login Unit") ;
+my $bas = new BUS() ; 
+my $bbs = new BUS() ;
+my $wci = new WIRE() ;
+my $bops = new BUS(3) ;
+my $bcs = new BUS() ; 
+my $wco = new WIRE() ;
+my $weqo = new WIRE() ;
+my $walo = new WIRE() ;
+my $wz = new WIRE() ;
+my $ALU = new ALU($bas, $bbs, $wci, $bops, $bcs, $wco, $weqo, $walo, $wz, "Arithmetic and Login Unit") ;
 ok(1) ;

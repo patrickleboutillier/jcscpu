@@ -12,8 +12,8 @@ sub new {
     my $name = shift ;
 
     croak("Invalid DECODER number of inputs $n") unless ($n >= 2) ;
-    croak("Invalid number of wires in DECODER input bus (" . $bis->n(). ") (n is $n)") unless $bis->n() eq $n ;
-    croak("Invalid number of wires in DECODER output bus (" . $bos->n(). ") (2**n is " . 2**$n . ")") unless $bos->n() eq 2**$n ;
+    croak("Invalid number of wires in DECODER input bus (" . $bis->n() . ") (n is $n)") unless $bis->n() eq $n ;
+    croak("Invalid number of wires in DECODER output bus (" . $bos->n() . ") (2**n is " . 2**$n . ")") unless $bos->n() eq 2**$n ;
 
     # Build the decoder circuit
     my @map = () ;
