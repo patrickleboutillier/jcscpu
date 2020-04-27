@@ -51,7 +51,7 @@ sub connect {
     foreach my $pin (@pins){
         push @{$this->{pins}}, $pin ;
         $pin->connect($this) ;
-        $pin->gate()->signal($pin, 0, 1) ;
+        $pin->gate()->connect($pin) ;
     }
 }
 

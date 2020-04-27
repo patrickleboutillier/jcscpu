@@ -92,11 +92,9 @@ sub b {
 }
 
 
-sub signal {
+sub eval {
     my $this = shift ;
     my $pin = shift ;
-    my $reset = shift ;
-    my $newconn = shift ;
 
     # Do nothing unless both sides are connected
     my $wa = $this->{a}->wire() ;
@@ -107,43 +105,46 @@ sub signal {
     # warn "PASS $pin $this->{a} $this->{b} $this->{io} $reset\n" ;
 
     if (! $this->{io}){
-        if (! $reset){
-            # Ignore signals from our output pin (always b), unless it is a reset
-            return if (($pin eq $this->{b})&&(! $newconn)) ;
+            $wb->power($wa->power()) ;
+    }
+    else {
+        if ($pin eq $this->{a}){
             $wb->power($wa->power()) ;
         }
         else {
-            # Reset on uni-directional PASS?
-            return if ($pin eq $this->{b}) ;
-            $wb->reset($this->{b}) ;
+            $wa->power($wb->power()) ;
         }
     }
-    else {
-        if (! $reset){
-            if ($pin eq $this->{a}){
-                $wb->power($wa->power()) ;
-            }
-            else {
-                $wa->power($wb->power()) ;
-            }
-        }
-        else {
-            if ($pin eq $this->{a}){
-                $wb->reset($this->{b}) ;
-            }
-            else {
-                $wa->reset($this->{a}) ;
-            }
-        }
-    }
-
     if ($GATES::DEBUG){
-        my $srca = ($pin eq $this->{a} ? ($reset ? '+' : '*') : '') ;
-        my $srcb = ($pin eq $this->{b} ? ($reset ? '+' : '*') : '') ;
+        my $srca = ($pin eq $this->{a} ? '*' : '') ;
+        my $srcb = ($pin eq $this->{b} ? '*' : '') ;
         my $a = $wa->power() ;
         my $b = $wb->power() ;
         warn "$this->{name}: ${srca}a:$a <-> ${srcb}b:$b\n" ;
     }
+}
+
+
+sub connect {
+    my $this = shift ;
+    my $pin = shift ;
+
+    $this->eval() ;
+}
+
+
+sub signal {
+    my $this = shift ;
+    my $pin = shift ;
+    my $reset = shift ;
+    my $newconn = shift ;
+
+    if (! $this->{io}){
+        # Ignore signals from our output pin (always b), unless it is a reset
+        return if ($pin eq $this->{b}) ;
+    }
+
+    $this->eval($pin) ;
 }
 
 
@@ -217,6 +218,42 @@ sub c {
 }
 
 
+sub eval {
+    my $this = shift ;
+    my $pin = shift ;
+
+    # Do nothing if our output is not connected
+    my $wc = $this->{c}->wire() ;
+    return unless $wc ;
+
+    my $wa = $this->{a}->wire() ;
+    my $a = ($wa ? $wa->power() : 0) ;
+    my $wb = $this->{b}->wire() ;
+    my $b = ($wb ? $wb->power() : 0) ;
+
+    # This code could be replaced by a truth table. No need to actually the language operators to perform
+    # the boolean and and the not.
+    my $c = ! ($a && $b) ;
+    my $wc = $this->{c}->wire() ;
+    $wc->power($c) ;
+    if ($GATES::DEBUG){
+        my $srca = ($pin eq $this->{a} ? '*' : '') ;
+        my $srcb = ($pin eq $this->{b} ? '*' : '') ;
+        my $srcc = ($pin eq $this->{c} ? '*' : '') ;
+        $c = ($c ? 1 : 0) ;
+        warn "$this->{name} : (${srca}a:$a, ${srcb}b:$b) -> ${srcc}c:$c\n" ;
+    }
+}
+
+
+sub connect {
+    my $this = shift ;
+    my $pin = shift ;
+
+    $this->eval($pin) if ($pin eq $this->{c}) ;
+}
+
+
 sub signal {
     my $this = shift ;
     my $pin = shift ;
@@ -227,28 +264,10 @@ sub signal {
     my $wc = $this->{c}->wire() ;
     return unless $wc ;
  
-    if (! $reset){
-        # Ignore signals from our output pin, unless it is a new connection
-        return if (($pin eq $this->{c})&&(! $newconn)) ;
-    }
+    # Ignore signals from our output pin, unless it is a new connection
+    return if ($pin eq $this->{c}) ;
 
-    my $wa = $this->{a}->wire() ;
-    my $a = ($wa ? $wa->power() : 0) ;
-    my $wb = $this->{b}->wire() ;
-    my $b = ($wb ? $wb->power() : 0) ;
-
-    # This code could be replaced by a truth table. No need to actually the language operators to perform
-    # the boolean and and the not.
-    my $c = ! ($a && $b) ;
-
-    $wc->power($c) ;
-    if ($GATES::DEBUG){
-        my $srca = ($pin eq $this->{a} ? ($reset ? '+' : '*') : '') ;
-        my $srcb = ($pin eq $this->{b} ? ($reset ? '+' : '*') : '') ;
-        my $srcc = ($pin eq $this->{c} ? ($reset ? '+' : '*') : '') ;
-        $c = ($c ? 1 : 0) ;
-        warn "$this->{name} : (${srca}a:$a, ${srcb}b:$b) -> ${srcc}c:$c\n" ;
-    }
+    $this->eval() ;
 }
 
 
