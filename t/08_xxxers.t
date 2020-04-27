@@ -6,7 +6,6 @@ use ORER ;
 use XORER ;
 use ADDER ;
 use ZERO ;
-use Bus ;
 use Algorithm::Combinatorics qw(tuples_with_repetition) ;
 use List::Util qw(shuffle) ;
 
@@ -16,54 +15,53 @@ plan(tests => nb_xxxer_tests()) ;
 
 
 # Basic test for XXXer circuits.
-my $n = new NOTTER() ;
-my $ba = new BUS([$n->as()]) ;
-my $bb = new BUS([$n->bs()]) ;
+my $bas = new BUS() ;
+my $bbs = new BUS() ;
+my $n = new NOTTER($bas, $bbs) ;
 
 make_notter_test(0) ;
 make_notter_test(1) ;
 
 
-my $z = new ZERO() ;
-my $bi = new BUS([$z->is()]) ;
-my $wz = new WIRE($z->z()) ;
+my $bis = new BUS() ;
+my $wz = new WIRE() ; 
+my $z = new ZERO($bis, $wz) ;
 
 make_zero_test(0) ;
 make_zero_test(1) ;
 
 
-my $a = new ANDDER() ;
-$ba = new BUS([$a->as()]) ;
-$bb = new BUS([$a->bs()]) ;
-my $bc = new BUS([$a->cs()]) ;
+$bas = new BUS() ;
+$bbs = new BUS() ;
+my $bcs = new BUS() ;
+my $a = new ANDDER($bas, $bbs, $bcs) ;
 
 make_andder_test(1) ;
 
 
-my $o = new ORER() ;
-$ba = new BUS([$o->as()]) ;
-$bb = new BUS([$o->bs()]) ;
-$bc = new BUS([$o->cs()]) ;
+$bas = new BUS() ;
+$bbs = new BUS() ;
+$bcs = new BUS() ;
+my $o = new ORER($bas, $bbs, $bcs) ;
 
 make_orer_test(1) ;
 
 
-my $x = new XORER() ;
-$ba = new BUS([$x->as()]) ;
-$bb = new BUS([$x->bs()]) ;
-$bc = new BUS([$x->cs()]) ;
-my $weqo = new WIRE($x->eqo()) ;
-my $walo = new WIRE($x->alo()) ;
+$bas = new BUS() ;
+$bbs = new BUS() ;
+$bcs = new BUS() ;
+my $weqo = new WIRE() ;
+my $walo = new WIRE() ;
+my $x = new XORER($bas, $bbs, $bcs, $weqo, $walo) ;
 
 make_xorer_test(1) ;
 
-
-$a = new ADDER() ;
-$ba = new BUS([$a->as()]) ;
-$bb = new BUS([$a->bs()]) ;
-my $bsum = new BUS([$a->sums()]) ;
-my $wci = new WIRE($a->carry_in()) ;
-my $wco = new WIRE($a->carry_out()) ;
+$bas = new BUS() ;
+$bbs = new BUS() ;
+my $wci = new WIRE() ;
+my $bsums = new BUS() ;
+my $wco = new WIRE() ;
+$a = new ADDER($bas, $bbs, $wci, $bsums, $wco) ;
 
 make_adder_test(1) ;
 
@@ -80,11 +78,11 @@ sub make_notter_test {
     @ts = shuffle @ts if $random ;
     foreach my $t (@ts){
         my $bin = join('', @{$t}) ;
-        $ba->power($bin) ;
+        $bas->power($bin) ;
 
         my @res = map { ($_ ? 1 : 0) } map {! $_ } @{$t} ;
         my $res = join('', @res) ;
-        is($bb->power(), $res, "NOTTER($bin)=$res") ;
+        is($bbs->power(), $res, "NOTTER($bin)=$res") ;
     }
 }
 
@@ -100,15 +98,15 @@ sub make_andder_test {
         foreach my $t2 (@ts2){
             my $bin1 = join('', @{$t1}) ;
             my $bin2 = join('', @{$t2}) ;
-            $ba->power($bin1) ;
-            $bb->power($bin2) ;
+            $bas->power($bin1) ;
+            $bbs->power($bin2) ;
 
             my @res = () ;
             for (my $j = 0 ; $j < 8 ; $j++){
                 push @res, map { ($_ ? 1 : 0) } ($t1->[$j] and $t2->[$j]) ;
             }
             my $res = join('', @res) ;
-            is($bc->power(), $res, "ANDDER($bin1,$bin2)=$res") ;
+            is($bcs->power(), $res, "ANDDER($bin1,$bin2)=$res") ;
         }
     }
 }
@@ -125,15 +123,15 @@ sub make_orer_test {
         foreach my $t2 (@ts2){
             my $bin1 = join('', @{$t1}) ;
             my $bin2 = join('', @{$t2}) ;
-            $ba->power($bin1) ;
-            $bb->power($bin2) ;
+            $bas->power($bin1) ;
+            $bbs->power($bin2) ;
 
             my @res = () ;
             for (my $j = 0 ; $j < 8 ; $j++){
                 push @res, map { ($_ ? 1 : 0) } ($t1->[$j] or $t2->[$j]) ;
             }
             my $res = join('', @res) ;
-            is($bc->power(), $res, "ORER($bin1,$bin2)=$res") ;
+            is($bcs->power(), $res, "ORER($bin1,$bin2)=$res") ;
         }
     }
 }
@@ -150,8 +148,8 @@ sub make_xorer_test {
         foreach my $t2 (@ts2){
             my $bin1 = join('', @{$t1}) ;
             my $bin2 = join('', @{$t2}) ;
-            $ba->power($bin1) ;
-            $bb->power($bin2) ;
+            $bas->power($bin1) ;
+            $bbs->power($bin2) ;
 
             my @res = () ;
             for (my $j = 0 ; $j < 8 ; $j++){
@@ -163,7 +161,7 @@ sub make_xorer_test {
             my $alo = ($bin1 gt $bin2) || 0 ;
             my $eqo = ($bin1 eq $bin2) || 0 ;
 
-            is_deeply([$bc->power(),$weqo->power(),$walo->power()], [$res,$eqo,$alo], "XORER($bin1,$bin2)=($res,eqo:$eqo,alo:$alo)") or exit ;
+            is_deeply([$bcs->power(),$weqo->power(),$walo->power()], [$res,$eqo,$alo], "XORER($bin1,$bin2)=($res,eqo:$eqo,alo:$alo)") or exit ;
         }
     }
 }
@@ -180,8 +178,8 @@ sub make_adder_test {
             my $bin1 = join('', @{$t1}) ;
             my $bin2 = join('', @{$t2}) ;
             my $ci = int rand(2) ;
-            $ba->power($bin1) ;
-            $bb->power($bin2) ;
+            $bas->power($bin1) ;
+            $bbs->power($bin2) ;
             $wci->power($ci) ;
 
             my $resd = oct("0b" . $bin1) + oct("0b" . $bin2) + $ci ;
@@ -193,7 +191,7 @@ sub make_adder_test {
                 $co = $1 ;
             }
             $wco->power($co) ;
-            is($bsum->power(), $res, "ADDER($bin1,$bin2,$ci)=($co,$res)") ;
+            is($bsums->power(), $res, "ADDER($bin1,$bin2,$ci)=($co,$res)") ;
             is($wco->power(), $co, "ADDER($bin1,$bin2,$ci)=($co,$res) (carry out)") ;
         }
     }
@@ -206,7 +204,7 @@ sub make_zero_test {
     @ts = shuffle @ts if $random ;
     foreach my $t (@ts){
         my $bin = join('', @{$t}) ;
-        $bi->power($bin) ;
+        $bis->power($bin) ;
 
         my @res = map { ($_ ? 1 : 0) } map {! $_ } @{$t} ;
         my $res = ($bin eq "00000000" ? 1 : 0) ;

@@ -7,16 +7,18 @@ use Gates ;
 
 sub new {
     my $class = shift ;
+    my $bis = shift ;
+    my $wz = shift ;
     my $name = shift ;
 
     # Build the ZERO circuit
-    my $a8 = new ORn(8) ;
-    my $n = new NOT() ;
-    new WIRE($a8->o(), $n->a()) ;
+    my $wi = new WIRE() ;
+    new ORn(8, $bis, $wi) ;
+    new NOT($wi, $wz) ;
 
     my $this = {
-        is => [map { $a8->i($_) } (0..7)],
-        z => PASS->out(new WIRE($n->b())),
+        is => $bis,
+        z => $wz,
     } ;
     bless $this, $class ;
 
@@ -26,7 +28,7 @@ sub new {
 
 sub is {
     my $this = shift ;
-    return @{$this->{is}} ;
+    return $this->{is} ;
 }
 
 

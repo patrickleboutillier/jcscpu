@@ -14,15 +14,15 @@ map { make_andn_test($_, 0) } (2..$max_n_tests) ;
 map { make_andn_test($_, 1) } (2..$max_n_tests) ;
 
 eval {
-    new ANDn(1) ;
+    new ANDn(1, new BUS(), new WIRE()) ;
 } ;
 like($@, qr/Invalid ANDn number of inputs/, "Invalid ANDn number of inputs <=2") ;
-my $a = new ANDn(4) ;
+my $a = new ANDn(4, , new BUS(), new WIRE()) ;
 $a->i(0) ;
 is($a->n(), 4, "Size of ANDn") ;
-eval { $a->i(-1) ;} ;
+eval { $a->i(-1) } ;
 like($@, qr/Invalid input index/, "Invalid input index <0") ;
-eval { $a->i(6) ;} ;
+eval { $a->i(6) } ;
 like($@, qr/Invalid input index/, "Invalid input index >n") ;
 
 
@@ -31,10 +31,10 @@ map { make_orn_test($_, 0) } (2..$max_n_tests) ;
 map { make_orn_test($_, 1) } (2..$max_n_tests) ;
 
 eval {
-    new ORn(1) ;
+    new ORn(1, new BUS(), new WIRE()) ;
 } ;
 like($@, qr/Invalid ORn number of inputs/, "Invalid ORn number of inputs <=2") ;
-my $o = new ORn(4) ;
+my $o = new ORn(4, new BUS(), new WIRE()) ;
 $o->i(0) ;
 is($o->n(), 4, "Size of ORn") ;
 eval { $o->i(-1) ;} ;
@@ -56,14 +56,14 @@ sub make_andn_test {
     my $n = shift ;
     my $random = shift ;
 
-    my $a = new ANDn($n) ;
-    my @wis = map { new WIRE($_) } $a->is() ;
-    my $wo = new WIRE($a->o()) ;
+    my $bis = new BUS($n) ;
+    my $wo = new WIRE() ;
+    my $a = new ANDn($n, $bis, $wo) ;
 
     my @ts = tuples_with_repetition([0, 1], $n) ;
     @ts = shuffle @ts if $random ;
     foreach my $t (@ts){
-        WIRE->power_wires(@wis, $t) ;
+        $bis->power(join('', @{$t})) ;
         my $res = (all { $_ } @{$t}) || 0 ;
         is($wo->power(), $res, "AND$n(" . join(", ", @{$t}) . ")=$res") ;
     }
@@ -83,14 +83,14 @@ sub make_orn_test {
     my $n = shift ;
     my $random = shift ;
 
-    my $a = new ORn($n) ;
-    my @wis = map { new WIRE($_) } $a->is() ;
-    my $wo = new WIRE($a->o()) ;
+    my $bis = new BUS($n) ;
+    my $wo = new WIRE() ;
+    my $a = new ORn($n, $bis, $wo) ;
 
     my @ts = tuples_with_repetition([0, 1], $n) ;
     @ts = shuffle @ts if $random ;
     foreach my $t (@ts){
-        WIRE->power_wires(@wis, $t) ;
+        $bis->power(join('', @{$t})) ;
         my $res = (any { $_ } @{$t}) || 0 ;
         is($wo->power(), $res, "OR$n(" . join(", ", @{$t}) . ")=$res") ;
     }

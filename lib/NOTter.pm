@@ -7,14 +7,16 @@ use Gates ;
 
 sub new {
     my $class = shift ;
+    my $bis = shift ;
+    my $bos = shift ;
     my $name = shift ;
 
     # Build the register circuit
-    my @nots = map { new NOT() } (0..7) ;
+    map { new NOT($bis->wire($_), $bos->wire($_)) } (0..7) ;
 
     my $this = {
-        as => [map { $_->a() } @nots],
-        bs => [map { $_->b() } @nots]
+        as => $bis,
+        bs => $bos,
     } ;
     bless $this, $class ;
 
@@ -24,13 +26,13 @@ sub new {
 
 sub as {
     my $this = shift ;
-    return @{$this->{as}} ;
+    return $this->{as} ;
 }
 
 
 sub bs {
     my $this = shift ;
-    return @{$this->{bs}} ;
+    return $this->{bs} ;
 }
 
 

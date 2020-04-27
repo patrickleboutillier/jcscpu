@@ -6,25 +6,20 @@ use Gates ;
 
 sub new {
     my $class = shift ;
-    my $name = "ENABLER[" . shift . "]" ;
+    my $bis = shift ;
+    my $we = shift ;
+    my $bos = shift ;
+    my $name = shift ;
 
-    # Build the byte circuit
-    my @as = map { new AND() } (0..7) ;
-    my @is = () ;
-    my @os = () ;
-    my $we = new WIRE() ;
-
-    # For each AND, connect a wire and a PASS to i and o, and connect e to we.
+    # Foreach AND circuit, connect to the wires.
     for (my $j = 0 ; $j < 8 ; $j++){
-        push @is, $as[$j]->a() ;
-        $we->connect($as[$j]->b()) ;
-        push @os, $as[$j]->c() ;    
+        new AND($bis->wire($j), $we, $bos->wire($j), $j) ; 
     }
     
     my $this = {
-        is => \@is,
-        e => PASS->in($we),
-        os => \@os,
+        is => $bis,
+        e => $we,
+        os => $bos,
         name => $name
     } ;
 
@@ -35,7 +30,7 @@ sub new {
 
 sub is {
     my $this = shift ;
-    return @{$this->{is}} ;
+    return $this->{is} ;
 }
 
 
@@ -47,7 +42,7 @@ sub e {
 
 sub os {
     my $this = shift ;
-    return @{$this->{os}} ;
+    return $this->{os} ;
 }
 
 

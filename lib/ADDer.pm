@@ -7,18 +7,28 @@ use Gates ;
 
 sub new {
     my $class = shift ;
+    my $bas = shift ;
+    my $bbs = shift ;
+    my $wci = shift ;
+    my $bsums = shift ;
+    my $wco = shift ;
     my $name = shift ;
 
     # Build the ADDer circuit
-    my @adds = map { new ADD() } (0..7) ;
-    map { new WIRE($adds[$_]->carry_in(), $adds[$_ + 1]->carry_out()) } (0..6) ;
+    my $twci = new WIRE() ;
+    my $twco = $wco ;
+    for (my $j = 0 ; $j < 8 ; $j++){
+        new ADD($bas->wire($j), $bbs->wire($j), ($j < 7 ? $twci : $wci), $bsums->wire($j), $twco) ;
+        $twco = $twci ;
+        $twci = new WIRE() ;
+    }
 
     my $this = {
-        as => [map { $_->a() } @adds],
-        bs => [map { $_->b() } @adds],
-        sums => [map { $_->sum() } @adds],
-        carry_in => $adds[7]->carry_in(), 
-        carry_out => $adds[0]->carry_out(), 
+        as => $bas,
+        bs => $bbs,
+        carry_in => $wci, 
+        sums => $bsums,
+        carry_out => $wco, 
     } ;
     bless $this, $class ;
 
@@ -28,25 +38,25 @@ sub new {
 
 sub as {
     my $this = shift ;
-    return @{$this->{as}} ;
+    return $this->{as} ;
 }
 
 
 sub bs {
     my $this = shift ;
-    return @{$this->{bs}} ;
-}
-
-
-sub sums {
-    my $this = shift ;
-    return @{$this->{sums}} ;
+    return $this->{bs} ;
 }
 
 
 sub carry_in {
     my $this = shift ;
     return $this->{carry_in} ;
+}
+
+
+sub sums {
+    my $this = shift ;
+    return $this->{sums} ;
 }
 
 

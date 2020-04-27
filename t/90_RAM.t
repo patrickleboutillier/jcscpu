@@ -5,14 +5,16 @@ use Data::Dumper ;
 use Algorithm::Combinatorics qw(tuples_with_repetition) ;
 use List::Util qw(shuffle) ;
 
+
 plan(tests => 3 + 256*2) ;
 
-my $RAM = new RAM("System memory") ;
-my $ba = new BUS([$RAM->as()]) ;
-my $wsa = new WIRE($RAM->sa()) ;
-my $bio = new BUS([$RAM->ios()]) ;
-my $ws = new WIRE($RAM->s()) ;
-my $we = new WIRE($RAM->e()) ;
+
+my $ba = new BUS() ;
+my $wsa = new WIRE() ;
+my $bio = new BUS() ;
+my $ws = new WIRE() ;
+my $we = new WIRE() ;
+my $RAM = new RAM($ba, $wsa, $bio, $ws, $we, "System memory") ;
 $RAM->show("00000000") ; # coverage...
 
 # First, setup an address on the MAR input bus and let it in the MAR 
@@ -28,8 +30,6 @@ $ws->power(1) ;
 $ws->power(0) ;
 
 # Now if we turn on the e, we should get our data back on the bus.
-# Reset the data bus
-# $bio->reset() ;
 $we->power(1) ;
 is($bio->power(), $data1) ;
 $we->power(0) ;
@@ -47,8 +47,6 @@ $ws->power(1) ;
 $ws->power(0) ;
 
 # Now if we turn on the e, we should get our data back on the bus.
-# Reset the data bus
-# bio->reset() ;
 $we->power(1) ;
 is($bio->power(), $data2) ;
 $we->power(0) ;
@@ -86,20 +84,15 @@ sub make_ram_test {
 
     foreach my $t (@ts){
         my $addr = join('', @{$t}) ;
-        # warn $RAM->show("$addr") ;
         $ba->power($addr) ;
         $wsa->power(1) ;
         $wsa->power(0) ;
-        # warn $RAM->show("$addr") ;
 
         # Now if we turn on the e, we should get our data back on the bus.
-        # $bio->reset() ;
         $we->power(1) ;
-        # warn $RAM->show("$addr") ;
         my $data = join('', reverse @{$t}) ;
         is($bio->power(), $data) ;
         $we->power(0) ;
-        # warn $RAM->show("$addr") ;
     }
 }
 
