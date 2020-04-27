@@ -7,21 +7,22 @@ use Gates ;
 
 sub new {
     my $class = shift ;
+    my $bis = shift ;
+    my $wsi = shift ;
+    my $bos = shift ;
+    my $wso = shift ;
     my $name = shift ;
 
-    # Build the shifter circuit
-    my @wires = map { new WIRE() } (0..6) ;
-    my $sow = new WIRE() ;
-    my $siw = new WIRE() ;
-    my @is = (PASS->in($sow), (map { PASS->in($wires[$_]) } (0..6))) ;
-    my @os = ((map { PASS->out($wires[$_]) } (0..6)), PASS->out($siw)) ;
+    new PASS($bis->wire(0), $wso) ;
+    map { new PASS($bis->wire($_), $bos->wire($_-1)) } (1..7) ;
+    new PASS($wsi, $bos->wire(7)) ;
     
     my $this = {
         name => $name,
-        is => \@is,
-        os => \@os,
-        so => PASS->out($sow),
-        si => PASS->in($siw),
+        is => $bis,
+        si => $wsi,
+        os => $bos,
+        so => $wso,
     } ;
     bless $this, $class ;
 
@@ -31,7 +32,7 @@ sub new {
 
 sub is {
     my $this = shift ;
-    return @{$this->{is}} ;
+    return $this->{is} ;
 }
 
 
@@ -49,7 +50,7 @@ sub so {
 
 sub os {
     my $this = shift ;
-    return @{$this->{os}} ;
+    return $this->{os} ;
 }
 
 

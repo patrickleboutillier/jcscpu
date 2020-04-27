@@ -7,24 +7,30 @@ use Gates ;
 
 sub new {
     my $class = shift ;
+    my $bas = shift ;
+    my $bbs = shift ;
+    my $bcs = shift ;
+    my $weqo = shift ;
+    my $walo = shift ; 
     my $name = shift ;
 
     # Build the XORer circuit
-    my @cmps = map { new CMP() } (0..7) ;
-    WIRE->new($cmps[0]->eqi())->power(1) ;
-    WIRE->new($cmps[0]->ali())->power(0) ;
-
-    map { 
-        new WIRE($cmps[$_]->eqo(), $cmps[$_+1]->eqi()) ;
-        new WIRE($cmps[$_]->alo(), $cmps[$_+1]->ali()) ;
-    } (0..6) ;
+    my $weqi = new WIRE(1) ;
+    my $wali = new WIRE(0) ;
+    for (my $j = 0 ; $j < 8 ; $j++){
+        my $teqo = new WIRE() ;
+        my $talo = new WIRE() ;
+        new CMP($bas->wire($j), $bbs->wire($j), $weqi, $wali, $bcs->wire($j), ($j < 7 ? $teqo : $weqo), ($j < 7 ? $talo : $walo)) ;
+        $weqi = $teqo ;
+        $wali = $talo ;
+    }
 
     my $this = {
-        as => [map { $_->a() } @cmps],
-        bs => [map { $_->b() } @cmps],
-        cs => [map { $_->c() } @cmps],
-        eqo => $cmps[7]->eqo(),
-        alo => $cmps[7]->alo(),
+        as => $bas,
+        bs => $bbs,
+        cs => $bcs,
+        eqo => $weqo,
+        alo => $walo,
     } ;
     bless $this, $class ;
 
@@ -34,19 +40,19 @@ sub new {
 
 sub as {
     my $this = shift ;
-    return @{$this->{as}} ;
+    return $this->{as} ;
 }
 
 
 sub bs {
     my $this = shift ;
-    return @{$this->{bs}} ;
+    return $this->{bs} ;
 }
 
 
 sub cs {
     my $this = shift ;
-    return @{$this->{cs}} ;
+    return $this->{cs} ;
 }
 
 

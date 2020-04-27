@@ -7,15 +7,18 @@ use Gates ;
 
 sub new {
     my $class = shift ;
+    my $bas = shift ;
+    my $bbs = shift ;
+    my $bcs = shift ;
     my $name = shift ;
 
     # Build the ANDder circuit
-    my @ands = map { new AND() } (0..7) ;
+    map { new AND($bas->wire($_), $bbs->wire($_), $bcs->wire($_)) } (0..7) ;
 
     my $this = {
-        as => [map { $_->a() } @ands],
-        bs => [map { $_->b() } @ands],
-        cs => [map { $_->c() } @ands]
+        as => $bas,
+        bs => $bbs,
+        cs => $bcs,
     } ;
     bless $this, $class ;
 
@@ -25,19 +28,19 @@ sub new {
 
 sub as {
     my $this = shift ;
-    return @{$this->{as}} ;
+    return $this->{as} ;
 }
 
 
 sub bs {
     my $this = shift ;
-    return @{$this->{bs}} ;
+    return $this->{bs} ;
 }
 
 
 sub cs {
     my $this = shift ;
-    return @{$this->{cs}} ;
+    return $this->{cs} ;
 }
 
 

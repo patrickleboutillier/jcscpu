@@ -5,9 +5,10 @@ use strict ;
 
 sub new {
     my $class = shift ;
+    my $v = shift ;
 
     my $this = {
-        power => 0,
+        power => $v || 0,
         gates => [],
     } ;
     bless $this, $class ;
@@ -42,7 +43,7 @@ sub power {
             my $prehook = $this->{prehook} ;
             $prehook->($v) if $prehook ;
             foreach my $gate (@{$this->{gates}}){
-                $gate->signal($this, 0, 0) ;  
+                $gate->signal($this) ;  
             }
         }
     }

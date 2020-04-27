@@ -1,184 +1,5 @@
 use Wire ;
 
-package PIN ;
-use strict ;
-
-# Using an arrayrey here to see if it's faster.
-my $GATE = 0 ;
-my $WIRE = 1 ;
-my $PREP = 2 ;
-
-sub new {
-    my $class = shift ;
-    my $gate = shift ;
-
-    my $this = [$gate, undef, undef] ;
-
-    bless $this, $class ;
-    return $this ;
-}
-
-
-sub wire {
-    my $this = shift ;
-    return $this->[$WIRE] ;   
-}
-
-
-sub connect {
-    my $this = shift ;
-    my $wire = shift ;
-
-    # New wire attached
-    die "Pin already has wire attached! " if ($this->[$WIRE]) ;
-    $this->[$WIRE] = $wire ;
-
-    return $wire ;   
-}
-
-
-sub gate {
-    my $this = shift ;
-    return $this->[$GATE] ;
-}
-
-
-sub prepare {
-    my $this = shift ;
-    my $sub = shift ;
-    my $v = shift ;
-
-    if ($sub){
-        $this->[$PREP] = $sub ;
-    }
-    if ($this->[$PREP]){
-        $this->[$PREP]->($v) ;
-    }
-}
-
-
-package PASS ; 
-use strict ;
-
-# A PASS gate is just a dummy gate used to expose wires from internal circuits
-# via pins in the enclosing circuit. 
-
-sub new {
-    my $class = shift ;
-    my $io = shift ;
-    my $name = "PASS[" . shift . "]" ;
-
-    my $this = {
-        name => $name,
-        io => $io,
-    } ;
-    $this->{a} = new PIN($this) ;
-    $this->{b} = new PIN($this) ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-sub a {
-    my $this = shift ;
-    return $this->{a} ;
-}
-
-
-sub b {
-    my $this = shift ;
-    return $this->{b} ;
-}
-
-
-sub eval {
-    my $this = shift ;
-    my $pin = shift ;
-
-    # Do nothing unless both sides are connected
-    my $wa = $this->{a}->wire() ;
-    return unless $wa ;
-    my $wb = $this->{b}->wire() ;
-    return unless $wb ;
-
-    # warn "PASS $pin $this->{a} $this->{b} $this->{io} $reset\n" ;
-
-    if (! $this->{io}){
-            $wb->power($wa->power()) ;
-    }
-    else {
-        if ($pin eq $this->{a}){
-            $wb->power($wa->power()) ;
-        }
-        else {
-            $wa->power($wb->power()) ;
-        }
-    }
-    if ($GATES::DEBUG){
-        my $srca = ($pin eq $this->{a} ? '*' : '') ;
-        my $srcb = ($pin eq $this->{b} ? '*' : '') ;
-        my $a = $wa->power() ;
-        my $b = $wb->power() ;
-        warn "$this->{name}: ${srca}a:$a <-> ${srcb}b:$b\n" ;
-    }
-}
-
-
-sub connect {
-    my $this = shift ;
-    my $pin = shift ;
-
-    $this->eval() ;
-}
-
-
-sub signal {
-    my $this = shift ;
-    my $pin = shift ;
-    my $reset = shift ;
-    my $newconn = shift ;
-
-    if (! $this->{io}){
-        # Ignore signals from our output pin (always b), unless it is a reset
-        return if ($pin eq $this->{b}) ;
-    }
-
-    $this->eval($pin) ;
-}
-
-
-sub in {
-    my $class = shift ;
-    my $wire = shift ;
-    my $name = shift ;
-    
-    my $p = new PASS(0, $name) ;
-    $wire->connect($p->b()) ;
-    return $p->a() ;
-}
-
-
-sub out {
-    my $class = shift ;
-    my $wire = shift ;
-    my $name = shift ;
-    
-    my $p = new PASS(0, $name) ;
-    $wire->connect($p->a()) ;
-    return $p->b() ;
-}
-
-sub thru {
-    my $class = shift ;
-    my $wire = shift ;
-    my $name = shift ;
-    
-    my $p = new PASS(1, $name) ;
-    $wire->connect($p->b()) ;
-    return $p->a() ;
-}
-
 
 package NAND ; 
 use strict ;
@@ -264,8 +85,6 @@ sub connect {
 sub signal {
     my $this = shift ;
     my $wire = shift ;
-    my $reset = shift ;
-    my $newconn = shift ;
 
     # Do nothing if our output is not connected
     my $wc = $this->{c} ;
@@ -723,6 +542,29 @@ sub sum {
 sub carry_out {
     my $this = shift ;
     return $this->{carry_out} ;
+}
+
+
+package PASS ; 
+use strict ;
+
+# Hack to connect 2 wires together, using 2 NOT gates...
+sub new {
+    my $class = shift ;
+    my $wa = shift ;
+    my $wb = shift ;
+
+    my $wi = new WIRE() ;
+    new NOT($wa, $wi) ;
+    new NOT($wi, $wb) ;
+
+    my $this = {
+        a => $wa,
+        b => $wb,
+    } ;
+    bless $this, $class ;
+
+    return $this ;
 }
 
 
