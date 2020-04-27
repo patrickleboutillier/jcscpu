@@ -7,7 +7,9 @@ use Gates ;
 sub new {
     my $class = shift ;
     my $n = shift ;
-    my $name = "DECODER${n}[" . shift . "]" ;
+    my $bis = shift ;
+    my $bos = shift ;
+    my $name = shift ;
 
     die ("Invalid DECODER number of inputs $n") unless ($n >= 2) ;
     
@@ -44,20 +46,20 @@ sub new {
     }
 
     my $this = {
-        is => \@is,
-        os => \@os,
+        is => $bis,
+        os => $bos,
         n => $n,
         name => $name,
     } ;
-
     bless $this, $class ;
+
     return $this ;
 }
 
 
 sub is {
     my $this = shift ;
-    return @{$this->{is}} ;
+    return $this->{is} ;
 }
 
 
@@ -65,13 +67,13 @@ sub i {
     my $this = shift ;
     my $n = shift ;
     die ("Invalid input index $n") unless (($n >= 0)&&($n < $this->{n})) ;
-    return $this->{is}->[$n] ;
+    return $this->{is}->wire($n) ;
 }
 
 
 sub os {
     my $this = shift ;
-    return @{$this->{os}} ;
+    return $this->{os} ;
 }
 
 
@@ -79,7 +81,8 @@ sub o {
     my $this = shift ;
     my $n = shift ;
     die ("Invalid output index $n") unless (($n >= 0)&&($n < 2**$this->{n})) ;
-    return $this->{os}->[$n] ;
+    return $this->{os}->wire($n) ;
 }
+
 
 return 1 ;

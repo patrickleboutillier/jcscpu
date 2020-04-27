@@ -30,7 +30,7 @@ sub new {
 
 sub is {
     my $this = shift ;
-    return @{$this->{is}} ;
+    return $this->{is} ;
 }
 
 
@@ -42,7 +42,7 @@ sub e {
 
 sub os {
     my $this = shift ;
-    return @{$this->{os}} ;
+    return $this->{os} ;
 }
 
 
