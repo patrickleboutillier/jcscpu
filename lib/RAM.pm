@@ -7,59 +7,49 @@ use Decoder ;
 
 sub new {
     my $class = shift ;
+    my $ba = shift ;
+    my $wsa = shift ;
+    my $bio = shift ;
+    my $ws = shift ;
+    my $we = shift ;
     my $name = shift ;
 
-    # Build the RAM circuit  
-    my $MAR = new REGISTER("MAR") ;
-    # MAR output (e) is always on
-    WIRE->new($MAR->e())->power(1) ;
+    # Build the RAM circuit 
+    my $on = new WIRE() ;
+    $on->power(1) ;
+    my $busd = new BUS() ;
+    my $MAR = new REGISTER($ba, $wsa, $on, $busd, "MAR") ;
 
+    my $wxs = new BUS(16) ;
+    my $wys = new BUS(16) ;
     my @maris = $MAR->os() ;
-    my $TD = new DECODER(4, "4x16") ;
-    my $LD = new DECODER(4, "4x16") ;
-    # Hook up the MAR to both decoders.
-    map { new WIRE($maris[$_], $TD->i($_)) } (0..3) ;
-    map { new WIRE($maris[$_+4], $LD->i($_)) } (0..3) ;
-
-    my $bus = new BUS() ;
-    my $ws = new WIRE() ;
-    my $we = new WIRE() ;
-    my @ios = map { PASS->thru($_) } $bus->wires() ;
-
-    # Attach wires to all decoder outputs.
-    my @wxs = map { new WIRE($TD->o($_)) ; } (0..15) ;
-    my @wys = map { new WIRE($LD->o($_)) ; } (0..15) ;
+    my $TD = new DECODER(4, BUS->wrap(($busd->wires())[0..3]), $wxs, "4x16") ;
+    my $LD = new DECODER(4, BUS->wrap(($busd->wires())[4..7]), $wys, "4x16") ;
+    
     # Now we create the circuit
     my %GRID = () ;
     for (my $x = 0 ; $x < 16 ; $x++){
         for (my $y = 0 ; $y < 16 ; $y++){
             # Create the subcircuit to be used at each location
-            my $xg = new AND() ;
-            my $sg = new AND() ;
-            my $eg = new AND() ;
+            my $wxo = new WIRE() ;
+            my $wso = new WIRE() ;
+            my $weo = new WIRE() ;
+            new AND($wxs->wire($x), $wys->wire($y), $wxo) ;
+            new AND($wxo, $ws, $wso) ;
+            new AND($wxo, $we, $weo) ;
             my $label = sprintf("%04b%04b", $x, $y) ;
-            my $R = new REGISTER("RAM($label)") ;
-            $GRID{$label} = $R ;
-            $wxs[$x]->connect($xg->b()) ;
-            $wys[$y]->connect($xg->a()) ;
-            new WIRE($xg->c(), $sg->a(), $eg->a()) ;
-            $ws->connect($sg->b()) ;
-            $we->connect($eg->b()) ;
-            new WIRE($sg->c(), $R->s()) ;
-            new WIRE($eg->c(), $R->e()) ;
-            $bus->connect([$R->is()], [$R->os()]) ;
+            $GRID{$label} = new REGISTER($bio, $wso, $weo, $bio, "RAM($label)") ;
         }
     }
     
     my $this = {
-        as => [$MAR->is()],
-        sa => $MAR->s(),
-        e => PASS->in($we),
-        s => PASS->in($ws),
-        ios => \@ios,
+        as => $ba,
+        sa => $wsa,
+        e => $we,
+        s => $ws,
+        ios => $bio,
         name => $name,
         MAR => $MAR,
-        bus => $bus,
         GRID => \%GRID,
     } ;
 
@@ -70,7 +60,7 @@ sub new {
 
 sub as {
     my $this = shift ;
-    return @{$this->{as}} ;
+    return $this->{as} ;
 }
 
 
@@ -82,7 +72,7 @@ sub sa {
 
 sub ios {
     my $this = shift ;
-    return @{$this->{ios}} ;
+    return $this->{ios} ;
 }
 
 
@@ -103,15 +93,14 @@ sub show {
     my @addrs = @_ ;
 
     my $mar = $this->{MAR}->show() ;
-    my $bus = $this->{bus}->power() ;
-    my $ios = WIRE->power_wires(map { $_->wire() } $this->ios()) ;
-    my $e = $this->e()->wire()->power() ;
-    my $s = $this->s()->wire()->power() ;
+    my $bio = $this->{ios}->power() ;
+    my $e = $this->{e}->power() ;
+    my $s = $this->{s}->power() ;
     my $str = "RAM($this->{name}):\n  $mar" ;
     foreach my $a (@addrs){
         $str .= "\n  " . $this->{GRID}->{$a}->show() ;
     }
-    $str .= "\n  e:$e, s:$s, bus:$bus, ios:$ios" ;
+    $str .= "\n  e:$e, s:$s, bio:$bio\n" ;
 
     return $str ;
 }

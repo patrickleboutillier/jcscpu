@@ -5,14 +5,16 @@ use Data::Dumper ;
 use Algorithm::Combinatorics qw(tuples_with_repetition) ;
 use List::Util qw(shuffle) ;
 
+
 plan(tests => 3 + 256*2) ;
 
-my $RAM = new RAM("System memory") ;
-my $ba = new BUS([$RAM->as()]) ;
-my $wsa = new WIRE($RAM->sa()) ;
-my $bio = new BUS([$RAM->ios()]) ;
-my $ws = new WIRE($RAM->s()) ;
-my $we = new WIRE($RAM->e()) ;
+
+my $ba = new BUS() ;
+my $wsa = new WIRE() ;
+my $bio = new BUS() ;
+my $ws = new WIRE() ;
+my $we = new WIRE() ;
+my $RAM = new RAM($ba, $wsa, $bio, $ws, $we, "System memory") ;
 $RAM->show("00000000") ; # coverage...
 
 # First, setup an address on the MAR input bus and let it in the MAR 

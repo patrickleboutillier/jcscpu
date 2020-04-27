@@ -88,6 +88,13 @@ sub n {
 }
 
 
+sub wires {
+    my $this = shift ;
+
+    return @{$this->{wires}} ;
+}
+
+
 sub wire {
     my $this = shift ;
     my $n = shift ;
