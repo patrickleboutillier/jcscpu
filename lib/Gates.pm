@@ -552,6 +552,7 @@ sub new {
     my $name = shift ;
 
     die ("Invalid ANDn number of inputs $n") unless ($n >= 2) ;
+    # Todo: make sure bis->n() == $n
     my $last = new AND($bis->wire(0), $bis->wire(1), (($n == 2) ? $wo : new WIRE()), "$name/AND[0]") ;
     for (my $j = 0 ; $j < ($n-2) ; $j++){
             my $next = new AND($last->c(), $bis->wire($j+2), (($n == ($j+3)) ? $wo : new WIRE()), "$name/AND[" . ($j+1) . "]") ;

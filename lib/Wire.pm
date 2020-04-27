@@ -82,6 +82,12 @@ sub wrap {
 }
 
 
+sub n {
+    my $this = shift ;
+    return $this->{n} ;
+}
+
+
 sub wire {
     my $this = shift ;
     my $n = shift ;
