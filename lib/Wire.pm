@@ -16,6 +16,19 @@ sub new {
 }
 
 
+sub prehook {
+    my $this = shift ;
+    my $sub = shift ;
+
+    if (defined($sub)){
+        # Set prehook
+        $this->{prehook} = $sub ;
+    }
+
+    return $this->{prehook} ;
+}
+
+
 # Get or set power on a wire.
 sub power {
     my $this = shift ;
@@ -26,8 +39,9 @@ sub power {
         if ($v != $this->{power}){
             # There is a change in power. Record it and propagate the effect.
             $this->{power} = $v ;
+            my $prehook = $this->{prehook} ;
+            $prehook->($v) if $prehook ;
             foreach my $gate (@{$this->{gates}}){
-                # $pin->prepare(undef, $v) ;
                 $gate->signal($this, 0, 0) ;  
             }
         }

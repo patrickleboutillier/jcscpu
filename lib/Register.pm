@@ -31,8 +31,8 @@ sub new {
     } ;
     bless $this, $class ;
     
-    # Setup the hook when e changes
-    # $this->{e}->prepare(sub { $this->clear_os_before_e(@_) } ) ;
+    # Setup the hook when e changes to clear the bus
+    $this->{e}->prehook(sub { $this->clear_bus_before_e(@_) }) ;
 
     return $this ;
 }
@@ -74,18 +74,13 @@ sub show {
 }
 
 
-sub clear_os_before_e {
+sub clear_bus_before_e {
     my $this = shift ;
     my $v = shift ;
 
     if ($v){
-        # warn "e is turning on for register $this->{name}!" ;
-        foreach my $pin ($this->{E}->os()){
-            my $w = $pin->wire() ;
-            if ($w){
-                $w->power(0) ;
-            }    
-        }
+        # warn "e is turning on ($v) for register $this->{name}!" ;
+        $this->{os}->power("00000000") ;
     }
 }
 

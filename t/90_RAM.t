@@ -30,8 +30,6 @@ $ws->power(1) ;
 $ws->power(0) ;
 
 # Now if we turn on the e, we should get our data back on the bus.
-# Reset the data bus
-# $bio->reset() ;
 $we->power(1) ;
 is($bio->power(), $data1) ;
 $we->power(0) ;
@@ -49,8 +47,6 @@ $ws->power(1) ;
 $ws->power(0) ;
 
 # Now if we turn on the e, we should get our data back on the bus.
-# Reset the data bus
-# bio->reset() ;
 $we->power(1) ;
 is($bio->power(), $data2) ;
 $we->power(0) ;
@@ -88,20 +84,15 @@ sub make_ram_test {
 
     foreach my $t (@ts){
         my $addr = join('', @{$t}) ;
-        # warn $RAM->show("$addr") ;
         $ba->power($addr) ;
         $wsa->power(1) ;
         $wsa->power(0) ;
-        # warn $RAM->show("$addr") ;
 
         # Now if we turn on the e, we should get our data back on the bus.
-        # $bio->reset() ;
         $we->power(1) ;
-        # warn $RAM->show("$addr") ;
         my $data = join('', reverse @{$t}) ;
         is($bio->power(), $data) ;
         $we->power(0) ;
-        # warn $RAM->show("$addr") ;
     }
 }
 
