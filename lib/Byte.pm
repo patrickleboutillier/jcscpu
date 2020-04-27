@@ -6,29 +6,24 @@ use Memory ;
 
 sub new {
     my $class = shift ;
-    my $name = "BYTE[" . shift . "]"  ;
+    my $wis = shift ;
+    my $ws = shift ;
+    my $wos = shift ;
+    my $name = shift  ;
 
-    # Build the byte circuit
-    my @ms = map { new MEMORY($_ - 1) } (0..7) ;
-    my @is = () ;
-    my @os = () ;
-    my $ws = new WIRE() ;
-
-    # Foreach memory circuit, connect a wire and a PASS to i and o, and connect s to ws.
+    # Foreach memory circuit, connect to the wires.
     for (my $j = 0 ; $j < 8 ; $j++){
-        push @is, $ms[$j]->i() ;
-        $ws->connect($ms[$j]->s()) ;
-        push @os, $ms[$j]->o() ;    
+        new MEMORY($wis->wire($j), $ws, $wos->wire($j), $j)  
     }
     
     my $this = {
-        is => \@is,
-        s => PASS->in($ws),
-        os => \@os,
+        is => $wis,
+        s => $ws,
+        os => $wos,
         name => $name
     } ;
-
     bless $this, $class ;
+
     return $this ;
 }
 

@@ -4,6 +4,8 @@ use strict ;
 use Gates ;
 
 
+die("No BUS!") ;
+
 # A 'bundle' is a collection of 8 pins
 sub new {
     my $class = shift ;

@@ -5,15 +5,12 @@ use strict ;
 
 sub new {
     my $class = shift ;
-    my @pins = @_ ;
 
     my $this = {
         power => 0,
-        pins => [],
+        gates => [],
     } ;
     bless $this, $class ;
-
-    $this->connect(@pins) ;
 
     return $this ;
 }
@@ -29,9 +26,9 @@ sub power {
         if ($v != $this->{power}){
             # There is a change in power. Record it and propagate the effect.
             $this->{power} = $v ;
-            foreach my $pin (@{$this->{pins}}){
-                $pin->prepare(undef, $v) ;
-                $pin->gate()->signal($pin, 0, 0) ;  
+            foreach my $gate (@{$this->{gates}}){
+                # $pin->prepare(undef, $v) ;
+                $gate->signal($this, 0, 0) ;  
             }
         }
     }
@@ -43,59 +40,77 @@ sub power {
 }
 
 
-# Connect the pins to the current wire.
+# Connect the gates to the current wire.
 sub connect {
     my $this = shift ;
-    my @pins = @_ ;
+    my @gates = @_ ;
 
-    foreach my $pin (@pins){
-        push @{$this->{pins}}, $pin ;
-        $pin->connect($this) ;
-        $pin->gate()->connect($pin) ;
+    foreach my $gate (@gates){
+        push @{$this->{gates}}, $gate ;
+        $gate->connect($this) ;
     }
+
+    return $this ;
 }
 
 
-# To reset a wire, we need to "poke" the connected pins and asks them to resend their signals.  
-sub _reset {
+package WIRES ;
+
+use strict ;
+use Carp ;
+
+
+sub new {
+    my $class = shift ;
+    my $n = shift ;
+
+    my $this = {
+        wires => [map { new WIRE() } (0..($n-1))],
+        n => $n,
+    } ;
+    bless $this, $class ;
+
+    return $this ;
+}
+
+
+sub wire {
     my $this = shift ;
-    my $skip = shift ;
+    my $n = shift ;
 
-    foreach my $pin (@{$this->{pins}}){
-        next if $pin eq $skip ; # This prevents infinite loops with bi-directioal PASS gates.
-        $pin->gate()->signal($pin, 1, 0) ;
-    }
+    croak("Invalid wire index $n (n is $this->{n})") unless (($n >= 0)&&($n <= $this->{n})) ;
+
+    return $this->{wires}->[$n] ;
 }
 
 
-# Create new wires, one per pin.
-sub new_wires {
-    my $class = shift ;
-    my @pins = @_ ;
-
-    map { new WIRE($_) } @pins ;
-}
-
-
-# Assign the given power values (as a string)to the given wires.
+# Assign the given power values (as a string) to the given wires.
 # $wires and $powers are arrayrefs and they must have the same number of elements.
-sub power_wires {
-    my $class = shift ;
-    my @wires = @_ ;
-
-    my $vs = undef ;
-    if (ref($wires[-1]) eq 'ARRAY'){
-        $vs = pop @wires ;        
-    }
+sub power {
+    my $this = shift ;
+    my $vs = shift ;
 
     if (defined($vs)){
-        die("Length mismatch") unless (scalar(@wires) == scalar(@{$vs})) ;
-        for (my $j = 0 ; $j < scalar(@wires) ; $j++){
-            $wires[$j]->power($vs->[$j]) ;
+        die("Length mismatch") unless (scalar(@{$this->{wires}}) == length($vs)) ;
+        my @vs = split(//, $vs) ;
+        for (my $j = 0 ; $j < scalar(@{$this->{wires}}) ; $j++){
+            $this->{wires}->[$j]->power($vs[$j]) ;
         }
     }
 
-    return join '', map { $_->power() } @wires ;
+    return join '', map { $_->power() } @{$this->{wires}} ;
+}
+
+
+package BUS ;
+
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+
+    return new WIRES(8) ;
 }
 
 

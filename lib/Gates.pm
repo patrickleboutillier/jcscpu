@@ -186,15 +186,22 @@ use strict ;
 
 sub new {
     my $class = shift ;
-    my $name = "NAND[" . shift . "]" ;
+    my $wa = shift ;
+    my $wb = shift ;
+    my $wc = shift ;
+    my $name = shift ;
 
     my $this = {
         name => $name,
     } ;
-    $this->{a} = new PIN($this) ;
-    $this->{b} = new PIN($this) ;
-    $this->{c} = new PIN($this) ;
     bless $this, $class ;
+    
+    $this->{a} = $wa ;
+    $wa->connect($this) ;
+    $this->{b} = $wb ;
+    $wb->connect($this) ;
+    $this->{c} = $wc ;
+    $wc->connect($this) ;
 
     return $this ;
 }
@@ -220,26 +227,26 @@ sub c {
 
 sub eval {
     my $this = shift ;
-    my $pin = shift ;
+    my $wire = shift ;
 
     # Do nothing if our output is not connected
-    my $wc = $this->{c}->wire() ;
+    my $wc = $this->{c} ;
     return unless $wc ;
 
-    my $wa = $this->{a}->wire() ;
+    my $wa = $this->{a} ;
     my $a = ($wa ? $wa->power() : 0) ;
-    my $wb = $this->{b}->wire() ;
+    my $wb = $this->{b} ;
     my $b = ($wb ? $wb->power() : 0) ;
 
     # This code could be replaced by a truth table. No need to actually the language operators to perform
     # the boolean and and the not.
     my $c = ! ($a && $b) ;
-    my $wc = $this->{c}->wire() ;
+    my $wc = $this->{c} ;
     $wc->power($c) ;
     if ($GATES::DEBUG){
-        my $srca = ($pin eq $this->{a} ? '*' : '') ;
-        my $srcb = ($pin eq $this->{b} ? '*' : '') ;
-        my $srcc = ($pin eq $this->{c} ? '*' : '') ;
+        my $srca = ($wire eq $this->{a} ? '*' : '') ;
+        my $srcb = ($wire eq $this->{b} ? '*' : '') ;
+        my $srcc = ($wire eq $this->{c} ? '*' : '') ;
         $c = ($c ? 1 : 0) ;
         warn "$this->{name} : (${srca}a:$a, ${srcb}b:$b) -> ${srcc}c:$c\n" ;
     }
@@ -248,26 +255,26 @@ sub eval {
 
 sub connect {
     my $this = shift ;
-    my $pin = shift ;
+    my $wire = shift ;
 
-    $this->eval($pin) if ($pin eq $this->{c}) ;
+    $this->eval($wire) if ($wire eq $this->{c}) ;
 }
 
 
 sub signal {
     my $this = shift ;
-    my $pin = shift ;
+    my $wire = shift ;
     my $reset = shift ;
     my $newconn = shift ;
 
     # Do nothing if our output is not connected
-    my $wc = $this->{c}->wire() ;
+    my $wc = $this->{c} ;
     return unless $wc ;
  
     # Ignore signals from our output pin, unless it is a new connection
-    return if ($pin eq $this->{c}) ;
+    return if ($wire eq $wc) ;
 
-    $this->eval() ;
+    $this->eval($wire) ;
 }
 
 
@@ -277,14 +284,15 @@ use strict ;
 
 sub new {
     my $class = shift ;
-    my $name = "NOT[" . shift . "]" ;
+    my $wa = shift ;
+    my $wb = shift ;
+    my $name = shift ;
 
-    my $g = new NAND("$name/NAND") ;
-    my $wa = new WIRE($g->a(), $g->b()) ;
+    new NAND($wa, $wa, $wb, "$name/NAND") ;
 
     my $this = {
-        a => PASS->in($wa, "$name/PASS[a]"),
-        b => $g->c(),
+        a => $wa,
+        b => $wb,
         name => $name,
     } ;
 
@@ -311,15 +319,19 @@ use strict ;
 
 sub new {
     my $class = shift ;
-    my $name = "AND[" . shift . "]" ;
+    my $wa = shift ;
+    my $wb = shift ;
+    my $wc = shift ;
+    my $name = shift ;
 
-    my $g = new NAND("$name/NAND") ;
-    my $n = new NOT("$name/NOT") ;
-    my $wn = new WIRE($g->c(), $n->a()) ;
+    my $win = new WIRE() ;
+    new NAND($wa, $wb, $win, "$name/NAND") ;
+    new NOT($win, $wc, "$name/NOT") ;
+ 
     my $this = {
-        a => $g->a(),
-        b => $g->b(),
-        c => $n->b(),
+        a => $wa,
+        b => $wb,
+        c => $wc,
         name => $name,
     } ;
 
@@ -352,18 +364,21 @@ use strict ;
 
 sub new {
     my $class = shift ;
-    my $name = "OR[" . shift . "]" ;
+    my $wa = shift ;
+    my $wb = shift ;
+    my $wc = shift ;
+    my $name = shift ;
 
- 
-    my $na = new NOT("$name/NOT[a]") ;
-    my $nb = new NOT("$name/NOT[b]") ;
-    my $g = new NAND("$name/NAND") ;
-    new WIRE($na->b(), $g->a()) ;
-    new WIRE($nb->b(), $g->b()) ;
+    my $wic = new WIRE() ;
+    my $wid = new WIRE() ;
+    new NOT($wa, $wic, "$name/NOT[a]") ;
+    new NOT($wb, $wid, "$name/NOT[b]") ;
+    new NAND($wic, $wid, $wc, "$name/NAND") ;
+
     my $this = {
-        a => $na->a(),
-        b => $nb->a(),
-        c => $g->c(),
+        a => $wa,
+        b => $wb,
+        c => $wc,
         name => $name,
     } ;
 
