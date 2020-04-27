@@ -6,20 +6,20 @@ use Gates ;
 
 sub new {
     my $class = shift ;
-    my $wis = shift ;
+    my $bis = shift ;
     my $we = shift ;
-    my $wos = shift ;
+    my $bos = shift ;
     my $name = shift ;
 
     # Foreach AND circuit, connect to the wires.
     for (my $j = 0 ; $j < 8 ; $j++){
-        new AND($wis->wire($j), $we, $wos->wire($j), $j) ; 
+        new AND($bis->wire($j), $we, $bos->wire($j), $j) ; 
     }
     
     my $this = {
-        is => $wis,
+        is => $bis,
         e => $we,
-        os => $wos,
+        os => $bos,
         name => $name
     } ;
 

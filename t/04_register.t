@@ -3,14 +3,14 @@ use Test::More ;
 use Register ;
 use Data::Dumper ;
 
-plan(tests => 20) ;
+plan(tests => 18) ;
 
 # Basic test for REGISTER circuit.
-my $R = new REGISTER() ;
-my $bin = new BUS([$R->is()]) ;
-my $bout = new BUS([$R->os()]) ;
-my $ws = new WIRE($R->s()) ;
-my $we = new WIRE($R->e()) ;
+my $bin = new BUS() ;
+my $bout = new BUS() ;
+my $ws = new WIRE() ;
+my $we = new WIRE() ;
+my $R = new REGISTER($bin, $ws, $we, $bout) ;
 $R->show() ;
 
 # Let input from the input bus into the register and turn on the enabler
@@ -32,32 +32,25 @@ is($bout->power(), "00000000", "R(i:00000000,s:1,e:1)=o:00000000, s=on, e=on, i 
 
 
 # Some BUS coverage tests
-is(scalar($bin->wires()), 8, "8 wires in a bundle") ;
 eval {
     $bin->wire(-1) ;
 } ;
-like($@, qr/Bad wire/, "Invalid wire index <0") ;
+like($@, qr/Invalid wire index/, "Invalid wire index <0") ;
 eval {
     $bin->wire(10) ;
 } ;
-like($@, qr/Bad wire/, "Invalid wire index >7") ;
+like($@, qr/Invalid wire index/, "Invalid wire index >7") ;
 eval {
     $bin->power("1100") ;
 } ;
 like($@, qr/Invalid bus power string/, "Invalid bus power string <8") ;
-eval {
-    my @is = $R->is() ;
-    pop @is ;
-    $bin->connect([@is]) ;
-} ;
-like($@, qr/Invalid bundle wire count/, "Invalid bundle count (7)") ;
 
 
 # Tests using a REGISTRY with input and output on the same BUS.
-my $R = new REGISTER() ;
-my $bio = new BUS([$R->is()], [$R->os()]) ;
-my $ws = new WIRE($R->s()) ;
-my $we = new WIRE($R->e()) ;
+my $bio = new BUS() ;
+$ws = new WIRE() ;
+$we = new WIRE() ;
+$R = new REGISTER($bio, $ws, $we, $bio) ;
 
 # Let input from the input bus into the register and turn on the enabler
 $ws->power(1) ;
@@ -77,17 +70,17 @@ $we->power(1) ;
 is($bio->power(), "10101010", "Data restored") ;
 
 
-# Multiple registries.
-my $R1 = new REGISTER() ;
-my $R2 = new REGISTER() ;
-my $R3 = new REGISTER() ;
-my $bio = new BUS([$R1->is()], [$R1->os()], [$R2->is()], [$R2->os()], [$R3->is()], [$R3->os()]) ;
-my $ws1 = new WIRE($R1->s()) ;
-my $we1 = new WIRE($R1->e()) ;
-my $ws2 = new WIRE($R2->s()) ;
-my $we2 = new WIRE($R2->e()) ;
-my $ws3 = new WIRE($R3->s()) ;
-my $we3 = new WIRE($R3->e()) ;
+# Multiple registers.
+$bio = new BUS() ;
+my $ws1 = new WIRE() ;
+my $we1 = new WIRE() ;
+my $ws2 = new WIRE() ;
+my $we2 = new WIRE() ;
+my $ws3 = new WIRE() ;
+my $we3 = new WIRE() ;
+my $R1 = new REGISTER($bio, $ws1, $we1, $bio) ;
+my $R2 = new REGISTER($bio, $ws2, $we2, $bio) ;
+my $R3 = new REGISTER($bio, $ws3, $we3, $bio) ;
 
 # Put something on the bus.
 $bio->power("00001111") ;

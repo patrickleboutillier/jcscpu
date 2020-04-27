@@ -411,27 +411,29 @@ use strict ;
 
 sub new {
     my $class = shift ;
-    my $name = "XOR[" . shift . "]" ;
+    my $wa = shift ;
+    my $wb = shift ;
+    my $wc = shift ;
+    my $name = shift ;
  
-    my $na = new NOT("$name/NOT[a]") ;
-    my $nb = new NOT("$name/NOT[b]") ;
-    my $g1 = new NAND("$name/NAND[g1]") ;
-    my $g2 = new NAND("$name/NAND[g2]") ;
-    my $g3 = new NAND("$name/NAND[g3]") ;
-    my $wa = new WIRE($na->a(), $g2->a()) ;
-    my $wb = new WIRE($nb->a(), $g1->b()) ;
-    new WIRE($na->b(), $g1->a()) ;
-    new WIRE($nb->b(), $g2->b()) ;
-    new WIRE($g1->c(), $g3->a()) ;
-    new WIRE($g2->c(), $g3->b()) ;
+    my $wic = new WIRE() ;
+    my $wid = new WIRE() ;
+    my $wie = new WIRE() ;
+    my $wif = new WIRE() ;
+    new NOT($wa, $wic, "$name/NOT[a]") ;
+    new NOT($wb, $wid, "$name/NOT[b]") ;
+    new NAND($wic, $wb, $wie, "$name/NAND[g1]") ;
+    new NAND($wa, $wid, $wif, "$name/NAND[g2]") ;
+    new NAND($wie, $wif, $wc, "$name/NAND[g3]") ;
+
     my $this = {
-        a => PASS->in($wa),
-        b => PASS->in($wb),
-        c => $g3->c(),
+        a => $wa,
+        b => $wb,
+        c => $wc,
         name => $name,
     } ;
-
     bless $this, $class ;
+
     return $this ;
 }
 
@@ -460,31 +462,35 @@ use strict ;
 
 sub new {
     my $class = shift ;
-    my $name = "CMP[" . shift . "]" ;
+    my $wa = shift ;
+    my $wb = shift ;
+    my $weqi = shift ;
+    my $wali = shift ;
+    my $wc = shift ;
+    my $weqo = shift ;
+    my $walo = shift ;
+    my $name = shift ;
  
-    my $x1 = new XOR("$name/XOR[1]") ;
-    my $n2 = new NOT("$name/NOT[2]") ;
-    my $a3 = new AND("$name/AND[3]") ;
-    my $a34 = new ANDn(3, "$name/AND3[4]") ;
-    my $o5 = new OR("$name/NAND[g3]") ;
-    my $wa = new WIRE($x1->a(), $a34->i(1)) ;
-    my $wc = new WIRE($x1->c(), $n2->a(), $a34->i(2)) ;
-    new WIRE($a34->o(), $o5->b()) ;
-    new WIRE($n2->b(), $a3->b()) ;
-    my $weqi = new WIRE($a34->i(0), $a3->a()) ;
+    my $w23 = new WIRE() ;
+    my $w45 = new WIRE() ;
+    new XOR($wa, $wb, $wc, "$name/XOR[1]") ;
+    new NOT($wc, $w23, "$name/NOT[2]") ;
+    new AND($weqi, $w23, $weqo, "$name/AND[3]") ;
+    new ANDn(3, BUS->wrap($weqi, $wa, $wc), $w45, "$name/AND3[4]") ;
+    new OR($wali, $w45, $walo, "$name/NAND[g3]") ;
 
     my $this = {
-        a => PASS->in($wa),
-        b => $x1->b(),
-        c => PASS->out($wc),
-        eqi => PASS->in($weqi),
-        ali => $o5->a(),
-        eqo => $a3->c(),
-        alo => $o5->c(),
+        a => $wa,
+        b => $wb,
+        c => $wc,
+        eqi => $weqi,
+        ali => $wali,
+        eqo => $weqo,
+        alo => $walo,
         name => $name,
     } ;
-
     bless $this, $class ;
+
     return $this ;
 }
 
@@ -541,25 +547,24 @@ use strict ;
 sub new {
     my $class = shift ;
     my $n = shift ;
-    my $name = "AND${n}[" . shift . "]" ;
+    my $bis = shift ;
+    my $wo = shift ;
+    my $name = shift ;
 
     die ("Invalid ANDn number of inputs $n") unless ($n >= 2) ;
-    my $last = new AND("$name/AND[0]") ;
-    my @is = (PASS->in(new WIRE($last->a()), "$name/AND[0]/PASS[a]"), PASS->in(new WIRE($last->b()), "$name/AND[0]/PASS[b]")) ;
+    my $last = new AND($bis->wire(0), $bis->wire(1), (($n == 2) ? $wo : new WIRE()), "$name/AND[0]") ;
     for (my $j = 0 ; $j < ($n-2) ; $j++){
-            my $next = new AND("$name/AND[" . ($j+1) . "]") ;
-            my $w = new WIRE($last->c(), $next->a()) ;
-            push @is, PASS->in(new WIRE($next->b()), "$name/AND[" . ($j+1) . "]/PASS[b]") ;
+            my $next = new AND($last->c(), $bis->wire($j+2), (($n == ($j+3)) ? $wo : new WIRE()), "$name/AND[" . ($j+1) . "]") ;
             $last = $next ;
     }
 
     my $this = {
-        is => \@is,
-        o => PASS->out(new WIRE($last->c()), "$name/PASS[c]"),
+        is => $bis,
+        o => $wo,
         n => $n,
     } ;
-
     bless $this, $class ;
+
     return $this ;
 }
 
@@ -574,7 +579,7 @@ sub i {
     my $this = shift ;
     my $n = shift ;
     die ("Invalid input index $n") unless (($n >= 0)&&($n < $this->{n})) ;
-    return $this->{is}->[$n] ;
+    return $this->{is}->wire($n) ;
 }
 
 
@@ -597,21 +602,29 @@ use strict ;
 sub new {
     my $class = shift ;
     my $n = shift ;
-    my $name = "OR${n}[" . shift . "]" ;
+    my $bis = shift ;
+    my $wo = shift ;
+    my $name = shift ;
 
     die ("Invalid ORn number of inputs $n") unless ($n >= 2) ;
-    my $last = new OR("$name/OR[0]") ;
-    my @is = (PASS->in(new WIRE($last->a()), "$name/OR[0]/PASS[a]"), PASS->in(new WIRE($last->b()), "$name/OR[0]/PASS[b]")) ;
+    my $last = new OR($bis->wire(0), $bis->wire(1), (($n == 2) ? $wo : new WIRE()), "$name/OR[0]") ;
     for (my $j = 0 ; $j < ($n-2) ; $j++){
-            my $next = new OR("$name/OR[" . ($j+1) . "]") ;
-            my $w = new WIRE($last->c(), $next->a()) ;
-            push @is, PASS->in(new WIRE($next->b()), "$name/OR[" . ($j+1) . "]/PASS[b]") ;
+            my $next = new OR($last->c(), $bis->wire($j+2), (($n == ($j+3)) ? $wo : new WIRE()), "$name/OR[" . ($j+1) . "]") ;
             $last = $next ;
     }
 
+    #my $last = new OR("$name/OR[0]") ;
+    #my @is = (PASS->in(new WIRE($last->a()), "$name/OR[0]/PASS[a]"), PASS->in(new WIRE($last->b()), "$name/OR[0]/PASS[b]")) ;
+    #for (my $j = 0 ; $j < ($n-2) ; $j++){
+    #        my $next = new OR("$name/OR[" . ($j+1) . "]") ;
+    #        my $w = new WIRE($last->c(), $next->a()) ;
+    #        push @is, PASS->in(new WIRE($next->b()), "$name/OR[" . ($j+1) . "]/PASS[b]") ;
+    #        $last = $next ;
+    #}
+
     my $this = {
-        is => \@is,
-        o => PASS->out(new WIRE($last->c()), "$name/PASS[c]"),
+        is => $bis,
+        o => $wo,
         n => $n,
     } ;
 
@@ -630,7 +643,7 @@ sub i {
     my $this = shift ;
     my $n = shift ;
     die ("Invalid input index $n") unless (($n >= 0)&&($n < $this->{n})) ;
-    return $this->{is}->[$n] ;
+    return $this->{is}->wire($n) ;
 }
 
 
@@ -652,30 +665,32 @@ use strict ;
 
 sub new {
     my $class = shift ;
-    my $name = "ADD[" . shift . "]" ;
+    my $wa = shift ;
+    my $wb = shift ;
+    my $wci = shift ;
+    my $wsum = shift ;
+    my $wco = shift ;
+    my $name = shift ;
  
-    my $x1 = new XOR("$name/XOR[1]") ;
-    my $x2 = new XOR("$name/XOR[2]") ;
-    my $a1 = new AND("$name/AND[1]") ;
-    my $a2 = new AND("$name/AND[2]") ;
-    my $o = new OR("$name/OR[]") ;
-    my $wa = new WIRE($x1->a(), $a2->a()) ;
-    my $wb = new WIRE($x1->b(), $a2->b()) ;
-    my $wxic = new WIRE($x1->c(), $x2->a(), $a1->b()) ;
-    my $wci = new WIRE($x2->b(), $a1->a()) ;
-    new WIRE($a1->c(), $o->a()) ;
-    new WIRE($a2->c(), $o->b()) ;
-
+    my $wi = new WIRE() ;
+    my $wcoa = new WIRE() ;
+    my $wcob = new WIRE() ;
+    new XOR($wa, $wb, $wi, "$name/XOR[1]") ;
+    new XOR($wi, $wci, $wsum, "$name/XOR[2]") ;
+    new AND($wci, $wi, $wcoa, "$name/AND[1]") ;
+    new AND($wa, $wb, $wcob, "$name/AND[2]") ;
+    new OR($wcoa, $wcob, $wco, "$name/OR[]") ;
+    
     my $this = {
-        a => PASS->in($wa),
-        b => PASS->in($wb),
-        carry_in => PASS->in($wci),
-        carry_out => $o->c(),
-        sum => $x2->c(),
+        a => $wa,
+        b => $wb,
+        carry_in => $wci,
+        sum => $wsum,
+        carry_out => $wco,
         name => $name,
     } ;
-
     bless $this, $class ;
+
     return $this ;
 }
 
@@ -698,17 +713,16 @@ sub carry_in {
 }
 
 
-sub carry_out {
-    my $this = shift ;
-    return $this->{carry_out} ;
-}
-
-
 sub sum {
     my $this = shift ;
     return $this->{sum} ;
 }
 
+
+sub carry_out {
+    my $this = shift ;
+    return $this->{carry_out} ;
+}
 
 
 return 1 ;

@@ -54,7 +54,7 @@ sub connect {
 }
 
 
-package WIRES ;
+package BUS ;
 
 use strict ;
 use Carp ;
@@ -62,11 +62,19 @@ use Carp ;
 
 sub new {
     my $class = shift ;
-    my $n = shift ;
+    my $n = shift || 8 ;
+
+    return $class->wrap(map { new WIRE() } (0..($n-1)))
+}
+
+
+sub wrap {
+    my $class = shift ;
+    my @wires = @_ ;
 
     my $this = {
-        wires => [map { new WIRE() } (0..($n-1))],
-        n => $n,
+        wires => \@wires,
+        n => scalar(@wires),
     } ;
     bless $this, $class ;
 
@@ -91,7 +99,7 @@ sub power {
     my $vs = shift ;
 
     if (defined($vs)){
-        die("Length mismatch") unless (scalar(@{$this->{wires}}) == length($vs)) ;
+        die("Invalid bus power string '$vs' (n is $this->{n})") unless (scalar(@{$this->{wires}}) == length($vs)) ;
         my @vs = split(//, $vs) ;
         for (my $j = 0 ; $j < scalar(@{$this->{wires}}) ; $j++){
             $this->{wires}->[$j]->power($vs[$j]) ;
@@ -99,18 +107,6 @@ sub power {
     }
 
     return join '', map { $_->power() } @{$this->{wires}} ;
-}
-
-
-package BUS ;
-
-use strict ;
-
-
-sub new {
-    my $class = shift ;
-
-    return new WIRES(8) ;
 }
 
 

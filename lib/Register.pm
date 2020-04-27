@@ -3,33 +3,36 @@ package REGISTER ;
 use strict ;
 use Byte ;
 use Enabler ;
-use Bus ;
+# use Bus ;
 
 
 sub new {
     my $class = shift ;
+    my $bis = shift ;
+    my $ws = shift ;
+    my $we = shift ;
+    my $bos = shift ;
     my $name = shift ;
 
     # Build the register circuit
-    my $B = new BYTE() ;
-    my $E = new ENABLER() ;
-
-    my $bus = new BUS([$B->os()], [$E->is()]) ;
+    my $bus = new BUS() ;
+    my $B = new BYTE($bis, $ws, $bus) ;
+    my $E = new ENABLER($bus, $we, $bos) ;
 
     my $this = {
-        is => [$B->is()],
-        e => $E->e(),
-        s => $B->s(),
-        os => [$E->os()],
+        is => $bis,
+        s => $ws,
+        e => $we,
+        os => $bos,
         name => $name,
-        B => $B, 
-        E => $E, 
+        #B => $B, 
+        #E => $E, 
         bus => $bus,
     } ;
     bless $this, $class ;
     
     # Setup the hook when e changes
-    $this->{e}->prepare(sub { $this->clear_os_before_e(@_) } ) ;
+    # $this->{e}->prepare(sub { $this->clear_os_before_e(@_) } ) ;
 
     return $this ;
 }
@@ -62,11 +65,11 @@ sub os {
 sub show {
     my $this = shift ;
 
-    my $is = WIRE->power_wires(map { $_->wire() } $this->{B}->is()) ;
+    my $is = $this->{is}->power() ;
     my $bus = $this->{bus}->power() ;
-    my $os = WIRE->power_wires(map { $_->wire() } $this->{E}->os()) ;
-    my $e = $this->e()->wire()->power() ;
-    my $s = $this->s()->wire()->power() ;
+    my $os = $this->{os}->power() ;
+    my $e = $this->{e}->power() ;
+    my $s = $this->{s}->power() ;
     return "REGISTER($this->{name}): e:$e, s:$s, is:$is, bus:$bus, os:$os" ;
 }
 
