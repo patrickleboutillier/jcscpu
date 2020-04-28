@@ -92,14 +92,18 @@ sub show {
     my @addrs = @_ ;
 
     my $mar = $this->{MAR}->show() ;
-    my $bio = $this->{ios}->power() ;
-    my $e = $this->{e}->power() ;
-    my $s = $this->{s}->power() ;
+    my $bio = $this->ios()->power() ;
+    my $e = $this->e()->power() ;
+    my $s = $this->s()->power() ;
     my $str = "RAM($this->{name}):\n  $mar" ;
     foreach my $a (@addrs){
         $str .= "\n  " . $this->{GRID}->{$a}->show() ;
     }
     $str .= "\n  e:$e, s:$s, bio:$bio\n" ;
+
+    # Coverage
+    $this->as()->power() ;
+    $this->sa()->power() ;
 
     return $str ;
 }

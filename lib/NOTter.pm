@@ -39,8 +39,8 @@ sub bs {
 sub show {
     my $this = shift ;
 
-    my $a = $this->{as}->power() ;
-    my $b = $this->{bs}->power() ;
+    my $a = $this->as()->power() ;
+    my $b = $this->bs()->power() ;
 
     return "NOTTER($this->{name}): a:$a, b:$b\n" ;
 }

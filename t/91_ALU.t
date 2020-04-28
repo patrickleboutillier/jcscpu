@@ -6,7 +6,7 @@ use ALU ;
 
 my $nb_test_per_op = 256 ;
 my @ops = (0,1,2,3,4,5,6,7) ;
-plan(tests => $nb_test_per_op*scalar(@ops)) ;
+plan(tests => $nb_test_per_op*(scalar(@ops)+1)) ;
 
 
 my $bas = new BUS() ; 
@@ -20,20 +20,34 @@ my $weqo = new WIRE() ;
 my $walo = new WIRE() ;
 my $wz = new WIRE() ;
 my $ALU = new ALU($bas, $bbs, $wci, $bops, $wope, $bcs, $wco, $weqo, $walo, $wz, "ALU") ;
-
+$ALU->show() ;
+$ALU->show(0) ;
 
 foreach my $op (@ops){
     for (my $j = 0 ; $j < $nb_test_per_op ; $j++){
-        my $tc = gen_test_case() ;
-        $tc->{op} = $op ;
-
-        my $res = alu($tc) ; 
-        my $vres = valu($tc) ;
-
-        my $desc = Dumper($tc) ;
-        $desc =~ s/\n\s*//gs ;
-        is_deeply($res, $vres, $desc) ;
+        do_test_case($op) ;
     }
+}
+
+# Random ops
+@ops = map { int rand(8) } (0 .. ($nb_test_per_op-1)) ;
+foreach my $op (@ops){
+    do_test_case($op) ;
+}
+
+
+sub do_test_case {
+    my $op = shift ;
+    
+    my $tc = gen_test_case() ;
+    $tc->{op} = $op ;
+
+    my $res = alu($tc) ; 
+    my $vres = valu($tc) ;
+
+    my $desc = Dumper($tc) ;
+    $desc =~ s/\n\s*//gs ;
+    is_deeply($res, $vres, $desc) ;
 }
 
 

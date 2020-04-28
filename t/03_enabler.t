@@ -9,6 +9,7 @@ my $bis = new BUS() ;
 my $we = new WIRE() ;
 my $bos = new BUS() ;
 my $E = new ENABLER($bis, $we, $bos) ;
+$E->show() ;
 
 $bis->wire(0)->power(1) ;
 is($bos->power(), "00000000", "B(i:10000000,e:0)=o:00000000, e=off, no output") ;

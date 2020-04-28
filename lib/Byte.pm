@@ -28,22 +28,5 @@ sub new {
 }
 
 
-sub is {
-    my $this = shift ;
-    return $this->{is} ;
-}
-
-
-sub s {
-    my $this = shift ;
-    return $this->{s} ;
-}
-
-
-sub os {
-    my $this = shift ;
-    return $this->{os} ;
-}
-
 
 return 1 ;

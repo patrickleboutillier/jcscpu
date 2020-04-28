@@ -32,22 +32,4 @@ sub new {
 }
 
 
-sub i {
-    my $this = shift ;
-    return $this->{i} ;
-}
-
-
-sub s {
-    my $this = shift ;
-    return $this->{s} ;
-}
-
-
-sub o {
-    my $this = shift ;
-    return $this->{o} ;
-}
-
-
 return 1 ;

@@ -13,6 +13,7 @@ my $wrap = new WIRE() ;
 my $bis = new BUS() ;
 my $bos = new BUS() ;
 my $sl = new SHIFTL($bis, $wrap, $bos, $wrap) ;
+$sl->show() ;
 
 make_shifterl_test(0) ;
 make_shifterl_test(1) ;
@@ -21,6 +22,7 @@ $wrap = new WIRE() ;
 $bis = new BUS() ;
 $bos = new BUS() ;
 my $sr = new SHIFTR($bis, $wrap, $bos, $wrap) ;
+$sr->show() ;
 
 make_shifterr_test(0) ;
 make_shifterr_test(1) ;

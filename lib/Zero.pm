@@ -38,4 +38,14 @@ sub z {
 }
 
 
+sub show {
+    my $this = shift ;
+
+    my $i = $this->is()->power() ;
+    my $z = $this->z()->power() ;
+
+    return "ZERO($this->{name}): i:$i, z:$z\n" ;
+}
+
+
 return 1 ;

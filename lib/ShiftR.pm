@@ -26,26 +26,6 @@ sub new {
     bless $this, $class ;
 
     return $this ;
-    my $class = shift ;
-    my $name = shift ;
-
-    # Build the shifter circuit
-    my @wires = map { new WIRE() } (0..6) ;
-    my $sow = new WIRE() ;
-    my $siw = new WIRE() ;
-    my @is = ((map { PASS->in($wires[$_]) } (0..6)), PASS->in($sow)) ;
-    my @os = (PASS->out($siw), (map { PASS->out($wires[$_]) } (0..6))) ;
- 
-    my $this = {
-        name => $name,
-        is => \@is,
-        os => \@os,
-        so => PASS->out($sow),
-        si => PASS->in($siw),
-    } ;
-    bless $this, $class ;
-    
-    return $this ;
 }
 
 
@@ -76,10 +56,10 @@ sub os {
 sub show {
     my $this = shift ;
 
-    my $i = $this->{is}->power() ;
-    my $si = $this->{si}->power() ;
-    my $so = $this->{so}->power() ;    
-    my $o = $this->{os}->power() ;
+    my $i = $this->is()->power() ;
+    my $si = $this->si()->power() ;
+    my $so = $this->so()->power() ;    
+    my $o = $this->os()->power() ;
 
     return "SHIFTR($this->{name}): si:$si, i:$i, o:$o, so:$so\n" ;
 }

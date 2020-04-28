@@ -18,6 +18,7 @@ plan(tests => nb_xxxer_tests()) ;
 my $bas = new BUS() ;
 my $bbs = new BUS() ;
 my $n = new NOTTER($bas, $bbs) ;
+$n->show() ;
 
 make_notter_test(0) ;
 make_notter_test(1) ;
@@ -26,6 +27,7 @@ make_notter_test(1) ;
 my $bis = new BUS() ;
 my $wz = new WIRE() ; 
 my $z = new ZERO($bis, $wz) ;
+$z->show() ;
 
 make_zero_test(0) ;
 make_zero_test(1) ;
@@ -35,6 +37,7 @@ $bas = new BUS() ;
 $bbs = new BUS() ;
 my $bcs = new BUS() ;
 my $a = new ANDDER($bas, $bbs, $bcs) ;
+$a->show() ;
 
 make_andder_test(1) ;
 
@@ -43,6 +46,7 @@ $bas = new BUS() ;
 $bbs = new BUS() ;
 $bcs = new BUS() ;
 my $o = new ORER($bas, $bbs, $bcs) ;
+$o->show() ;
 
 make_orer_test(1) ;
 
@@ -53,7 +57,7 @@ $bcs = new BUS() ;
 my $weqo = new WIRE() ;
 my $walo = new WIRE() ;
 my $x = new XORER($bas, $bbs, $bcs, $weqo, $walo) ;
-
+$x->show() ;
 make_xorer_test(1) ;
 
 $bas = new BUS() ;
@@ -62,7 +66,7 @@ my $wci = new WIRE() ;
 my $bsums = new BUS() ;
 my $wco = new WIRE() ;
 $a = new ADDER($bas, $bbs, $wci, $bsums, $wco) ;
-
+$a->show() ;
 make_adder_test(1) ;
 
 

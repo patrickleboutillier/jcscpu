@@ -5,7 +5,19 @@ use List::Util qw(all) ;
 use Gates ;
 
 
-plan(tests => 54) ;
+plan(tests => 57) ;
+
+
+# Coverage for WIRE
+my $w = new WIRE() ;
+$w->prehook(sub { ok(1, "Hook called") }) ;
+$w->posthook(sub { ok(1, "Hook called") }) ;
+$w->prehook() ;
+$w->posthook() ;
+$w->power(1) ;
+$w->terminal() ;
+$w->power(0) ;
+is($w->power(), 1, "Terminal froze the wire") ;
 
 
 # NAND

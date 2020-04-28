@@ -91,19 +91,19 @@ sub new {
 
 sub as {
     my $this = shift ;
-    return @$this->{as} ;
+    return $this->{as} ;
 }
 
 
 sub bs {
     my $this = shift ;
-    return @$this->{bs} ;
+    return $this->{bs} ;
 }
 
 
 sub cs {
     my $this = shift ;
-    return @$this->{cs} ;
+    return $this->{cs} ;
 }
 
 
@@ -155,21 +155,22 @@ sub show {
     my $this = shift ;
     my @ops = @_ ;
 
-    my $a = $this->{as}->power() ;
-    my $b = $this->{bs}->power() ;
-    my $c = $this->{cs}->power() ;
-    my $ope = $this->{ope}->power() ;
-    my $ci = $this->{ci}->power() ;
-    my $co = $this->{co}->power() ;  
-    my $alo = $this->{alo}->power() ;
-    my $eqo = $this->{eqo}->power() ;
-    my $op = $this->{ops}->power() ;
+    my $a = $this->as()->power() ;
+    my $b = $this->bs()->power() ;
+    my $c = $this->cs()->power() ;
+    my $ope = $this->ope()->power() ;
+    my $ci = $this->ci()->power() ;
+    my $co = $this->co()->power() ;  
+    my $alo = $this->alo()->power() ;
+    my $eqo = $this->eqo()->power() ;
+    my $op = $this->ops()->power() ;
     my $deci = $this->{dec}->is()->power() ;
     my $deco = $this->{dec}->os()->power() ;
+    my $z = $this->z()->power() ;
 
     my $filter = scalar(@ops) ;
     my %ops = map { ($_ => 1) } @ops ;
-    my $str = "ALU($this->{name}): op:$op, a:$a, b:$b, ci:$ci, c:$c, dec:$deci, ope:$ope, sw:$deco, co:$co eqo:$eqo, alo:$alo\n" ;
+    my $str = "ALU($this->{name}): op:$op, a:$a, b:$b, ci:$ci, c:$c, dec:$deci, ope:$ope, sw:$deco, co:$co eqo:$eqo, alo:$alo. z:$z\n" ;
     for (my $j = 6 ; $j >= 0 ; $j--){
         next if (($filter)&&(! $ops{$j})) ;
         $str .= "  " . $this->{Ms}->[$j]->show() ;

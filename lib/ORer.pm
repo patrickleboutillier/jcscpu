@@ -47,9 +47,9 @@ sub cs {
 sub show {
     my $this = shift ;
 
-    my $a = $this->{as}->power() ;
-    my $b = $this->{bs}->power() ;
-    my $c = $this->{cs}->power() ;
+    my $a = $this->as()->power() ;
+    my $b = $this->bs()->power() ;
+    my $c = $this->cs()->power() ;
 
     return "ORER($this->{name}): a:$a, b:$b, c:$c\n" ;
 }

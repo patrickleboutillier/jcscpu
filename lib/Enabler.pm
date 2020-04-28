@@ -53,9 +53,9 @@ sub os {
 sub show {
     my $this = shift ;
 
-    my $i = $this->{is}->power() ;
-    my $e = $this->{e}->power() ;
-    my $o = $this->{os}->power() ;
+    my $i = $this->is()->power() ;
+    my $e = $this->e()->power() ;
+    my $o = $this->os()->power() ;
 
     return "ENABLER($this->{name}): i:$i, e:$e, o:$o\n" ;
 }
@@ -79,16 +79,16 @@ sub clear_bus_before_set {
 }
 
 
-sub check_bus_after_set {
-    my $this = shift ;
-    my $v = shift ;
+#sub check_bus_after_set {
+#    my $this = shift ;
+#    my $v = shift ;
 
-    if ($v){
-        my $i = $this->{is}->power() ;
-        my $o = $this->{os}->power() ;
-        # warn "e $this->{name} was turned on ($v): i:$i, o:$o\n" ;
-    }
-}
+#    if ($v){
+#        my $i = $this->{is}->power() ;
+#        my $o = $this->{os}->power() ;
+#        # warn "e $this->{name} was turned on ($v): i:$i, o:$o\n" ;
+#    }
+#}
 
 
 return 1 ;
