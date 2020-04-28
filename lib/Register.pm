@@ -31,8 +31,9 @@ sub new {
     } ;
     bless $this, $class ;
     
+    # Moved to ENABLER
     # Setup the hook when e changes to clear the bus
-    $this->{e}->prehook(sub { $this->clear_bus_before_e(@_) }) ;
+    # $this->{e}->prehook(sub { $this->clear_bus_before_e(@_) }) ;
 
     return $this ;
 }

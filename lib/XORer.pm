@@ -70,4 +70,17 @@ sub eqo {
 }
 
 
+sub show {
+    my $this = shift ;
+
+    my $a = $this->{as}->power() ;
+    my $b = $this->{bs}->power() ;
+    my $c = $this->{cs}->power() ;
+    my $alo = $this->{alo}->power() ;
+    my $eqo = $this->{eqo}->power() ;
+
+    return "XORER($this->{name}): a:$a, b:$b, c:$c, eqo:$eqo, alo:$alo\n" ;
+}
+
+
 return 1 ;

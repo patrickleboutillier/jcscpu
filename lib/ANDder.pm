@@ -44,4 +44,15 @@ sub cs {
 }
 
 
+sub show {
+    my $this = shift ;
+
+    my $a = $this->{as}->power() ;
+    my $b = $this->{bs}->power() ;
+    my $c = $this->{cs}->power() ;
+
+    return "ANDDER($this->{name}): a:$a, b:$b, c:$c\n" ;
+}
+
+
 return 1 ;

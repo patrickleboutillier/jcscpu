@@ -1,7 +1,5 @@
 use strict ;
 use Test::More ;
-use Algorithm::Combinatorics qw(tuples_with_repetition) ;
-use List::Util qw(all any shuffle) ;
 use Gates ;
 
 
@@ -60,12 +58,12 @@ sub make_andn_test {
     my $wo = new WIRE() ;
     my $a = new ANDn($n, $bis, $wo) ;
 
-    my @ts = tuples_with_repetition([0, 1], $n) ;
-    @ts = shuffle @ts if $random ;
+    my @ts = map { ($random ? int rand(2**$n) : $_) } (0 .. ((2**$n)-1)) ;
     foreach my $t (@ts){
-        $bis->power(join('', @{$t})) ;
-        my $res = (all { $_ } @{$t}) || 0 ;
-        is($wo->power(), $res, "AND$n(" . join(", ", @{$t}) . ")=$res") ;
+        my $bin = sprintf("%0${n}b", $t) ;
+        $bis->power($bin) ;
+        my $res = ($t == ((2**$n)-1)) || 0 ;
+        is($wo->power(), $res, "AND$n($bin)=$res") ;
     }
 }
 
@@ -87,12 +85,12 @@ sub make_orn_test {
     my $wo = new WIRE() ;
     my $a = new ORn($n, $bis, $wo) ;
 
-    my @ts = tuples_with_repetition([0, 1], $n) ;
-    @ts = shuffle @ts if $random ;
+    my @ts = map { ($random ? int rand(2**$n) : $_) } (0 .. ((2**$n)-1)) ;
     foreach my $t (@ts){
-        $bis->power(join('', @{$t})) ;
-        my $res = (any { $_ } @{$t}) || 0 ;
-        is($wo->power(), $res, "OR$n(" . join(", ", @{$t}) . ")=$res") ;
+        my $bin = sprintf("%0${n}b", $t) ;
+        $bis->power($bin) ;
+        my $res = ($t != 0) || 0 ;
+        is($wo->power(), $res, "OR$n($bin)=$res") ;
     }
 }
 

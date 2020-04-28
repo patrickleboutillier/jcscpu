@@ -33,26 +33,32 @@ sub new {
     my $a3x8 = new DECODER(3, $bops, $bdec, "3x8") ;
     $bdec->wire(7)->power(0) ;
 
+    my @Es = () ;
     my $xor = new XORER($bas, $bbs, new BUS(), $weqo, $walo) ;
-    new ENABLER($xor->cs(), $bdec->wire(6), $bcs) ;
+    unshift @Es, new ENABLER($xor->cs(), $bdec->wire(6), $bcs, "$name/ENABLER(XORER)") ;
+
     my $or = new ORER($bas, $bbs, new BUS()) ;
-    new ENABLER($or->cs(), $bdec->wire(5), $bcs) ;
+    unshift @Es, new ENABLER($or->cs(), $bdec->wire(5), $bcs, "$name/ENABLER(ORER)") ;
+    
     my $and = new ANDDER($bas, $bbs, new BUS()) ;
-    new ENABLER($and->cs(), $bdec->wire(4), $bcs) ;
+    unshift @Es, new ENABLER($and->cs(), $bdec->wire(4), $bcs, "$name/ENABLER(ANDDER)") ;
+    
     my $not = new NOTTER($bas, new BUS()) ;
-    new ENABLER($not->bs(), $bdec->wire(3), $bcs) ;
+    unshift @Es, new ENABLER($not->bs(), $bdec->wire(3), $bcs, "$name/ENABLER(NOTTER)") ;
 
     my $shl = new SHIFTL($bas, $wci, new BUS(), new WIRE()) ;
     new AND($shl->so(), $bdec->wire(2), $wco) ;
-    new ENABLER($shl->os(), $bdec->wire(2), $bcs) ;
+    unshift @Es, new ENABLER($shl->os(), $bdec->wire(2), $bcs, "$name/ENABLER(SHIFTL)") ;
+
     my $shr = new SHIFTR($bas, $wci, new BUS(), new WIRE()) ;
     new AND($shr->so(), $bdec->wire(1), $wco) ;
-    new ENABLER($shr->os(), $bdec->wire(1), $bcs) ;
+    unshift @Es, new ENABLER($shr->os(), $bdec->wire(1), $bcs, "$name/ENABLER(SHIFTR)") ;
 
     my $add = new ADDER($bas, $bbs, $wci, new BUS(), new WIRE()) ;
     new AND($add->carry_out(), $bdec->wire(0), $wco) ;
-    new ENABLER($add->sums(), $bdec->wire(0), $bcs) ;
+    unshift @Es, new ENABLER($add->sums(), $bdec->wire(0), $bcs, "$name/ENABLER(ADDER)") ;
 
+    my @Ms = ($add, $shr, $shl, $not, $and, $or, $xor) ;
     my $zero = new ZERO($bcs, $wz) ;
 
     my $this = {
@@ -60,12 +66,14 @@ sub new {
         bs => $bbs,
         cs => $bcs,
         ops => $bops,
-        carry_in => $wci,
-        carry_out => $wco,
+        ci => $wci,
+        co => $wco,
         eqo => $weqo,
         alo => $walo,
         z => $wz,
         name => $name,
+        Ms => \@Ms,
+        Es => \@Es,
     } ;
     bless $this, $class ;
 
@@ -97,15 +105,15 @@ sub ops {
 }
 
 
-sub carry_in {
+sub ci {
     my $this = shift ;
-    return $this->{carry_in} ;
+    return $this->{co} ;
 }
 
 
-sub carry_out {
+sub co {
     my $this = shift ;
-    return $this->{carry_out} ;
+    return $this->{co} ;
 }
 
 
@@ -126,6 +134,30 @@ sub eqo {
 sub z {
     my $this = shift ;
     return $this->{z} ;
+}
+
+
+sub show {
+    my $this = shift ;
+    my $fop = shift ;
+
+    my $a = $this->{as}->power() ;
+    my $b = $this->{bs}->power() ;
+    my $c = $this->{cs}->power() ;
+    my $ci = $this->{ci}->power() ;
+    my $co = $this->{co}->power() ;  
+    my $alo = $this->{alo}->power() ;
+    my $eqo = $this->{eqo}->power() ;
+    my $op = $this->{ops}->power() ;
+
+    my $str = "ALU($this->{name}): op:$op, a:$a, b:$b, ci:$ci, c:$c, co:$co eqo:$eqo, alo:$alo\n" ;
+    for (my $j = 6 ; $j >= 0 ; $j--){
+        next if ((defined($fop))&&($fop != $j)) ;
+        $str .= "  " . $this->{Ms}->[$j]->show() ;
+        $str .= "    " . $this->{Es}->[$j]->show() ;
+    }
+
+    return $str ;
 }
 
 

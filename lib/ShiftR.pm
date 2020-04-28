@@ -12,9 +12,9 @@ sub new {
     my $wso = shift ;
     my $name = shift ;
 
-    new PASS($wsi, $bos->wire(0)) ;
-    map { new PASS($bis->wire($_-1), $bos->wire($_)) } (1..7) ;
-    new PASS($bis->wire(7), $wso) ;
+    new CONN($wsi, $bos->wire(0)) ;
+    map { new CONN($bis->wire($_-1), $bos->wire($_)) } (1..7) ;
+    new CONN($bis->wire(7), $wso) ;
     
     my $this = {
         name => $name,
@@ -70,6 +70,18 @@ sub so {
 sub os {
     my $this = shift ;
     return $this->{os} ;
+}
+
+
+sub show {
+    my $this = shift ;
+
+    my $i = $this->{is}->power() ;
+    my $si = $this->{si}->power() ;
+    my $so = $this->{so}->power() ;    
+    my $o = $this->{os}->power() ;
+
+    return "SHIFTR($this->{name}): si:$si, i:$i, o:$o, so:$so\n" ;
 }
 
 

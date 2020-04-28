@@ -433,15 +433,6 @@ sub new {
             $last = $next ;
     }
 
-    #my $last = new OR("$name/OR[0]") ;
-    #my @is = (PASS->in(new WIRE($last->a()), "$name/OR[0]/PASS[a]"), PASS->in(new WIRE($last->b()), "$name/OR[0]/PASS[b]")) ;
-    #for (my $j = 0 ; $j < ($n-2) ; $j++){
-    #        my $next = new OR("$name/OR[" . ($j+1) . "]") ;
-    #        my $w = new WIRE($last->c(), $next->a()) ;
-    #        push @is, PASS->in(new WIRE($next->b()), "$name/OR[" . ($j+1) . "]/PASS[b]") ;
-    #        $last = $next ;
-    #}
-
     my $this = {
         is => $bis,
         o => $wo,
@@ -545,18 +536,16 @@ sub carry_out {
 }
 
 
-package PASS ; 
+package CONN ; 
 use strict ;
 
-# Hack to connect 2 wires together, using 2 NOT gates...
+# Hack to connect 2 wires together, using an AND gates...
 sub new {
     my $class = shift ;
     my $wa = shift ;
     my $wb = shift ;
 
-    my $wi = new WIRE() ;
-    new NOT($wa, $wi) ;
-    new NOT($wi, $wb) ;
+    new AND($wa, $wa, $wb) ;
 
     my $this = {
         a => $wa,

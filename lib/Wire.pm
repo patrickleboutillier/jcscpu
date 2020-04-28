@@ -10,6 +10,7 @@ sub new {
     my $this = {
         power => $v || 0,
         gates => [],
+        prehooks => [],
     } ;
     bless $this, $class ;
 
@@ -23,10 +24,19 @@ sub prehook {
 
     if (defined($sub)){
         # Set prehook
-        $this->{prehook} = $sub ;
+        push @{$this->{prehooks}}, $sub ;
     }
+}
 
-    return $this->{prehook} ;
+
+sub posthook {
+    my $this = shift ;
+    my $sub = shift ;
+
+    if (defined($sub)){
+        # Set posthook
+        push @{$this->{posthooks}}, $sub ;
+    }
 }
 
 
@@ -40,10 +50,19 @@ sub power {
         if ($v != $this->{power}){
             # There is a change in power. Record it and propagate the effect.
             $this->{power} = $v ;
-            my $prehook = $this->{prehook} ;
-            $prehook->($v) if $prehook ;
+
+            # Do prehooks
+            foreach my $hook (@{$this->{prehooks}}){
+                $hook->($v)  ;
+            }
+
             foreach my $gate (@{$this->{gates}}){
                 $gate->signal($this) ;  
+            }
+
+            # Do posthooks
+            foreach my $hook (@{$this->{posthooks}}){
+                $hook->($v)  ;
             }
         }
     }
