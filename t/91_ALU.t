@@ -4,8 +4,8 @@ use Data::Dumper ;
 use ALU ;
 
 
-my $nb_test_per_op = 1 ;
-my @ops = (0,1,3,4) ;
+my $nb_test_per_op = 256 ;
+my @ops = (0,1,2,3,4,5,6,7) ;
 plan(tests => $nb_test_per_op*scalar(@ops)) ;
 
 
@@ -13,12 +13,13 @@ my $bas = new BUS() ;
 my $bbs = new BUS() ;
 my $wci = new WIRE() ;
 my $bops = new BUS(3) ;
+my $wope = new WIRE() ;
 my $bcs = new BUS() ; 
 my $wco = new WIRE() ;
 my $weqo = new WIRE() ;
 my $walo = new WIRE() ;
 my $wz = new WIRE() ;
-my $ALU = new ALU($bas, $bbs, $wci, $bops, $bcs, $wco, $weqo, $walo, $wz, "ALU") ;
+my $ALU = new ALU($bas, $bbs, $wci, $bops, $wope, $bcs, $wco, $weqo, $walo, $wz, "ALU") ;
 
 
 foreach my $op (@ops){
@@ -58,27 +59,22 @@ sub alu {
     $bas->power(sprintf("%08b", $res{a})) ;
     $bbs->power(sprintf("%08b", $res{b})) ;
     $wci->power($res{ci}) ;
-    warn $ALU->show($res{op}) ;
-    # $bops->power("000") ;
-    
-    if ($res{op} == 4){
-        foreach my $w ($bcs->wires()){
-            # $w->posthook(sub { warn "$w: @_ ALU C-bus event occured!" ; }) ;
-        }
-    }
-    warn "before power" ;
-    $bops->power(sprintf("%03b", $res{op})) ;
-    warn "after power" ;
-    warn $ALU->show($res{op}) ;
+    # warn $ALU->show($res{op}) ;
 
+    $bops->power(sprintf("%03b", $res{op})) ;
+    $wope->power(1) ;
+    # warn $ALU->show($res{op}) ;
 
     $res{out} = oct("0b" . $bcs->power()) if ($res{op} < 7) ;   
     $res{co} = $wco->power() if ($res{op} < 3) ;
-    
+
     if (defined($res{out})){
         $res{binout} = sprintf("%08b", $res{out}) ; 
         $res{z} = $wz->power() ;
+        $res{eqo} = $weqo->power() ;
+        $res{alo} = $walo->power() ;
     }
+    $wope->power(0) ;
 
     return \%res ;
 }
@@ -122,6 +118,7 @@ sub valu {
         my @res = map { ($_ ? 0 : 1) } @bina ;
         $res{out} = oct("0b" . join('', map { ($_ ? 1 : 0) } @res)) ;    
     }
+    # AND
     elsif (($res{op}) == 4){
         my @bina = split(//, sprintf("%08b", $res{a})) ;
         my @binb = split(//, sprintf("%08b", $res{b})) ;
@@ -131,18 +128,37 @@ sub valu {
         }
         $res{out} = oct("0b" . join('', map { ($_ ? 1 : 0) } @res)) ;
     }
+    # OR
     elsif (($res{op}) == 5){
+        my @bina = split(//, sprintf("%08b", $res{a})) ;
+        my @binb = split(//, sprintf("%08b", $res{b})) ;
+        my @res = () ;
+        for (my $j = 0 ; $j < 8 ; $j++){
+            push @res, ($bina[$j] || $binb[$j]) ;
+        }
+        $res{out} = oct("0b" . join('', map { ($_ ? 1 : 0) } @res)) ;
     }
+    # XOR
     elsif (($res{op}) == 6){
+        my @bina = split(//, sprintf("%08b", $res{a})) ;
+        my @binb = split(//, sprintf("%08b", $res{b})) ;
+        my @res = () ;
+        for (my $j = 0 ; $j < 8 ; $j++){
+            push @res, ($bina[$j] xor $binb[$j]) ;
+        }
+        $res{out} = oct("0b" . join('', map { ($_ ? 1 : 0) } @res)) ;
     }
+    #CMP
     elsif (($res{op}) == 7){
+        # Nothing...
     }
 
     if (defined($res{out})){
         $res{binout} = sprintf("%08b", $res{out}) ; 
         $res{z} = ($res{out} == 0 ? 1 : 0) ;
+        $res{eqo} = $weqo->power() ;
+        $res{alo} = $walo->power() ;
     }
-    # warn "bina=$res{bina} $res{a}\nbinb=$res{binb} $res{b}\nbino=$res{binout} $res{out}" ;
 
     return \%res ;
 }

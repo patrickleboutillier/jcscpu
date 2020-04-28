@@ -60,6 +60,6 @@ sub make_decoder_test {
         # Converting this binary string to decimal number will give us the bit to turn on.
         $res[oct("0b" . $bin)] = 1 ;
         my $res = join('', @res) ;
-        is($bos->power($res), $res, "DECODER$n($bin)=$res") ;
+        is($bos->power(), $res, "DECODER$n($bin)=$res") ;
     }
 }

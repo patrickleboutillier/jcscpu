@@ -20,6 +20,14 @@ sub new {
 }
 
 
+sub terminal {
+    my $this = shift ;
+
+    $this->{terminal} = 1 ;
+    return 1 ;
+}
+
+
 sub prehook {
     my $this = shift ;
     my $sub = shift ;

@@ -26,7 +26,7 @@ sub new {
 
     # Setup a hook when e changes to clear the bus
     $we->prehook(sub { $this->clear_bus_before_set(@_) }) ;
-    $we->posthook(sub { $this->check_bus_after_set(@_) }) ;
+    # $we->posthook(sub { $this->check_bus_after_set(@_) }) ;
 
     return $this ;
 }
