@@ -26,6 +26,7 @@ sub new {
 
     # Setup a hook when e changes to clear the bus
     $we->prehook(sub { $this->clear_bus_before_set(@_) }) ;
+    $we->posthook(sub { $this->check_bus_after_set(@_) }) ;
 
     return $this ;
 }
@@ -65,8 +66,27 @@ sub clear_bus_before_set {
     my $v = shift ;
 
     if ($v){
-        # warn "e $this->{name} is turning on ($v), i:" . $this->{is}->power() ;
+        my $i = $this->{is}->power() ;
+        my $o = $this->{os}->power() ;
+        #warn "e $this->{name} is turning on ($v): i:$i, o:$o\n" ;
         $this->{os}->power("00000000") ;
+        $o = $this->{os}->power() ;
+        #warn "  after bus reset: i:$i, o:$o\n" ;
+    }
+    else {
+        #warn "e $this->{name} is turning off\n" ;
+    }
+}
+
+
+sub check_bus_after_set {
+    my $this = shift ;
+    my $v = shift ;
+
+    if ($v){
+        my $i = $this->{is}->power() ;
+        my $o = $this->{os}->power() ;
+        # warn "e $this->{name} was turned on ($v): i:$i, o:$o\n" ;
     }
 }
 

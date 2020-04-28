@@ -9,8 +9,10 @@ sub new {
 
     my $this = {
         power => $v || 0,
+        terminal => 0,  # Terminal wires cannot change power.
         gates => [],
         prehooks => [],
+        posthooks => [],
     } ;
     bless $this, $class ;
 
@@ -49,20 +51,22 @@ sub power {
         $v = ($v ? 1 : 0) ;
         if ($v != $this->{power}){
             # There is a change in power. Record it and propagate the effect.
-            $this->{power} = $v ;
+            if (! $this->{terminal}){
+                $this->{power} = $v ;
 
-            # Do prehooks
-            foreach my $hook (@{$this->{prehooks}}){
-                $hook->($v)  ;
-            }
+                # Do prehooks
+                foreach my $hook (@{$this->{prehooks}}){
+                    $hook->($v)  ;
+                }
 
-            foreach my $gate (@{$this->{gates}}){
-                $gate->signal($this) ;  
-            }
+                foreach my $gate (@{$this->{gates}}){
+                    $gate->signal($this) ;  
+                }
 
-            # Do posthooks
-            foreach my $hook (@{$this->{posthooks}}){
-                $hook->($v)  ;
+                # Do posthooks
+                foreach my $hook (@{$this->{posthooks}}){
+                    $hook->($v)  ;
+                }
             }
         }
     }

@@ -60,8 +60,17 @@ sub alu {
     $wci->power($res{ci}) ;
     warn $ALU->show($res{op}) ;
     # $bops->power("000") ;
+    
+    if ($res{op} == 4){
+        foreach my $w ($bcs->wires()){
+            # $w->posthook(sub { warn "$w: @_ ALU C-bus event occured!" ; }) ;
+        }
+    }
+    warn "before power" ;
     $bops->power(sprintf("%03b", $res{op})) ;
+    warn "after power" ;
     warn $ALU->show($res{op}) ;
+
 
     $res{out} = oct("0b" . $bcs->power()) if ($res{op} < 7) ;   
     $res{co} = $wco->power() if ($res{op} < 3) ;

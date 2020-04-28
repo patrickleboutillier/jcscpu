@@ -30,8 +30,10 @@ sub new {
 
     # Build the ALU circuit
     my $bdec = new BUS() ;
-    my $a3x8 = new DECODER(3, $bops, $bdec, "3x8") ;
+    my $dec = new DECODER(3, $bops, $bdec, "3x8") ;
     $bdec->wire(7)->power(0) ;
+    $bdec->wire(7)->{terminal} = 1 ;
+    $bdec->wire(7)->prehook(sub { warn "WTF(@_)!!" }) ;
 
     my @Es = () ;
     my $xor = new XORER($bas, $bbs, new BUS(), $weqo, $walo) ;
@@ -74,6 +76,7 @@ sub new {
         name => $name,
         Ms => \@Ms,
         Es => \@Es,
+        dec => $dec,
     } ;
     bless $this, $class ;
 
@@ -139,7 +142,7 @@ sub z {
 
 sub show {
     my $this = shift ;
-    my $fop = shift ;
+    my @ops = @_ ;
 
     my $a = $this->{as}->power() ;
     my $b = $this->{bs}->power() ;
@@ -149,10 +152,13 @@ sub show {
     my $alo = $this->{alo}->power() ;
     my $eqo = $this->{eqo}->power() ;
     my $op = $this->{ops}->power() ;
+    my $dec = $this->{dec}->os()->power() ;
 
-    my $str = "ALU($this->{name}): op:$op, a:$a, b:$b, ci:$ci, c:$c, co:$co eqo:$eqo, alo:$alo\n" ;
+    my $filter = scalar(@ops) ;
+    my %ops = map { ($_ => 1) } @ops ;
+    my $str = "ALU($this->{name}): op:$op, a:$a, b:$b, ci:$ci, c:$c, dec:$dec, co:$co eqo:$eqo, alo:$alo\n" ;
     for (my $j = 6 ; $j >= 0 ; $j--){
-        next if ((defined($fop))&&($fop != $j)) ;
+        next if (($filter)&&(! $ops{$j})) ;
         $str .= "  " . $this->{Ms}->[$j]->show() ;
         $str .= "    " . $this->{Es}->[$j]->show() ;
     }
