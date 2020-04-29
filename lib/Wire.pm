@@ -1,6 +1,7 @@
 package WIRE ;
 
 use strict ;
+use Time::HiRes ;
 
 
 sub new {
@@ -13,6 +14,7 @@ sub new {
         gates => [],
         prehooks => [],
         posthooks => [],
+        pause => 0,
     } ;
     bless $this, $class ;
 
@@ -25,6 +27,18 @@ sub terminal {
 
     $this->{terminal} = 1 ;
     return 1 ;
+}
+
+
+sub pause {
+    my $this = shift ;
+    my $ms = shift ;
+
+    if (defined($ms)){
+        $this->{pause} = $ms ;
+    }
+
+    return $this->{pause} ;
 }
 
 
@@ -60,6 +74,9 @@ sub power {
         if ($v != $this->{power}){
             # There is a change in power. Record it and propagate the effect.
             if (! $this->{terminal}){
+                if ($this->{pause}){
+                    Time::HiRes::sleep($this->{pause}) ;
+                }
                 $this->{power} = $v ;
 
                 # Do prehooks
