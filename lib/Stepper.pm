@@ -6,10 +6,10 @@ use Memory ;
 
 sub new {
     my $class = shift ;
-    my $bis = shift ;
-    my $ws = shift ;
-    my $bos = shift ;
-    my $name = shift  ;
+    my $wclk = shift ;
+    my $wrst = shift ;
+    my $bos = shift ;  # 7 wire bus
+    my $name = shift ;
 
     # Foreach memory circuit, connect to the wires.
     for (my $j = 0 ; $j < 8 ; $j++){
@@ -17,8 +17,8 @@ sub new {
     }
     
     my $this = {
-        is => $bis,
-        s => $ws,
+        clk => $wclk,
+        rst => $wrst,
         os => $bos,
         name => $name
     } ;

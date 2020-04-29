@@ -1,3 +1,4 @@
 - Remove dependencies on Algorhithm::Combinatorics and List::Utils qw(shuffle)
+- Debug clock cycles
 
 

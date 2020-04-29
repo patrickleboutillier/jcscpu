@@ -13,6 +13,7 @@ sub new {
     my $wclk = shift ;
     my $wclke = shift ;
     my $wclks = shift ;
+    my $maxticks = shift || -1 ;
     my $name = shift  ;
 
     # Here we must fake it a bit due to the implementation system.
@@ -26,13 +27,16 @@ sub new {
         clke => $wclke,
         clks => $wclks,
         qticks => 0,
-        maxticks => -1,
+        maxticks => $maxticks,
         name => $name,
     } ;
     bless $this, $class ;
 
     $wclk->prehook(sub { $this->_qtick_callback("clk", @_) }) ;
     $wclkd->prehook(sub { $this->_qtick_callback("clkd", @_) }) ;
+
+    $wclke->prehook(sub { $this->_trace("clke", @_) }) ;
+    $wclks->prehook(sub { $this->_trace("clks", @_) }) ;
 
     return $this ;
 }
@@ -54,16 +58,13 @@ sub qticks {
 
 sub start(){
     my $this = shift ;
-    my $freqhz = shift ;
-    my $maxticks = shift || -1 ;
+    my $freqhz = shift || 0 ;
 
     # Close the circuit to start the clock
     my $wclk = $this->{clk} ;
     my $wclkd = $this->{clkd} ;
-    $this->{maxticks} = $maxticks ;
     $wclkd->pause($freqhz ? (1.0 / ($freqhz * 4)) : undef) ;
     $wclk->pause($freqhz ? (1.0 / ($freqhz * 4)) : undef) ;
-
 
     # Build the loop circuit.
     new CONN($wclk, $wclkd) ;
@@ -87,7 +88,8 @@ sub qtick {
     elsif ($mod == 2){
          $this->{clk}->power(0) ;       
     }
-    elsif ($mod == 3){
+    else {
+        # mod == 3
         $this->{clkd}->power(0) ;
     }
 }
@@ -129,7 +131,7 @@ sub _trace {
     my $s = shift ;
 
     my ($ts, $tsm) = Time::HiRes::gettimeofday() ;
-    # warn sprintf("[$ts.%06d] tick %8.2lf: %-4s %-3s\n", $tsm, $this->{qticks} / 4, $label, ($s ? "on" : "off")) ;
+    warn sprintf("[$ts.%06d] tick %8.2lf: %-4s %-3s\n", $tsm, $this->{qticks} / 4, $label, ($s ? "on" : "off")) ;
 }
 
 

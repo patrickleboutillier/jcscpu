@@ -32,27 +32,12 @@ sub eval {
     my $this = shift ;
     my $wire = shift ;
 
-    # Do nothing if our output is not connected
-    my $wc = $this->{c} ;
-    # return unless $wc ;
-
-    my $wa = $this->{a} ;
-    my $a = ($wa ? $wa->power() : 0) ;
-    my $wb = $this->{b} ;
-    my $b = ($wb ? $wb->power() : 0) ;
+    my $a = $this->{a}->power() ;
+    my $b = $this->{b}->power() ;
 
     # This code could be replaced by a truth table. No need to actually the language operators to perform
     # the boolean and and the not.
-    my $c = ! ($a && $b) ;
-    my $wc = $this->{c} ;
-    $wc->power($c) ;
-    if ($GATES::DEBUG){
-        my $srca = ($wire eq $this->{a} ? '*' : '') ;
-        my $srcb = ($wire eq $this->{b} ? '*' : '') ;
-        my $srcc = ($wire eq $this->{c} ? '*' : '') ;
-        $c = ($c ? 1 : 0) ;
-        warn "$this->{name} : (${srca}a:$a, ${srcb}b:$b) -> ${srcc}c:$c\n" ;
-    }
+    $this->{c}->power(! ($a && $b)) ;
 }
 
 
@@ -67,13 +52,9 @@ sub connect {
 sub signal {
     my $this = shift ;
     my $wire = shift ;
-
-    # Do nothing if our output is not connected
-    my $wc = $this->{c} ;
-    return unless $wc ;
  
-    # Ignore signals from our output pin, unless it is a new connection
-    return if ($wire eq $wc) ;
+    # Ignore signals from our output pin.
+    return if ($wire eq $this->{c}) ;
 
     $this->eval($wire) ;
 }
@@ -129,18 +110,6 @@ sub new {
 }
 
 
-sub a {
-    my $this = shift ;
-    return $this->{a} ;
-}
-
-
-sub b {
-    my $this = shift ;
-    return $this->{b} ;
-}
-
-
 sub c {
     my $this = shift ;
     return $this->{c} ;
@@ -173,18 +142,6 @@ sub new {
 
     bless $this, $class ;
     return $this ;
-}
-
-
-sub a {
-    my $this = shift ;
-    return $this->{a} ;
-}
-
-
-sub b {
-    my $this = shift ;
-    return $this->{b} ;
 }
 
 
@@ -296,12 +253,6 @@ sub new {
 }
 
 
-sub is {
-    my $this = shift ;
-    return @{$this->{is}} ;
-}
-
-
 sub i {
     my $this = shift ;
     my $n = shift ;
@@ -313,12 +264,6 @@ sub i {
 sub n {
     my $this = shift ;
     return $this->{n} ;
-}
-
-
-sub o {
-    my $this = shift ;
-    return $this->{o} ;
 }
 
 
@@ -351,12 +296,6 @@ sub new {
 }
 
 
-sub is {
-    my $this = shift ;
-    return @{$this->{is}} ;
-}
-
-
 sub i {
     my $this = shift ;
     my $n = shift ;
@@ -368,12 +307,6 @@ sub i {
 sub n {
     my $this = shift ;
     return $this->{n} ;
-}
-
-
-sub o {
-    my $this = shift ;
-    return $this->{o} ;
 }
 
 
@@ -410,36 +343,6 @@ sub new {
     bless $this, $class ;
 
     return $this ;
-}
-
-
-sub a {
-    my $this = shift ;
-    return $this->{a} ;
-}
-
-
-sub b {
-    my $this = shift ;
-    return $this->{b} ;
-}
-
-
-sub carry_in {
-    my $this = shift ;
-    return $this->{carry_in} ;
-}
-
-
-sub sum {
-    my $this = shift ;
-    return $this->{sum} ;
-}
-
-
-sub carry_out {
-    my $this = shift ;
-    return $this->{carry_out} ;
 }
 
 

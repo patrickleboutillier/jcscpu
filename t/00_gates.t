@@ -19,6 +19,7 @@ $w->posthook() ;
 $w->power(1) ;
 $w->terminal() ;
 $w->power(0) ;
+$w->pause() ;
 is($w->power(), 1, "Terminal froze the wire") ;
 
 
