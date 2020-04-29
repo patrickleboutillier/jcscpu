@@ -7,10 +7,11 @@ use Time::HiRes ;
 sub new {
     my $class = shift ;
     my $v = shift ;
+    my $terminal = shift ;
 
     my $this = {
         power => $v || 0,
-        terminal => 0,  # Terminal wires cannot change power.
+        terminal => $terminal,  # Terminal wires cannot change power.
         gates => [],
         prehooks => [],
         posthooks => [],

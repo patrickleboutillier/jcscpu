@@ -16,12 +16,19 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "Algorithm::Combinatorics" : "0",
             "Devel::Cover" : "0"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Time::HiRes" : "0"
          }
       }
    },
    "provides" : {
+      "ADD" : {
+         "file" : "lib/Gates.pm"
+      },
       "AND" : {
          "file" : "lib/Gates.pm"
       },
@@ -30,6 +37,12 @@
       },
       "BYTE" : {
          "file" : "lib/Byte.pm"
+      },
+      "CMP" : {
+         "file" : "lib/Gates.pm"
+      },
+      "CONN" : {
+         "file" : "lib/Gates.pm"
       },
       "ENABLER" : {
          "file" : "lib/Enabler.pm"
@@ -43,13 +56,13 @@
       "NOT" : {
          "file" : "lib/Gates.pm"
       },
-      "PASS" : {
+      "OR" : {
          "file" : "lib/Gates.pm"
       },
-      "PIN" : {
+      "ORn" : {
          "file" : "lib/Gates.pm"
       },
-      "WIRE" : {
+      "XOR" : {
          "file" : "lib/Gates.pm"
       },
       "jcscpu" : {

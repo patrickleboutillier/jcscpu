@@ -9,7 +9,7 @@ my $builder = Module::Build->new(
     license             => 'perl',
     dist_abstract       => 'Implementation of the JSC Computer',
     requires            => {
-        'Time:HiRes' => 0,
+        'Time::HiRes' => 0,
     },
     build_requires      => {
         'Devel::Cover' => 0,

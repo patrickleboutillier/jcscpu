@@ -15,8 +15,8 @@ sub new {
     my $name = shift ;
 
     # Build the XORer circuit
-    my $weqi = new WIRE(1) ;
-    my $wali = new WIRE(0) ;
+    my $weqi = new WIRE(1, 1) ;
+    my $wali = new WIRE(0, 1) ;
     for (my $j = 0 ; $j < 8 ; $j++){
         my $teqo = new WIRE() ;
         my $talo = new WIRE() ;

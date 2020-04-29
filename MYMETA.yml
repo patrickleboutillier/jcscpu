@@ -3,7 +3,6 @@ abstract: 'Implementation of the JSC Computer'
 author:
   - unknown
 build_requires:
-  Algorithm::Combinatorics: '0'
   Devel::Cover: '0'
 dynamic_config: 0
 generated_by: 'Module::Build version 0.4224, CPAN::Meta::Converter version 2.150010'
@@ -13,12 +12,18 @@ meta-spec:
   version: '1.4'
 name: jcscpu
 provides:
+  ADD:
+    file: lib/Gates.pm
   AND:
     file: lib/Gates.pm
   ANDn:
     file: lib/Gates.pm
   BYTE:
     file: lib/Byte.pm
+  CMP:
+    file: lib/Gates.pm
+  CONN:
+    file: lib/Gates.pm
   ENABLER:
     file: lib/Enabler.pm
   MEMORY:
@@ -27,15 +32,17 @@ provides:
     file: lib/Gates.pm
   NOT:
     file: lib/Gates.pm
-  PASS:
+  OR:
     file: lib/Gates.pm
-  PIN:
+  ORn:
     file: lib/Gates.pm
-  WIRE:
+  XOR:
     file: lib/Gates.pm
   jcscpu:
     file: lib/jcscpu.pm
     version: '1.0'
+requires:
+  Time::HiRes: '0'
 resources:
   license: http://dev.perl.org/licenses/
 version: '1.0'
