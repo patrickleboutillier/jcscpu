@@ -8,6 +8,9 @@ use Carp ;
 # NOTE: Each tick of this clock calls itself recursively.
 # This allowed the implementation to be faithful to the book. A loop could easily be used instead
 
+$CLOCK::DEBUG = 0 ;
+
+
 sub new {
     my $class = shift ;
     my $wclk = shift ;
@@ -26,7 +29,7 @@ sub new {
         clkd => $wclkd,
         clke => $wclke,
         clks => $wclks,
-        qticks => 0,
+        qticks => -1,
         maxticks => $maxticks,
         name => $name,
     } ;
@@ -52,7 +55,7 @@ sub clkd {
 sub qticks {
     my $this = shift ;
 
-    return $this->{qticks} ;
+    return $this->{qticks} + 1 ;
 }
 
 
@@ -79,17 +82,16 @@ sub qtick {
     my $qticks = $this->{qticks} ;
     my $mod = $qticks % 4 ;
 
-    if ($mod == 0){
+    if ($mod == 3){
         $this->{clk}->power(1) ;
     }
-    elsif ($mod == 1){
+    elsif ($mod == 0){
         $this->{clkd}->power(1) ;
     }
-    elsif ($mod == 2){
+    elsif ($mod == 1){
          $this->{clk}->power(0) ;       
     }
-    else {
-        # mod == 3
+    elsif ($mod == 2){
         $this->{clkd}->power(0) ;
     }
 }
@@ -102,7 +104,7 @@ sub tick {
     my $qticks = $this->{qticks} ;
     my $mod = $qticks % 4 ;
 
-    croak("Can't tick a clock mid-cycle (qtick: $qticks % 4 == $mod)!") if $mod ;
+    croak("Can't tick a clock mid-cycle (qticks: $qticks)!") if $mod != 3 ;
 
     map { $this->qtick() } (0..3) ;
 }
@@ -114,14 +116,14 @@ sub _qtick_callback {
     my $s = shift ;
 
     my $maxqticks = $this->{maxticks} * 4 ;
-    if (($maxqticks > -1)&&($this->{qticks} >= $maxqticks)){
+    if (($maxqticks > -1)&&(($this->{qticks} + 1) >= $maxqticks)){
         my $maxticks = $maxqticks / 4 ;
         die("HALTING! (Max clock ticks of $maxticks reached)\n") ;
     }
 
-    $this->_trace($label, $s) ;
-
     $this->{qticks}++ ; 
+
+    $this->_trace($label, $s) ;
 }
 
 
@@ -131,7 +133,9 @@ sub _trace {
     my $s = shift ;
 
     my ($ts, $tsm) = Time::HiRes::gettimeofday() ;
-    warn sprintf("[$ts.%06d] tick %8.2lf: %-4s %-3s\n", $tsm, $this->{qticks} / 4, $label, ($s ? "on" : "off")) ;
+    if ($CLOCK::DEBUG){
+        warn sprintf("[$ts.%06d] tick %8.2lf: %-4s %-3s\n", $tsm, $this->{qticks} / 4, $label, ($s ? "on" : "off")) ;
+    }
 }
 
 

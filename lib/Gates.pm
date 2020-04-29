@@ -24,7 +24,14 @@ sub new {
     $this->{c} = $wc ;
     $wc->connect($this) ;
 
+    $GATES::NB_NAND++ ;
+
     return $this ;
+}
+
+
+END {
+    # warn "$GATES::NB_NAND NAND gates created!" ;
 }
 
 
