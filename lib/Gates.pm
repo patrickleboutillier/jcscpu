@@ -28,31 +28,13 @@ sub new {
 }
 
 
-sub a {
-    my $this = shift ;
-    return $this->{a} ;
-}
-
-
-sub b {
-    my $this = shift ;
-    return $this->{b} ;
-}
-
-
-sub c {
-    my $this = shift ;
-    return $this->{c} ;
-}
-
-
 sub eval {
     my $this = shift ;
     my $wire = shift ;
 
     # Do nothing if our output is not connected
     my $wc = $this->{c} ;
-    return unless $wc ;
+    # return unless $wc ;
 
     my $wa = $this->{a} ;
     my $a = ($wa ? $wa->power() : 0) ;
@@ -117,18 +99,6 @@ sub new {
 
     bless $this, $class ;
     return $this ;
-}
-
-
-sub a {
-    my $this = shift ;
-    return $this->{a} ;
-}
-
-
-sub b {
-    my $this = shift ;
-    return $this->{b} ;
 }
 
 
@@ -257,24 +227,6 @@ sub new {
 }
 
 
-sub a {
-    my $this = shift ;
-    return $this->{a} ;
-}
-
-
-sub b {
-    my $this = shift ;
-    return $this->{b} ;
-}
-
-
-sub c {
-    my $this = shift ;
-    return $this->{c} ;
-}
-
-
 package CMP ;
 use strict ;
 
@@ -311,51 +263,6 @@ sub new {
     bless $this, $class ;
 
     return $this ;
-}
-
-
-sub a {
-    my $this = shift ;
-    return $this->{a} ;
-}
-
-
-sub b {
-    my $this = shift ;
-    return $this->{b} ;
-}
-
-
-sub c {
-    my $this = shift ;
-    return $this->{c} ;
-}
-
-
-# 'a' larger in
-sub ali {
-    my $this = shift ;
-    return $this->{ali} ;
-}
-
-
-# 'a' larger out
-sub alo {
-    my $this = shift ;
-    return $this->{alo} ;
-}
-
-# 'equal so far' in
-sub eqi {
-    my $this = shift ;
-    return $this->{eqi} ;
-}
-
-
-# 'equal so far' out
-sub eqo {
-    my $this = shift ;
-    return $this->{eqo} ;
 }
 
 

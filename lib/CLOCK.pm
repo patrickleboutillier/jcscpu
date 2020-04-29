@@ -3,6 +3,7 @@ package CLOCK ;
 use strict ;
 use Time::HiRes ;
 use Gates ;
+use Carp ;
 
 # NOTE: Each tick of this clock calls itself recursively.
 # This allowed the implementation to be faithful to the book. A loop could easily be used instead
@@ -24,10 +25,14 @@ sub new {
         clkd => $wclkd,
         clke => $wclke,
         clks => $wclks,
-        name => $name,
         qticks => 0,
+        maxticks => -1,
+        name => $name,
     } ;
     bless $this, $class ;
+
+    $wclk->prehook(sub { $this->_qtick_callback("clk", @_) }) ;
+    $wclkd->prehook(sub { $this->_qtick_callback("clkd", @_) }) ;
 
     return $this ;
 }
@@ -40,6 +45,13 @@ sub clkd {
 }
 
 
+sub qticks {
+    my $this = shift ;
+
+    return $this->{qticks} ;
+}
+
+
 sub start(){
     my $this = shift ;
     my $freqhz = shift ;
@@ -48,43 +60,76 @@ sub start(){
     # Close the circuit to start the clock
     my $wclk = $this->{clk} ;
     my $wclkd = $this->{clkd} ;
+    $this->{maxticks} = $maxticks ;
     $wclkd->pause($freqhz ? (1.0 / ($freqhz * 4)) : undef) ;
     $wclk->pause($freqhz ? (1.0 / ($freqhz * 4)) : undef) ;
 
-    $wclk->prehook(sub { $this->qtick("clk", $maxticks * 4, @_) }) ;
-    $wclkd->prehook(sub { $this->qtick("clkd", $maxticks * 4, @_) }) ;
 
+    # Build the loop circuit.
     new CONN($wclk, $wclkd) ;
     new NOT($wclkd, $wclk) ;
 }
 
 
-sub qtick {    
+# Maunal advancing of the clock.
+sub qtick {
+    my $this = shift ;
+
+    my $qticks = $this->{qticks} ;
+    my $mod = $qticks % 4 ;
+
+    if ($mod == 0){
+        $this->{clk}->power(1) ;
+    }
+    elsif ($mod == 1){
+        $this->{clkd}->power(1) ;
+    }
+    elsif ($mod == 2){
+         $this->{clk}->power(0) ;       
+    }
+    elsif ($mod == 3){
+        $this->{clkd}->power(0) ;
+    }
+}
+
+
+# Maunal advancing of the clock.
+sub tick {
+    my $this = shift ;
+
+    my $qticks = $this->{qticks} ;
+    my $mod = $qticks % 4 ;
+
+    croak("Can't tick a clock mid-cycle (qtick: $qticks % 4 == $mod)!") if $mod ;
+
+    map { $this->qtick() } (0..3) ;
+}
+
+
+sub _qtick_callback {    
     my $this = shift ;
     my $label = shift ;
-    my $max = shift ;
     my $s = shift ;
 
-    if (($max > -1)&&($this->{qticks} >= $max)){
-        $max = $max / 4 ;
-        die("HALTING! (Max clock ticks of $max reached)") ;
+    my $maxqticks = $this->{maxticks} * 4 ;
+    if (($maxqticks > -1)&&($this->{qticks} >= $maxqticks)){
+        my $maxticks = $maxqticks / 4 ;
+        die("HALTING! (Max clock ticks of $maxticks reached)\n") ;
     }
 
-    $this->trace($label, $s) ;
+    $this->_trace($label, $s) ;
 
     $this->{qticks}++ ; 
 }
 
 
-sub trace {
+sub _trace {
     my $this = shift ;
     my $label = shift ;
     my $s = shift ;
 
     my ($ts, $tsm) = Time::HiRes::gettimeofday() ;
-    warn sprintf("[$ts.%06d] tick %8.2lf: %-4s %-3s\n", $tsm, $this->{qticks} / 4, $label, ($s ? "on" : "off")) ;
-    
-    $this->{qticks}++ ; 
+    # warn sprintf("[$ts.%06d] tick %8.2lf: %-4s %-3s\n", $tsm, $this->{qticks} / 4, $label, ($s ? "on" : "off")) ;
 }
 
 
