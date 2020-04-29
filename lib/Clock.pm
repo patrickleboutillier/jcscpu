@@ -91,7 +91,8 @@ sub qtick {
     elsif ($mod == 1){
          $this->{clk}->power(0) ;       
     }
-    elsif ($mod == 2){
+    else {
+        # $mod == 2
         $this->{clkd}->power(0) ;
     }
 }
