@@ -16,6 +16,7 @@ sub new {
         prehooks => [],
         posthooks => [],
         pause => 0,
+        soft => 0,
     } ;
     bless $this, $class ;
 
@@ -76,29 +77,33 @@ sub show {
 sub power {
     my $this = shift ;
     my $v = shift ;
+    my $soft = shift ; # Soft signal only changes the power value, no signals and no hooks.
 
     if (defined($v)){
         $v = ($v ? 1 : 0) ;
-        if ($v != $this->{power}){
+        if (($v != $this->{power})||($this->{soft})){
             # There is a change in power. Record it and propagate the effect.
             if (! $this->{terminal}){
                 if ($this->{pause}){
                     Time::HiRes::sleep($this->{pause}) ;
                 }
                 $this->{power} = $v ;
+                $this->{soft} = $soft ;
 
-                # Do prehooks
-                foreach my $hook (@{$this->{prehooks}}){
-                    $hook->($v)  ;
-                }
+                if (! $soft){
+                    # Do prehooks
+                    foreach my $hook (@{$this->{prehooks}}){
+                        $hook->($v)  ;
+                    }
 
-                foreach my $gate (@{$this->{gates}}){
-                    $gate->signal($this) ;  
-                }
+                    foreach my $gate (@{$this->{gates}}){
+                        $gate->signal($this) ;  
+                    }
 
-                # Do posthooks
-                foreach my $hook (@{$this->{posthooks}}){
-                    $hook->($v)  ;
+                    # Do posthooks
+                    foreach my $hook (@{$this->{posthooks}}){
+                        $hook->($v)  ;
+                    }
                 }
             }
         }

@@ -19,7 +19,7 @@ sub new {
     my $o1 = new OR($wrst, $wnco1, $wmsn) ;
     my $wmsnn = new WIRE() ;
     my $o2 = new OR($wrst, $wclk, $wmsnn) ;
-    
+
     # M1
     my $wn12b = new WIRE() ;
     my $wn12a = new WIRE() ;
@@ -86,14 +86,11 @@ sub new {
     my $n67 = new NOT($bos->wire(6), $wn67b) ;
     my $m67 = new MEMORY($wm667, $wmsnn, $bos->wire(6), "67") ;
 
-    #warn "N: " .$wmsn->power() ;
-    #warn "NN: " . $wmsnn->power() ;
-    #warn "i of M1:" . $m1->i()->power() ;
-    #warn "s of M1:" . $m1->s()->power() ;
-    #warn "o of M1:" . $m1->o()->power() ;
-    #warn "i of M12:" . $m12->i()->power() ;
-    #warn "s of M12:" . $m12->s()->power() ;
-    #warn "o of M12:" . $m12->o()->power() ;
+    $wclk->prehook(sub {
+        my $v = shift ;
+        $wmsn->power(! $v, 1) ;
+        $wmsnn->power($v, 1) ;
+    }) ;
 
 
     my $this = {

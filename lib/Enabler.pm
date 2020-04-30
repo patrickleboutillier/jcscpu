@@ -79,16 +79,4 @@ sub clear_bus_before_set {
 }
 
 
-#sub check_bus_after_set {
-#    my $this = shift ;
-#    my $v = shift ;
-
-#    if ($v){
-#        my $i = $this->{is}->power() ;
-#        my $o = $this->{os}->power() ;
-#        # warn "e $this->{name} was turned on ($v): i:$i, o:$o\n" ;
-#    }
-#}
-
-
 return 1 ;
