@@ -65,6 +65,13 @@ sub posthook {
 }
 
 
+sub show {
+    my $this = shift ;
+
+    return $this->power() ;
+}
+
+
 # Get or set power on a wire.
 sub power {
     my $this = shift ;

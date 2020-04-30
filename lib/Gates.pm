@@ -123,6 +123,13 @@ sub c {
 }
 
 
+sub show {
+    my $this = shift ;
+
+    return "AND[" . $this->{a}->power() . "/" . $this->{b}->power() . "/" . $this->{c}->power() . "]" ;
+}
+
+
 package OR ;
 use strict ;
 
@@ -155,6 +162,13 @@ sub new {
 sub c {
     my $this = shift ;
     return $this->{c} ;
+}
+
+
+sub show {
+    my $this = shift ;
+
+    return " OR[" . $this->{a}->power() . "/" . $this->{b}->power() . "/" . $this->{c}->power() . "]" ;
 }
 
 
