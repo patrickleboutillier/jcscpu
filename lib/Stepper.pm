@@ -119,13 +119,6 @@ sub new {
 }
 
 
-sub rst {
-    my $this = shift ;
-
-    return $this->{rst} ;
-}
-
-
 sub show {
     my $this = shift ;
 

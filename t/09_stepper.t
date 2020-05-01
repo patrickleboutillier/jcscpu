@@ -19,6 +19,7 @@ my $bsteps = new BUS(7) ;
 my $s = new STEPPER($wclk, $wrst, $bsteps) ;
 # Connect step 7 wire to rst.
 new CONN($bsteps->wire(6), $wrst) ;
+$s->show() ;
 
 is($bsteps->power(), "1000000", "initial state, step 1") ;
 $c->tick() ;

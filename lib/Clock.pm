@@ -5,7 +5,7 @@ use Time::HiRes ;
 use Gates ;
 use Carp ;
 
-# NOTE: Each tick of this clock calls itself recursively.
+# NOTE: Each tick of this clock calls itself recursively. A more performant lopp-based clock may be required on the future...
 # This allowed the implementation to be faithful to the book. A loop could easily be used instead
 
 $CLOCK::DEBUG = 0 ;
