@@ -1,9 +1,6 @@
 use strict ;
 use Test::More ;
 use Decoder ;
-use Data::Dumper ;
-use Algorithm::Combinatorics qw(tuples_with_repetition) ;
-use List::Util qw(shuffle) ;
 
 
 my $max_decoder_tests = 4 ;
@@ -50,10 +47,9 @@ sub make_decoder_test {
     my $bos = new BUS(2**$n) ;
     my $D = new DECODER($n, $bis, $bos, $n . 'x' . 2**$n) ;
 
-    my @ts = tuples_with_repetition([0, 1], $n) ;
-    @ts = shuffle @ts if $random ;
+    my @ts = map { ($random ? int rand(2**$n) : $_) } (0 .. ((2**$n)-1)) ;
     foreach my $t (@ts){
-        my $bin = join('', @{$t}) ; 
+        my $bin = sprintf("%0${n}b", $t) ;
         $bis->power($bin) ;
 
         my @res = ('0') x 2**$n ;

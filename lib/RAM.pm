@@ -15,7 +15,7 @@ sub new {
     my $name = shift ;
 
     # Build the RAM circuit 
-    my $on = new WIRE(1) ;
+    my $on = new WIRE(1, 1) ;
     my $busd = new BUS() ;
     my $MAR = new REGISTER($ba, $wsa, $on, $busd, "MAR") ;
 
@@ -51,8 +51,8 @@ sub new {
         MAR => $MAR,
         GRID => \%GRID,
     } ;
-
     bless $this, $class ;
+
     return $this ;
 }
 

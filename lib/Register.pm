@@ -67,7 +67,9 @@ sub show {
     my $os = $this->os()->power() ;
     my $e = $this->e()->power() ;
     my $s = $this->s()->power() ;
-    return "REGISTER($this->{name}): e:$e, s:$s, is:$is, bus:$bus, os:$os" ;
+    my $name = $this->{name} || "REGISTER" ;
+
+    return "$name:$s/$bus/$e" ;
 }
 
 

@@ -8,7 +8,9 @@ use Carp ;
 # NOTE: Each tick of this clock calls itself recursively. A more performant lopp-based clock may be required on the future...
 # This allowed the implementation to be faithful to the book. A loop could easily be used instead
 
+
 $CLOCK::DEBUG = 0 ;
+$CLOCK::MODE = 'loop' ;
 
 
 sub new {
@@ -77,8 +79,15 @@ sub start(){
     $wclk->pause($freqhz ? (1.0 / ($freqhz * 4)) : undef) ;
 
     # Build the loop circuit.
-    new CONN($wclk, $wclkd) ;
-    new NOT($wclkd, $wclk) ;
+    if ($CLOCK::MODE eq 'gates'){
+        new CONN($wclk, $wclkd) ;
+        new NOT($wclkd, $wclk) ;
+    }
+    else {
+        while (1){
+            $this->tick() ;
+        }
+    }
 }
 
 
