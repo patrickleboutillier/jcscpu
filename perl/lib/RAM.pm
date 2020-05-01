@@ -37,7 +37,7 @@ sub new {
             new AND($wxo, $ws, $wso) ;
             new AND($wxo, $we, $weo) ;
             my $label = sprintf("%04b%04b", $x, $y) ;
-            $GRID{$label} = new REGISTER($bio, $wso, $weo, $bio, "RAM($label)") ;
+            $GRID{$label} = new REGISTER($bio, $wso, $weo, $bio, "ADDR($label)") ;
         }
     }
     
@@ -95,11 +95,11 @@ sub show {
     my $bio = $this->ios()->power() ;
     my $e = $this->e()->power() ;
     my $s = $this->s()->power() ;
-    my $str = "RAM($this->{name}):\n  $mar" ;
+    my $str = "RAM:\n  $mar  " . $this->{GRID}->{$this->{MAR}->os()->power()}->show() . "\n" ;
     foreach my $a (@addrs){
-        $str .= "\n  " . $this->{GRID}->{$a}->show() ;
+        $str .= "  " . $this->{GRID}->{$a}->show() ;
     }
-    $str .= "\n  e:$e, s:$s, bio:$bio\n" ;
+    # $str .= "\n  e:$e, s:$s, bio:$bio\n" ;
 
     # Coverage
     $this->as()->power() ;

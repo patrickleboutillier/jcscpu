@@ -4,7 +4,7 @@ use Clock ;
 use Stepper ;
 
 my $max_clock_ticks = 256 ;
-plan(tests => 9 + $max_clock_ticks) ;
+plan(tests => 10 + $max_clock_ticks) ;
 
 # STEPPER
 # First we need a clock
@@ -48,6 +48,7 @@ $bsteps = new BUS(7) ;
 $s = new STEPPER($wclk, $wrst, $bsteps) ;
 # Connect step 7 wire to rst.
 new CONN($bsteps->wire(6), $wrst) ;
+is($c->ticks(), 0, "Clock starts at tick 0") ;
 
 $wclk->prehook(sub{
     my $v = shift ;

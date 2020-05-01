@@ -2,6 +2,7 @@ package STEPPER ;
 
 use strict ;
 use Memory ;
+use Carp ;
 
 
 sub new {
@@ -116,6 +117,17 @@ sub new {
 
 
     return $this ;
+}
+
+
+sub step {
+    my $this = shift ;
+
+    for (my $j = 0 ; $j < 7 ; $j++){
+        return $j if $this->{os}->wire($j)->power() ;        
+    }
+
+    croak("Stepper has no active steps!!!") ;
 }
 
 

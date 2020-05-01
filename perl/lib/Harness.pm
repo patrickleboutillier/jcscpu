@@ -43,11 +43,11 @@ sub new {
         "TMP.bus" => new BUS(), 
     ) ;
     $this->put(
-        'R0' => new REGISTER($this->get(qw/DATA.bus R0.s R0.e DATA.bus/)),
-        'R1' => new REGISTER($this->get(qw/DATA.bus R1.s R1.e DATA.bus/)), 
-        'R2' => new REGISTER($this->get(qw/DATA.bus R2.s R2.e DATA.bus/)), 
-        'R3' => new REGISTER($this->get(qw/DATA.bus R3.s R3.e DATA.bus/)), 
-        'TMP' => new REGISTER($this->get(qw/DATA.bus TMP.s TMP.e TMP.bus/)), 
+        'R0' => new REGISTER($this->get(qw/DATA.bus R0.s R0.e DATA.bus/), "R0"),
+        'R1' => new REGISTER($this->get(qw/DATA.bus R1.s R1.e DATA.bus/), "R1"), 
+        'R2' => new REGISTER($this->get(qw/DATA.bus R2.s R2.e DATA.bus/), "R2"), 
+        'R3' => new REGISTER($this->get(qw/DATA.bus R3.s R3.e DATA.bus/), "R3"), 
+        'TMP' => new REGISTER($this->get(qw/DATA.bus TMP.s TMP.e TMP.bus/), "TMP"), 
         "TMP.bus.bit1" => $this->get(qw/TMP.bus/)->wire(7),
     ) ;
 
@@ -57,16 +57,32 @@ sub new {
         "ACC.e" => new WIRE(),
         "ALU.bus" => new BUS(), 
         "ALU.ci"  => new WIRE(),
-        "ALU.ops" => new BUS(3),
-        "ALU.ops.e" => new WIRE(),
+        "ALU.op" => new BUS(3),
+        "ALU.op.e" => new WIRE(),
         "ALU.co" => new WIRE(),
         "ALU.eqo" => new WIRE(),
         "ALU.alo" => new WIRE(),
         "ALU.z" => new WIRE(),
     ) ;
-
     $this->put(
-        "ALU" => new ALU($this->get(qw/DATA.bus TMP.bus ALU.ci ALU.ops ALU.ops.e ALU.bus ALU.co ALU.eqo ALU.alo ALU.z/)), 
+        "ACC" => new REGISTER($this->get(qw/ALU.bus ACC.s ACC.e DATA.bus/), "ACC"), 
+        "ALU" => new ALU($this->get(qw/DATA.bus TMP.bus ALU.ci ALU.op ALU.op.e ALU.bus ALU.co ALU.eqo ALU.alo ALU.z/)), 
+    ) ;
+
+
+    # CLOCK & STEPPER
+    $this->put(
+        "CLK.clk" => new WIRE(),
+        "CLK.clke" => new WIRE(),
+        "CLK.clks" => new WIRE(), 
+        "STP.rst" => new WIRE(),
+        "STP.bus" => new BUS(7),
+    ) ;
+    # Connect step 7 wire to rst.
+    new CONN($this->get("STP.bus")->wire(6), $this->get("STP.rst")) ;
+    $this->put(
+        "CLK"  => new CLOCK($this->get(qw/CLK.clk CLK.clke CLK.clks/)),
+        "STP"  => new STEPPER($this->get(qw/CLK.clk STP.rst STP.bus/)),
     ) ;
 
     return $this ;
@@ -100,6 +116,16 @@ sub get {
 
 sub show {
     my $this = shift ;
+
+    my $str = "" ;
+    $str .= $this->get("CLK")->show() ;
+    $str .= $this->get("STP")->show() ;
+    $str .= "BUS:" . $this->get("DATA.bus")->show() . "  " ;
+    $str .= join("  ", map { $this->get($_)->show() } qw/TMP ACC R0 R1 R2 R3/) . "\n" ;
+    $str .= $this->get("ALU")->show(oct('0b' . $this->get("ALU.op")->power())) ;
+    $str .= $this->get("RAM")->show() ;
+
+    return $str ;
 }
 
 

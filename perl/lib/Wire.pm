@@ -199,4 +199,11 @@ sub power {
 }
 
 
+sub show {
+    my $this = shift ;
+
+    return $this->power() ;
+}
+
+
 1 ;

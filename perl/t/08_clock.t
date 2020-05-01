@@ -2,7 +2,7 @@ use strict ;
 use Test::More ;
 use Clock ;
 
-plan(tests => 35) ;
+plan(tests => 37) ;
 
 # CLOCK
 my $wclk = new WIRE() ;
@@ -10,6 +10,7 @@ my $wclke = new WIRE() ;
 my $wclks = new WIRE() ;
 my $c = new CLOCK($wclk, $wclke, $wclks, 2) ;
 my $wclkd = $c->clkd() ;
+is($c->ticks(), 0, "Clock starts at tick 0") ;
 
 eval {
     $c->start(100) ;
@@ -18,6 +19,7 @@ if ($@){
     like($@, qr/Max clock ticks/, "Clock stopped after max (2) ticks") ;
 }
 is($c->qticks(), 8, "Clock did 8 qticks") ;
+is($c->ticks(), 2, "Clock did 2 ticks") ;
 
 
 foreach my $mode (qw(gates loop)){

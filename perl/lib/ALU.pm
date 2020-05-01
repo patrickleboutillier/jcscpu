@@ -109,7 +109,7 @@ sub cs {
 
 sub ops {
     my $this = shift ;
-    return $this->{cs};
+    return $this->{ops};
 }
 
 
@@ -121,7 +121,7 @@ sub ope {
 
 sub ci {
     my $this = shift ;
-    return $this->{co} ;
+    return $this->{ci} ;
 }
 
 
@@ -170,11 +170,11 @@ sub show {
 
     my $filter = scalar(@ops) ;
     my %ops = map { ($_ => 1) } @ops ;
-    my $str = "ALU($this->{name}): op:$op, a:$a, b:$b, ci:$ci, c:$c, dec:$deci, ope:$ope, sw:$deco, co:$co eqo:$eqo, alo:$alo. z:$z\n" ;
+    my $str = "ALU:\n  op:$op  a:$a  b:$b  ci:$ci  c:$c  dec:$deci  ope:$ope  sw:$deco  co:$co  eqo:$eqo  alo:$alo  z:$z\n" ;
     for (my $j = 6 ; $j >= 0 ; $j--){
         next if (($filter)&&(! $ops{$j})) ;
-        $str .= "  " . $this->{Ms}->[$j]->show() ;
-        $str .= "    " . $this->{Es}->[$j]->show() ;
+        $str .= "    " . $this->{Ms}->[$j]->show() ;
+        # $str .= "      " . $this->{Es}->[$j]->show() ;
     }
 
     return $str ;

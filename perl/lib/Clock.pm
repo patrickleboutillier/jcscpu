@@ -64,13 +64,18 @@ sub qticks {
 sub ticks {
     my $this = shift ;
 
-    return int ($this->{qticks} / 4) ;
+    my $qt = $this->qticks() ;
+    
+    return int($qt / 4) ;
 }
 
 
 sub start(){
     my $this = shift ;
     my $freqhz = shift || 0 ;
+    my $maxticks = shift ;
+
+    $this->{maxticks} = $maxticks if defined($maxticks) ;
 
     # Close the circuit to start the clock
     my $wclk = $this->{clk} ;
@@ -153,6 +158,21 @@ sub _trace {
     if ($CLOCK::DEBUG){
         warn sprintf("[$ts.%06d] tick %8.2lf: %-4s %-3s\n", $tsm, $this->{qticks} / 4, $label, ($s ? "on" : "off")) ;
     }
+}
+
+
+sub show {
+    my $this = shift ;
+
+    my $qt = $this->qticks() ;
+    my $t = int($qt / 4) ;
+    my $q = $qt % 4 ;
+
+    my $clk = $this->{clk}->power() ;
+    my $clkd = $this->{clkd}->power() ;
+    my $clke = $this->{clke}->power() ;
+    my $clks = $this->{clks}->power() ;
+    return "CLK:$t.$q ($qt) (clk:$clk  clkd:$clkd  clke:$clke  clks:$clks)\n" ;
 }
 
 

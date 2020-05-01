@@ -59,6 +59,12 @@ sub os {
 }
 
 
+sub ms {
+    my $this = shift ;
+    return $this->{bus}->power() ;
+}
+
+
 sub show {
     my $this = shift ;
 
