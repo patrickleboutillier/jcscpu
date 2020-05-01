@@ -86,13 +86,6 @@ sub new {
     my $n67 = new NOT($bos->wire(6), $wn67b) ;
     my $m67 = new MEMORY($wm667, $wmsnn, $bos->wire(6), "67") ;
 
-    $wclk->prehook(sub {
-        my $v = shift ;
-        $wmsn->power(! $v, 1) ;
-        $wmsnn->power($v, 1) ;
-    }) ;
-
-
     my $this = {
         clk => $wclk,
         rst => $wrst,
@@ -102,6 +95,25 @@ sub new {
         name => $name
     } ;
     bless $this, $class ;
+
+    $wclk->prehook(sub {
+        my $v = shift ;
+        $wmsn->power(! $v, 1) ;
+        $wmsnn->power($v, 1) ;
+    }) ;
+    
+    $wrst->prehook(sub {
+        my $v = shift ;
+        if ($v){
+            $wmsn->power($v, 1) ;
+            $wmsnn->power($v, 1) ;
+        }
+        else {
+            $wmsn->power(! $wclk->power(), 1) ;
+            $wmsnn->power($wclk->power(), 1) ;    
+        }
+    }) ;
+
 
     return $this ;
 }

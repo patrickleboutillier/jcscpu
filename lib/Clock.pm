@@ -59,6 +59,13 @@ sub qticks {
 }
 
 
+sub ticks {
+    my $this = shift ;
+
+    return int ($this->{qticks} / 4) ;
+}
+
+
 sub start(){
     my $this = shift ;
     my $freqhz = shift || 0 ;
