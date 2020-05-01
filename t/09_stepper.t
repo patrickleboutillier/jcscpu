@@ -4,7 +4,7 @@ use Clock ;
 use Stepper ;
 
 my $max_clock_ticks = 256 ;
-plan(tests => 11 + $max_clock_ticks) ;
+plan(tests => 9 + $max_clock_ticks) ;
 
 # STEPPER
 # First we need a clock
