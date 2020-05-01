@@ -5,7 +5,7 @@ use Harness ;
 plan(tests => 8) ;
 
 
-my $h = new HARNESS() ;
+my $h = new HARNESS({instructions => 0}) ;
 $h->show() ;
 
 # Add our extra connections to the Harness
@@ -55,44 +55,3 @@ sub init {
     is($h->get("R0")->ms(), "00010100", "R0 contains 00010100 (20)") ;
     is($h->get("R1")->ms(), "00010110", "R1 contains 00010110 (22)") ;
 } 
-
-
-sub cycle1 {
-    $h->get("R1.e")->power(1) ;
-        $h->get("TMP.s")->power(1) ;
-        $h->get("TMP.s")->power(0) ;
-    $h->get("R1.e")->power(0) ;
-    is($h->get("TMP")->ms(), "00010110", "TMP contains 00010110 (22)") ;
-}
-
-
-sub cycle2 {
-    $h->get("R0.e")->power(1) ;
-    $h->get("ALU.op")->power("000") ;
-    $h->get("ALU.op.e")->power(1) ;
-        $h->get("ACC.s")->power(1) ;
-        $h->get("ACC.s")->power(0) ;
-    $h->get("ALU.op.e")->power(0) ; 
-    $h->get("R0.e")->power(0) ;
-    is($h->get("ACC")->ms(), "00101010", "ACC contains 00101010 (42)") ;
-}
-
-
-sub cycle3 {
-    $h->get("ACC.e")->power(1) ;
-        $h->get("R0.s")->power(1) ;
-        $h->get("R0.s")->power(0) ;
-    $h->get("ACC.e")->power(0) ;
-    is($h->get("R0")->ms(), "00101010", "R0 contains 00101010 (42)") ;
-}
-
-
-__DATA__
-Let's say that we want to do something useful, like adding one number to another number. 
-We have a number in R0, and there is another number in R1 that we want to add to the number in R0. 
-The processor we have built so far has all of the connections to do h addition, 
-but it will take more than one clock cycle to do it. 
-In the first clock cycle, we can enable R1 onto the bus, and set it into TMP. 
-In the second cycle we can enable R0 onto the bus, set the ALU to ADD, and set the answer into ACC. 
-In the third cycle, we can enable ACC onto the bus, and set it into Ro. We now have the old value of R0, 
-plus R1 in R0. Perhaps h doesn't seem very useful, 

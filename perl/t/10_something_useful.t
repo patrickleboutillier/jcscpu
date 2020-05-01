@@ -5,7 +5,7 @@ use Harness ;
 plan(tests => 30) ;
 
 
-my $h = new HARNESS() ;
+my $h = new HARNESS({instructions => 0}) ;
 $h->show() ;
 
 is(oct('0b00010100'), 20, "00010100=20") ;
@@ -47,6 +47,7 @@ if ($@){
     is($h->get("CLK")->ticks(), 9, "Clock is at 9 ticks") ;
     like($@, qr/Max clock ticks/, "Clock stopped after max ticks") ;
 }
+
 
 sub init {
     # Put a number on the data bus, say 20.

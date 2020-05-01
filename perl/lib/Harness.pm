@@ -13,6 +13,7 @@ use Carp ;
 
 sub new {
     my $class = shift ;
+    my $opts = shift || {instructions => 1} ;
 
     my $this = {} ;
     bless $this, $class ;
@@ -85,7 +86,33 @@ sub new {
         "STP"  => new STEPPER($this->get(qw/CLK.clk STP.rst STP.bus/)),
     ) ;
 
+    # INSTRUCTIONS
+    $this->instructions() if $opts->{instructions} ;
+
     return $this ;
+}
+
+
+sub instructions {
+    my $this = shift ;
+ 
+    $this->put(
+        "IAR.s" => new WIRE(),
+        "IAR.e" => new WIRE(),
+        "IR.s" => new WIRE(),
+        "IR.e" => new WIRE(1, 1), # IR.e is always on
+        "IR.bus" => new BUS(),
+    ) ;
+    $this->put(
+        "IAR" => new REGISTER($this->get(qw/DATA.bus IAR.s IAR.e DATA.bus/)),
+        "IR" => new REGISTER($this->get(qw/DATA.bus IR.s IR.e IR.bus/)),
+    ) ;
+
+    # Hook up the circuit used to process the first 3 steps of each cycle (see page 108 in book), i.e 
+    # - Load IAR to MAR and increment IAR in AC
+    # - Load the instruction from RAM into IR
+    # - Increment the IAR from ACC
+
 }
 
 
