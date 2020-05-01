@@ -2,7 +2,7 @@ use strict ;
 use Test::More ;
 use Harness ;
 
-plan(tests => 6) ;
+plan(tests => 8) ;
 
 
 my $h = new HARNESS() ;
@@ -12,7 +12,9 @@ $h->show() ;
 my $steps = $h->get("STP.bus") ;
 my $clke = $h->get("CLK.clke") ;
 new AND($clke, $steps->wire(5), $h->get("ACC.e")) ;
-new ANDn(3, BUS->wrap($clke, $steps->wire(4), $h->get("ALU.op.e")), $h->get("R0.e")) ;
+# Specific to my installation (extra enabler in ALU)
+new AND($clke, $steps->wire(4), $h->get("ALU.op.e")) ;
+new AND($clke, $steps->wire(4), $h->get("R0.e")) ;
 new AND($clke, $steps->wire(3), $h->get("R1.e")) ;
 my $clks = $h->get("CLK.clks") ;
 new AND($clks, $steps->wire(3), $h->get("TMP.s")) ;
@@ -27,20 +29,16 @@ is(oct('0b00101010'), 42, "00101010=42") ;
 # Initialize registers with vaues.
 init() ;
 
-$CLOCK::DEBUG = 1 ;
+# $CLOCK::DEBUG = 1 ;
 # Since we are hooked on stesp 4-5-6, the first 3 ticks do nothing...
 $h->get("CLK")->tick() ;
 $h->get("CLK")->tick() ;
-warn $h->show() ;
-$h->get("CLK")->qtick() ;
-warn $h->show() ;
-$h->get("CLK")->qtick() ;
-warn $h->show() ;
-$h->get("CLK")->qtick() ;
-warn $h->show() ;
-$h->get("CLK")->qtick() ;
-warn $h->show() ;
+$h->get("CLK")->tick() ;
 is($h->get("TMP")->ms(), "00010110", "TMP contains 00010110 (22)") ;
+$h->get("CLK")->tick() ;
+is($h->get("ACC")->ms(), "00101010", "ACC contains 00101010 (42)") ;
+$h->get("CLK")->tick() ;
+is($h->get("R0")->ms(), "00101010", "R0 contains 00101010 (42)") ;
 
 
 sub init {
