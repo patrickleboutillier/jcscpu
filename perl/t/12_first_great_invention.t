@@ -3,7 +3,7 @@ use Test::More ;
 use Breadboard ;
 
 plan(tests => 1) ;
-
+$CLOCK::DEBUG = 1 ;
 
 my $BB = new BREADBOARD('enaset' => 1,  'instruct' => 1) ;
 
@@ -14,40 +14,38 @@ $BB->get("RAM.MAR.s")->power(0) ;
 $BB->get("DATA.bus")->power("10101010") ;
 $BB->get("RAM.s")->power(1) ;
 $BB->get("RAM.s")->power(0) ;
-is($BB->get("RAM")->r("00000100")->ms(), "10101010", "RAM set correctly at 00000100") ;
+is($BB->get("RAM")->r("00000100")->power(), "10101010", "RAM set correctly at 00000100") ;
 $BB->get("DATA.bus")->power("00000101") ;
 $BB->get("RAM.MAR.s")->power(1) ;
 $BB->get("RAM.MAR.s")->power(0) ;
 $BB->get("DATA.bus")->power("01010101") ;
 $BB->get("RAM.s")->power(1) ;
 $BB->get("RAM.s")->power(0) ;
-is($BB->get("RAM")->r("00000101")->ms(), "01010101", "RAM set correctly at 00000101") ;
+is($BB->get("RAM")->r("00000101")->power(), "01010101", "RAM set correctly at 00000101") ;
 $BB->get("DATA.bus")->power("00000110") ;
 $BB->get("RAM.MAR.s")->power(1) ;
 $BB->get("RAM.MAR.s")->power(0) ;
 $BB->get("DATA.bus")->power("11110000") ;
 $BB->get("RAM.s")->power(1) ;
 $BB->get("RAM.s")->power(0) ;
-is($BB->get("RAM")->r("00000110")->ms(), "11110000", "RAM set correctly at 00000110") ;
+is($BB->get("RAM")->r("00000110")->power(), "11110000", "RAM set correctly at 00000110") ;
 
 # Set the IAR to our start address
 $BB->get("DATA.bus")->power("00000100") ;
 $BB->get("IAR.s")->power(1) ;
 $BB->get("IAR.s")->power(0) ;
-is($BB->get("IAR")->ms(), "00000100", "IAR set correctly") ;
+is($BB->get("IAR")->power(), "00000100", "IAR set correctly") ;
 
 warn $BB->show() ;
-$BB->get("CLK")->qtick() ;
+$BB->get("CLK")->tick() ;
 warn $BB->show() ;
-exit ;
-
+is($BB->get("RAM.MAR")->power(), "00000100", "RAM.MAR contains previous contents of IAR") ;
+is($BB->get("ACC")->power(), "00000101", "ACC contains previous contents of IAR + 1") ;
 $BB->get("CLK")->tick() ;
+is($BB->get("IR")->power(), "10101010", "IR contains our first fake instruction") ;
+exit
 $BB->get("CLK")->tick() ;
-is($BB->get("TMP")->ms(), "00010110", "TMP contains 00010110 (22)") ;
-$BB->get("CLK")->tick() ;
-is($BB->get("ACC")->ms(), "00101010", "ACC contains 00101010 (42)") ;
-$BB->get("CLK")->tick() ;
-is($BB->get("R0")->ms(), "00101010", "R0 contains 00101010 (42)") ;
+is($BB->get("R0")->power(), "00101010", "R0 contains 00101010 (42)") ;
 
 __DATA__
 $BB->show() ;
@@ -78,11 +76,11 @@ init() ;
 $BB->get("CLK")->tick() ;
 $BB->get("CLK")->tick() ;
 $BB->get("CLK")->tick() ;
-is($BB->get("TMP")->ms(), "00010110", "TMP contains 00010110 (22)") ;
+is($BB->get("TMP")->power(), "00010110", "TMP contains 00010110 (22)") ;
 $BB->get("CLK")->tick() ;
-is($BB->get("ACC")->ms(), "00101010", "ACC contains 00101010 (42)") ;
+is($BB->get("ACC")->power(), "00101010", "ACC contains 00101010 (42)") ;
 $BB->get("CLK")->tick() ;
-is($BB->get("R0")->ms(), "00101010", "R0 contains 00101010 (42)") ;
+is($BB->get("R0")->power(), "00101010", "R0 contains 00101010 (42)") ;
 
 
 sub init {
@@ -96,6 +94,6 @@ sub init {
     # Let in go into R1.
     $BB->get("R1.s")->power(1) ;
     $BB->get("R1.s")->power(0) ;
-    is($BB->get("R0")->ms(), "00010100", "R0 contains 00010100 (20)") ;
-    is($BB->get("R1")->ms(), "00010110", "R1 contains 00010110 (22)") ;
+    is($BB->get("R0")->power(), "00010100", "R0 contains 00010100 (20)") ;
+    is($BB->get("R1")->power(), "00010110", "R1 contains 00010110 (22)") ;
 } 

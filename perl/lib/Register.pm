@@ -59,7 +59,7 @@ sub os {
 }
 
 
-sub ms {
+sub power {
     my $this = shift ;
     return $this->{bus}->power() ;
 }

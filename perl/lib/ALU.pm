@@ -170,7 +170,7 @@ sub show {
 
     my $filter = scalar(@ops) ;
     my %ops = map { ($_ => 1) } @ops ;
-    my $str = "ALU:\n  op:$op  a:$a  b:$b  ci:$ci  c:$c  dec:$deci  ope:$ope  sw:$deco  co:$co  eqo:$eqo  alo:$alo  z:$z\n" ;
+    my $str = "ALU: op:$op  a:$a  b:$b  ci:$ci  c:$c  dec:$deci  ope:$ope  sw:$deco  co:$co  eqo:$eqo  alo:$alo  z:$z\n" ;
     for (my $j = 6 ; $j >= 0 ; $j--){
         next if (($filter)&&(! $ops{$j})) ;
         $str .= "    " . $this->{Ms}->[$j]->show() ;

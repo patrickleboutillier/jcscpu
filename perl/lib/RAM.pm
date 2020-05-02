@@ -95,6 +95,13 @@ sub r {
 }
 
 
+sub MAR {
+    my $this = shift ;
+    
+    return $this->{MAR} ;
+}
+
+
 sub show {
     my $this = shift ;
     my @addrs = @_ ;

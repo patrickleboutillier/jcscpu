@@ -35,6 +35,7 @@ sub new {
     $this->put( 
         "RAM" => new RAM($this->get(qw/DATA.bus RAM.MAR.s DATA.bus RAM.s RAM.e/)),
     ) ;
+    $this->put("RAM.MAR" => $this->get("RAM")->MAR()) ;
 
     # REGISTERS
     $this->put(
@@ -119,9 +120,9 @@ sub enaset {
     $this->put("TMP.bit1.eor" => new ORe($this->get("TMP.bus.bit1"))) ;
 
     # ALL SETS
-    for my $s (qw/RAM.MAR IAR ACC RAM TMP/){
+    for my $s (qw/IR RAM.MAR IAR ACC RAM TMP/){
         my $w = new WIRE() ;
-        new AND($this->get("CLK.clke"), $w, $this->get("$s.s")) ;
+        new AND($this->get("CLK.clks"), $w, $this->get("$s.s")) ;
         $this->put("$s.set.eor" => new ORe($w)) ; 
     }
 }
@@ -140,6 +141,7 @@ sub instruct {
     $this->get("ACC.set.eor")->add($this->get("STP.bus")->wire(0)) ;
     $this->get("ALU.op.ena.eor")->add($this->get("STP.bus")->wire(0)) ;
     $this->get("RAM.ena.eor")->add($this->get("STP.bus")->wire(1)) ; 
+    $this->get("IR.set.eor")->add($this->get("STP.bus")->wire(1)) ; 
     $this->get("ACC.ena.eor")->add($this->get("STP.bus")->wire(2)) ; 
     $this->get("IAR.set.eor")->add($this->get("STP.bus")->wire(2)) ; 
 }
