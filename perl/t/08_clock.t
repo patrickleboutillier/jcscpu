@@ -2,7 +2,7 @@ use strict ;
 use Test::More ;
 use Clock ;
 
-plan(tests => 37) ;
+plan(tests => 38) ;
 
 # CLOCK
 my $wclk = new WIRE() ;
@@ -10,7 +10,8 @@ my $wclke = new WIRE() ;
 my $wclks = new WIRE() ;
 my $c = new CLOCK($wclk, $wclke, $wclks, 2) ;
 my $wclkd = $c->clkd() ;
-is($c->ticks(), 0, "Clock starts at tick 0") ;
+is($c->qticks(), -1, "Clock starts at qtick -1, hasn't ticked yet!") ;
+is($c->ticks(), -1, "Clock starts at tick -1, hasn't ticked yet!") ;
 
 eval {
     $c->start(100) ;
@@ -18,7 +19,7 @@ eval {
 if ($@){
     like($@, qr/Max clock ticks/, "Clock stopped after max (2) ticks") ;
 }
-is($c->qticks(), 8, "Clock did 8 qticks") ;
+is($c->qticks(), 8, "Clock did 8 (+1) qticks") ;
 is($c->ticks(), 2, "Clock did 2 ticks") ;
 
 
@@ -38,7 +39,7 @@ foreach my $mode (qw(gates loop)){
     if ($@){
         like($@, qr/Max clock ticks/, "Clock stopped after max (2) ticks") ;
     }
-    is($c->qticks(), 8, "Clock did 8 qticks") ;
+    is($c->qticks(), 8, "Clock did 8 (+1) qticks") ;
 
     # The with no maxticks
     my $wclk = new WIRE() ;
@@ -48,9 +49,9 @@ foreach my $mode (qw(gates loop)){
     my $wclkd = $c->clkd() ;
 
     # Add a prehook to clk to grab interrupt at the right moment.
-    $wclkd->prehook(sub { 
-        my $nq = $c->qticks() ;
-        die("INTERRUPT $nq") if $nq >= (2*4) ;
+    $wclk->prehook(sub { 
+        my $qt = $c->qticks() ;
+        die("INTERRUPT $qt") if $qt >= (2*4) ;
     } ) ;
     eval {
         $c->start() ;
@@ -58,7 +59,9 @@ foreach my $mode (qw(gates loop)){
     if ($@){
         like($@, qr/INTERRUPT 8/, "Clock interrupted after 8 ticks") ;
     }
-    is($c->qticks(), 8, "Clock did 8 qticks") ;
+    # Since we are interrupting the clock on a prehook, it will have done the next $qtick when we get the signal.
+    # So when we stop it will have done an extra qtick.
+    is($c->qticks(), 8, "Clock did 8 (+1) qticks") ;
 }
 
 
@@ -67,7 +70,7 @@ $wclke = new WIRE() ;
 $wclks = new WIRE() ;
 $c = new CLOCK($wclk, $wclke, $wclks) ;
 map { $c->qtick() } (1..(2*4)) ;
-is($c->qticks(), 8, "Clock did 8 qticks manually using qtick()") ;
+is($c->qticks(), 7, "Clock did 8 qticks manually using qtick()") ;
 
 
 $wclk = new WIRE() ;
@@ -76,11 +79,11 @@ $wclks = new WIRE() ;
 $c = new CLOCK($wclk, $wclke, $wclks) ;
 map { $c->tick() } (1..2) ;
 
-is($c->qticks(), 8, "Clock did 8 qticks") ;
+is($c->qticks(), 7, "Clock did 8 qticks") ;
 map { $c->qtick() } (1..4) ;
-is($c->qticks(), 12, "Clock did 12 qticks") ;
+is($c->qticks(), 11, "Clock did 12 qticks") ;
 $c->qtick() ;
-is($c->qticks(), 13, "Clock did 13 qticks") ;
+is($c->qticks(), 12, "Clock did 13 qticks") ;
 eval {
     $c->tick() ;
 } ;

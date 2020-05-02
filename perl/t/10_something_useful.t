@@ -1,12 +1,12 @@
 use strict ;
 use Test::More ;
-use Harness ;
+use Breadboard ;
 
-plan(tests => 30) ;
+plan(tests => 35) ;
 
 
-my $h = new HARNESS({instructions => 0}) ;
-$h->show() ;
+my $BB = new BREADBOARD() ;
+$BB->show() ;
 
 is(oct('0b00010100'), 20, "00010100=20") ;
 is(oct('0b00010110'), 22, "00010110=22") ;
@@ -18,80 +18,90 @@ cycle1() ;
 cycle2() ;
 cycle3() ;
 
+
 # Second time, manually
 init() ;
 cycle1() ;
 cycle2() ;
 cycle3() ;
 
+
 # Third time, using the stepper (manually)
-$h->get("STP.bus")->wire(0)->prehook(sub { cycle1() if $_[0] }) ;
-$h->get("STP.bus")->wire(1)->prehook(sub { cycle2() if $_[0] }) ;
-$h->get("STP.bus")->wire(2)->prehook(sub { cycle3() if $_[0] }) ;
-$h->get("STP.bus")->wire(3)->prehook(sub { is($h->get("STP")->step(), 3, "Step 4 does nothing!") if $_[0] }) ;
-$h->get("STP.bus")->wire(4)->prehook(sub { is($h->get("STP")->step(), 4, "Step 5 does nothing!") if $_[0] }) ;
-$h->get("STP.bus")->wire(5)->prehook(sub { is($h->get("STP")->step(), 5, "Step 6 does nothing!") if $_[0] }) ;
-$h->get("STP.bus")->wire(6)->posthook(sub { is($h->get("STP")->step(), 0, "Stepper reset!") if $_[0] }) ;
+pass("Using Stepper (manually)") ;
 init() ;
-$h->get("CLK")->tick() ;
-$h->get("CLK")->tick() ;
-$h->get("CLK")->tick() ;
-is($h->get("STP")->step(), 3, "Stepper is at step 4") ;
+$BB->get("STP.bus")->wire(0)->prehook(sub { cycle1() if $_[0] }) ;
+$BB->get("STP.bus")->wire(1)->prehook(sub { cycle2() if $_[0] }) ;
+$BB->get("STP.bus")->wire(2)->prehook(sub { cycle3() if $_[0] }) ;
+$BB->get("STP.bus")->wire(3)->prehook(sub { is($BB->get("STP")->step(), 3, "Step 4 does nothing!") if $_[0] }) ;
+$BB->get("STP.bus")->wire(4)->prehook(sub { is($BB->get("STP")->step(), 4, "Step 5 does nothing!") if $_[0] }) ;
+$BB->get("STP.bus")->wire(5)->prehook(sub { is($BB->get("STP")->step(), 5, "Step 6 does nothing!") if $_[0] }) ;
+# To start using the Stepper we have to "start" the breadboard
+$BB->start() ;
+# Install the prehook only after we started not to get the initial reset signal.
+$BB->get("STP.bus")->wire(6)->prehook(sub { is($BB->get("STP")->step(), 5, "Stepper reset (but still at step 5 since we are in prehook)!") if $_[0] }) ;
+
+$BB->get("CLK")->tick() ;
+$BB->get("CLK")->tick() ;
+$BB->get("CLK")->tick() ;
+is($BB->get("STP")->step(), 3, "Stepper is at step 4") ;
+
 
 # Fourth time, using the stepper (automatically)
+pass("Using Stepper (automatic)") ;
+is($BB->get("CLK")->ticks(), 3, "Clock has done 4 ticks") ;
 init() ;
 eval {
-    $h->get("CLK")->start(0, $h->get("CLK")->ticks() + 6) ;
+    $BB->get("CLK")->start(0, $BB->get("CLK")->ticks() + 6) ;
 } ;
 if ($@){
-    is($h->get("CLK")->ticks(), 9, "Clock is at 9 ticks") ;
     like($@, qr/Max clock ticks/, "Clock stopped after max ticks") ;
 }
-
+is($BB->get("CLK")->ticks(), 9, "Clock is at 10 ticks") ;
+is($BB->get("STP")->step(), 3, "Stepper is at step 4") ;
 
 sub init {
     # Put a number on the data bus, say 20.
-    $h->get("DATA.bus")->power("00010100") ;
+    $BB->get("DATA.bus")->power("00010100") ;
     # Let in go into R0.
-    $h->get("R0.s")->power(1) ;
-    $h->get("R0.s")->power(0) ;
+    $BB->get("R0.s")->power(1) ;
+    $BB->get("R0.s")->power(0) ;
     # Put a different number on the data bus, say 22.
-    $h->get("DATA.bus")->power("00010110") ;
+    $BB->get("DATA.bus")->power("00010110") ;
     # Let in go into R1.
-    $h->get("R1.s")->power(1) ;
-    $h->get("R1.s")->power(0) ;
-    is($h->get("R0")->ms(), "00010100", "R0 contains 00010100 (20)") ;
-    is($h->get("R1")->ms(), "00010110", "R1 contains 00010110 (22)") ;
+    $BB->get("R1.s")->power(1) ;
+    $BB->get("R1.s")->power(0) ;
+    is($BB->get("R0")->ms(), "00010100", "R0 contains 00010100 (20)") ;
+    is($BB->get("R1")->ms(), "00010110", "R1 contains 00010110 (22)") ;
 } 
 
 
 sub cycle1 {
-    $h->get("R1.e")->power(1) ;
-        $h->get("TMP.s")->power(1) ;
-        $h->get("TMP.s")->power(0) ;
-    $h->get("R1.e")->power(0) ;
-    is($h->get("TMP")->ms(), "00010110", "TMP contains 00010110 (22)") ;
+    $BB->get("R1.e")->power(1) ;
+        $BB->get("TMP.s")->power(1) ;
+        $BB->get("TMP.s")->power(0) ;
+    $BB->get("R1.e")->power(0) ;
+    is($BB->get("TMP")->ms(), "00010110", "cycle1: TMP contains 00010110 (22)") ;
 }
 
 
 sub cycle2 {
-    $h->get("R0.e")->power(1) ;
-    $h->get("ALU.op")->power("000") ;
-    $h->get("ALU.op.e")->power(1) ;
-        $h->get("ACC.s")->power(1) ;
-        $h->get("ACC.s")->power(0) ;
-    $h->get("ALU.op.e")->power(0) ; 
-    $h->get("R0.e")->power(0) ;
-    is($h->get("ACC")->ms(), "00101010", "ACC contains 00101010 (42)") ;
+    $BB->get("R0.e")->power(1) ;
+    $BB->get("ALU.op")->power("000") ;
+    $BB->get("ALU.op.e")->power(1) ;
+        $BB->get("ACC.s")->power(1) ;
+        $BB->get("ACC.s")->power(0) ;
+    $BB->get("ALU.op.e")->power(0) ; 
+    $BB->get("R0.e")->power(0) ;
+    is($BB->get("ACC")->ms(), "00101010", "cycle2: ACC contains 00101010 (42)") ;
 }
 
 
 sub cycle3 {
-    $h->get("ACC.e")->power(1) ;
-        $h->get("R0.s")->power(1) ;
-        $h->get("R0.s")->power(0) ;
-    $h->get("ACC.e")->power(0) ;
-    is($h->get("R0")->ms(), "00101010", "R0 contains 00101010 (42)") ;
+    $BB->get("ACC.e")->power(1) ;
+        $BB->get("R0.s")->power(1) ;
+        $BB->get("R0.s")->power(0) ;
+    $BB->get("ACC.e")->power(0) ;
+    is($BB->get("R0")->ms(), "00101010", "cycle3: R0 contains 00101010 (42)") ;
 }
 
 

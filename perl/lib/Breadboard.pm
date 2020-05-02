@@ -1,4 +1,4 @@
-package HARNESS ;
+package BREADBOARD ;
 
 use strict ;
 use RAM ;
@@ -8,7 +8,12 @@ use Stepper ;
 use Carp ;
 
 
-# The HARNESS is just an assembly of everything except instructions circuits.
+# The BREADBOARD comes loaded with the following components:
+# - ALU, RAM and BUS
+# - All registers (including IAR and IR registers)
+#
+# Using the options hash, you can specify more componnents be added:
+#  enaset: Add elactic ORs to create the Enables and Sets sides of the board   
 
 
 sub new {
@@ -43,7 +48,12 @@ sub new {
         "R3.e" => new WIRE(),
         "TMP.s" => new WIRE(),
         "TMP.e" => new WIRE(1, 1), # TMP.e is always on
-        "TMP.bus" => new BUS(), 
+        "TMP.bus" => new BUS(),
+        "IAR.s" => new WIRE(),
+        "IAR.e" => new WIRE(),
+        "IR.s" => new WIRE(),
+        "IR.e" => new WIRE(1, 1), # IR.e is always on
+        "IR.bus" => new BUS(),
     ) ;
     $this->put(
         'R0' => new REGISTER($this->get(qw/DATA.bus R0.s R0.e DATA.bus/), "R0"),
@@ -52,12 +62,14 @@ sub new {
         'R3' => new REGISTER($this->get(qw/DATA.bus R3.s R3.e DATA.bus/), "R3"), 
         'TMP' => new REGISTER($this->get(qw/DATA.bus TMP.s TMP.e TMP.bus/), "TMP"), 
         "TMP.bus.bit1" => $this->get(qw/TMP.bus/)->wire(7),
+        "IAR" => new REGISTER($this->get(qw/DATA.bus IAR.s IAR.e DATA.bus/), "IAR"),
+        "IR" => new REGISTER($this->get(qw/DATA.bus IR.s IR.e IR.bus/), "IR"),
     ) ;
 
     # ALU
     $this->put(
         "ACC.s" => new WIRE(),
-        "ACC.e" => new WIRE(),
+        "ACC.e" => new WIRE(), 
         "ALU.bus" => new BUS(), 
         "ALU.ci"  => new WIRE(),
         "ALU.op" => new BUS(3),
@@ -72,7 +84,6 @@ sub new {
         "ALU" => new ALU($this->get(qw/DATA.bus TMP.bus ALU.ci ALU.op ALU.op.e ALU.bus ALU.co ALU.eqo ALU.alo ALU.z/)), 
     ) ;
 
-
     # CLOCK & STEPPER
     $this->put(
         "CLK.clk" => new WIRE(),
@@ -85,37 +96,15 @@ sub new {
         "STP"  => new STEPPER($this->get(qw/CLK.clk STP.bus/)),
     ) ;
 
-    # INSTRUCTION REGISTERS
-    $this->put(
-        "IAR.s" => new WIRE(),
-        "IAR.e" => new WIRE(),
-        "IR.s" => new WIRE(),
-        "IR.e" => new WIRE(1, 1), # IR.e is always on
-        "IR.bus" => new BUS(),
-    ) ;
-    $this->put(
-        "IAR" => new REGISTER($this->get(qw/DATA.bus IAR.s IAR.e DATA.bus/), "IAR"),
-        "IR" => new REGISTER($this->get(qw/DATA.bus IR.s IR.e IR.bus/), "IR"),
-    ) ;
-
-
     return $this ;
-}
-
-
-sub reset {
-    my $this = shift ;
-
-    $this->get("STP.rst")->power(1) ;
-    #$this->get("STP.rst")->power(0) ;
 }
 
 
 sub start {
     my $this = shift ;
 
-    $this->setup_instruction_loader() ;
-    # $this->get("STP.rst")->power(1) ;
+    # Give a free tick to kickoff the Stepper.
+    $this->get("CLK")->tick() ;
     $this->{started} = 1 ;
 }
 
@@ -183,6 +172,8 @@ sub setup_instruction_loader {
 sub put {
     my $this = shift ;
     my %objs = @_ ;
+
+    croak("Can't add components to the breadboard once it's started!") if $this->{started} ;
 
     foreach my $k (keys %objs){
         croak("Component '$k' already registered with Harness!") if (exists $this->{$k}) ;

@@ -8,10 +8,10 @@ use Carp ;
 sub new {
     my $class = shift ;
     my $wclk = shift ;
-    my $wrst = shift ;
     my $bos = shift ;  # 7 wire bus
     my $name = shift ;
 
+    my $wrst = new WIRE() ;
     my $wnrm1 = new WIRE() ;
     my $nr = new NOT($wrst, $wnrm1) ;
     my $wnco1 = new WIRE() ;
@@ -115,6 +115,22 @@ sub new {
         }
     }) ;
 
+    # In it's current design. the stepper goes to setup 1 as soon as it's powered on. 
+    # We don't want that. We want the stepper to be in a state where the first clock tick
+    # will *bring it* to step 1.
+    # To do this, we fake 6 ticks, and turn off (softly) the power on step 7.
+    # But we have to simulate the ticks without touching $wclk, which make the clock tick!
+    # We need to signal the $wmsn and $wmsnn wire directly.
+    map { 
+        $wmsn->power(0) ; 
+        $wmsnn->power(1) ; 
+        $wmsn->power(1) ; 
+        $wmsnn->power(0) ; 
+    } (0..5) ;
+    $bos->wire(6)->power(0, 1) ;
+
+    # Finally, loop step 7 to the reset wire.
+    new CONN($bos->wire(6), $wrst) ;
 
     return $this ;
 }

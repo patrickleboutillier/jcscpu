@@ -244,6 +244,27 @@ sub new {
 }
 
 
+package CONN ; 
+use strict ;
+
+# Hack to connect 2 wires together, using an AND gates...
+sub new {
+    my $class = shift ;
+    my $wa = shift ;
+    my $wb = shift ;
+
+    new AND($wa, $wa, $wb) ;
+
+    my $this = {
+        a => $wa,
+        b => $wb,
+    } ;
+    bless $this, $class ;
+
+    return $this ;
+}
+
+
 package ANDn ; 
 use strict ;
 
@@ -331,6 +352,64 @@ sub n {
 }
 
 
+package ANDe ; 
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+    my $wo = shift ;
+    my $name = shift ;
+
+    my $this = {
+        orn => new ANDn(6, BUS->wrap(map { new WIRE(1) } (0..5)), $wo),
+        n => 0,
+    } ;
+    bless $this, $class ;
+ 
+    return $this ;
+}
+
+
+sub add {
+    my $this = shift ;
+    my $wi = shift ;
+
+    croak("Elastic AND has reached maximum capacity of 6") if $this->{n} >= 6 ;
+    new CONN($wi, $this->{orn}->i($this->{n})) ;
+    $this->{n}++ ;
+}
+
+
+package ORe ; 
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+    my $wo = shift ;
+    my $name = shift ;
+
+    my $this = {
+        orn => new ORn(6, BUS->wrap(map { new WIRE(0) } (0..5)), $wo),
+        n => 0,
+    } ;
+    bless $this, $class ;
+ 
+    return $this ;
+}
+
+
+sub add {
+    my $this = shift ;
+    my $wi = shift ;
+
+    croak("Elastic OR has reached maximum capacity of 6") if $this->{n} >= 6 ;
+    new CONN($wi, $this->{orn}->i($this->{n})) ;
+    $this->{n}++ ;
+}
+
+
 package ADD ;
 use strict ;
 
@@ -360,27 +439,6 @@ sub new {
         sum => $wsum,
         carry_out => $wco,
         name => $name,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-package CONN ; 
-use strict ;
-
-# Hack to connect 2 wires together, using an AND gates...
-sub new {
-    my $class = shift ;
-    my $wa = shift ;
-    my $wb = shift ;
-
-    new AND($wa, $wa, $wb) ;
-
-    my $this = {
-        a => $wa,
-        b => $wb,
     } ;
     bless $this, $class ;
 

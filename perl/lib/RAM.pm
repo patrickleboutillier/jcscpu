@@ -87,6 +87,14 @@ sub e {
 }
 
 
+sub r {
+    my $this = shift ;
+    my $addr = shift ;
+
+    return $this->{GRID}->{$addr} ;
+}
+
+
 sub show {
     my $this = shift ;
     my @addrs = @_ ;

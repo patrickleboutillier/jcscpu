@@ -57,7 +57,7 @@ sub clkd {
 sub qticks {
     my $this = shift ;
 
-    return $this->{qticks} + 1 ;
+    return $this->{qticks} ;
 }
 
 
@@ -65,12 +65,13 @@ sub ticks {
     my $this = shift ;
 
     my $qt = $this->qticks() ;
+
     
-    return int($qt / 4) ;
+    return ($qt < 0 ? $qt : int($qt / 4)) ;
 }
 
 
-sub start(){
+sub start {
     my $this = shift ;
     my $freqhz = shift || 0 ;
     my $maxticks = shift ;
@@ -137,9 +138,8 @@ sub _qtick_callback {
     my $label = shift ;
     my $s = shift ;
 
-    my $maxqticks = $this->{maxticks} * 4 ;
-    if (($maxqticks > -1)&&(($this->{qticks} + 1) >= $maxqticks)){
-        my $maxticks = $maxqticks / 4 ;
+    my $maxticks = $this->{maxticks} ;
+    if (($maxticks > -1)&&($this->ticks() >= $maxticks)){
         die("HALTING! (Max clock ticks of $maxticks reached)\n") ;
     }
 
