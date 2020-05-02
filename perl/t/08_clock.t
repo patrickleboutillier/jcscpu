@@ -10,8 +10,8 @@ my $wclke = new WIRE() ;
 my $wclks = new WIRE() ;
 my $c = new CLOCK($wclk, $wclke, $wclks, 2) ;
 my $wclkd = $c->clkd() ;
-is($c->qticks(), -1, "Clock starts at qtick -1, hasn't ticked yet!") ;
-is($c->ticks(), -1, "Clock starts at tick -1, hasn't ticked yet!") ;
+is($c->qticks(), 0, "Clock starts with 0 completed qticks") ;
+is($c->ticks(), 0, "Clock starts with 0 completed ticks") ;
 
 eval {
     $c->start(100) ;
@@ -56,12 +56,12 @@ foreach my $mode (qw(gates loop)){
     eval {
         $c->start() ;
     } ;
-    if ($@){
-        like($@, qr/INTERRUPT 8/, "Clock interrupted after 8 ticks") ;
-    }
     # Since we are interrupting the clock on a prehook, it will have done the next $qtick when we get the signal.
     # So when we stop it will have done an extra qtick.
-    is($c->qticks(), 8, "Clock did 8 (+1) qticks") ;
+     if ($@){
+        like($@, qr/INTERRUPT 9/, "Clock interrupted after 9 ticks") ;
+    }
+    is($c->qticks(), 9, "Clock did 9 qticks") ;
 }
 
 
@@ -70,7 +70,7 @@ $wclke = new WIRE() ;
 $wclks = new WIRE() ;
 $c = new CLOCK($wclk, $wclke, $wclks) ;
 map { $c->qtick() } (1..(2*4)) ;
-is($c->qticks(), 7, "Clock did 8 qticks manually using qtick()") ;
+is($c->qticks(), 8, "Clock did 8 qticks manually using qtick()") ;
 
 
 $wclk = new WIRE() ;
@@ -79,11 +79,11 @@ $wclks = new WIRE() ;
 $c = new CLOCK($wclk, $wclke, $wclks) ;
 map { $c->tick() } (1..2) ;
 
-is($c->qticks(), 7, "Clock did 8 qticks") ;
+is($c->qticks(), 8, "Clock did 8 qticks") ;
 map { $c->qtick() } (1..4) ;
-is($c->qticks(), 11, "Clock did 12 qticks") ;
+is($c->qticks(), 12, "Clock did 12 qticks") ;
 $c->qtick() ;
-is($c->qticks(), 12, "Clock did 13 qticks") ;
+is($c->qticks(), 13, "Clock did 13 qticks") ;
 eval {
     $c->tick() ;
 } ;

@@ -4,7 +4,7 @@ use Clock ;
 use Stepper ;
 
 my $max_clock_ticks = 256 ;
-plan(tests => 13 + $max_clock_ticks) ;
+plan(tests => 11 + $max_clock_ticks*2) ;
 
 # STEPPER
 # First we need a clock
@@ -44,22 +44,26 @@ $c = new CLOCK($wclk, $wclke, $wclks, 256) ;
 $bsteps = new BUS(7) ;
 $s = new STEPPER($wclk, $bsteps) ;
 
-# Do a first click to start the cycle.
-$c->tick() ;
-is($c->qticks(), 3, "Starting test at qtick 3") ;
+is($c->qticks(), 0, "Starting test at qtick 0") ;
 is($c->ticks(), 0, "Starting test at tick 0") ;
-is($bsteps->power(), "1000000", "initial state, step 1") ;
+is($bsteps->power(), "0000000", "initial state, step 7") ;
+# Get out of step 7 by doing one click.
+$c->tick() ;
 
 $wclk->prehook(sub{
     my $v = shift ;
     if ($v){
-        # Subtract 1 to ticks() since it already has been incremented to the next tick by the clock prehook.
-        my $t = ($c->ticks() - 1) % 6 ;
-        my @os = split(//, $bsteps->power()) ;
+        # Since ticks() has already been incremented to the next tick by the clock prehook, 
+        # Subtract 1 from it.
+        my $t = $c->ticks() - 1 ;
+        my $tmod6 = ($t % 6) ;
+        is($s->step(), $tmod6 + 1, "Step is $t") ; # steps os 1-6
 
+        # Check the matching power value
+        my @os = split(//, $bsteps->power()) ;
         # Bit $t should be on, and it should the the only one one.
         # If we set it to 0, we should have power = "0000000"
-        $os[$t] = "0" ;
+        $os[$tmod6] = "0" ;
         is(join('', @os), "0000000", "Proper step ($t) should be set (" . $bsteps->power() . ")") ;
     }
 }) ;
@@ -71,4 +75,4 @@ eval {
 if ($@){
     like($@, qr/Max clock ticks/, "Clock stopped after max ticks") ;
 }
-is($c->qticks(), 1024, "Clock did 1024 (+1) qticks") ;
+is($c->qticks(), 1024, "Clock did 1024 qticks") ;

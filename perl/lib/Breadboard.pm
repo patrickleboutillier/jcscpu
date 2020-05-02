@@ -13,12 +13,12 @@ use Carp ;
 # - All registers (including IAR and IR registers)
 #
 # Using the options hash, you can specify more componnents be added:
-#  enaset: Add elactic ORs to create the Enables and Sets sides of the board   
+#  enaset: Add elactic ORs to create the Enables and Sets sides of the board for everything except (R0-R3)   
 
 
 sub new {
     my $class = shift ;
-    my $opts = shift ;
+    my %opts = @_ ;
 
     my $this = {
         started => 0,
@@ -96,64 +96,40 @@ sub new {
         "STP"  => new STEPPER($this->get(qw/CLK.clk STP.bus/)),
     ) ;
 
+    if ($opts{'enaset'}){
+        $this->enaset() ;
+    }
+    if ($opts{'instruct'}){
+        $this->instruct() ;
+    }
+
     return $this ;
 }
 
 
-sub start {
+sub enaset {
     my $this = shift ;
 
-    # Give a free tick to kickoff the Stepper.
-    $this->get("CLK")->tick() ;
-    $this->{started} = 1 ;
+    # ALL ENABLES
+    for my $e (qw/IAR RAM ACC ALU.op/){
+        my $w = new WIRE() ;
+        new AND($this->get("CLK.clke"), $w, $this->get("$e.e")) ;
+        $this->put("$e.ena.eor" => new ORe($w)) ; 
+    }
+    $this->put("TMP.bit1.eor" => new ORe($this->get("TMP.bus.bit1"))) ;
+
+    # ALL SETS
+    for my $s (qw/RAM.MAR IAR ACC RAM TMP/){
+        my $w = new WIRE() ;
+        new AND($this->get("CLK.clke"), $w, $this->get("$s.s")) ;
+        $this->put("$s.set.eor" => new ORe($w)) ; 
+    }
 }
 
 
-sub setup_instruction_loader {
+sub instruct {
     my $this = shift ;
  
-
-
-    # ALL ENABLES
-    $this->put(
-        "IAR.ena.in" => new WIRE(),
-        "RAM.ena.in" => new WIRE(),
-        "ACC.ena.in" => new WIRE(),
-        "ALU.op.ena.in" => new WIRE(),
-    ) ;
-    $this->put(
-        "TMP.bit1.eor" => new ORe($this->get("TMP.bus.bit1")),
-        "IAR.ena" => new AND($this->get("CLK.clke"), $this->get("IAR.ena.in"), $this->get("IAR.e")),
-        "IAR.ena.eor" => new ORe($this->get("IAR.ena.in")),
-        "RAM.ena" => new AND($this->get("CLK.clke"), $this->get("RAM.ena.in"), $this->get("RAM.e")),
-        "RAM.ena.eor" => new ORe($this->get("RAM.ena.in")),
-        "ACC.ena" => new AND($this->get("CLK.clke"), $this->get("ACC.ena.in"), $this->get("ACC.e")),
-        "ACC.ena.eor" => new ORe($this->get("ACC.ena.in")),
-        "ALU.op.ena" => new AND($this->get("CLK.clke"), $this->get("ALU.op.ena.in"), $this->get("ALU.op.e")),
-        "ALU.op.ena.eor" => new ORe($this->get("ALU.op.ena.in")),
-    ) ;
-
-
-    # ALL SETS
-    $this->put(
-        "RAM.MAR.set.in" => new WIRE(),
-        "IAR.set.in" => new WIRE(),
-        "ACC.set.in" => new WIRE(),
-        #"RAM.set.in" => new WIRE(),
-        #"TMP.set.in" => new WIRE(),
-    ) ;
-    $this->put(
-        "IR.set" => new AND($this->get("CLK.clks"), $this->get("STP.bus")->wire(1), $this->get("IAR.s")),
-        "RAM.MAR.set" => new AND($this->get("CLK.clks"), $this->get("RAM.MAR.set.in"), $this->get("RAM.MAR.s")),
-        "RAM.MAR.set.eor" => new ORe($this->get("RAM.MAR.set.in")),
-        "IAR.set" => new AND($this->get("CLK.clks"), $this->get("IAR.set.in"), $this->get("IAR.s")),
-        "IAR.set.eor" => new ORe($this->get("IAR.set.in")),
-        "ACC.set" => new AND($this->get("CLK.clks"), $this->get("ACC.set.in"), $this->get("ACC.s")),
-        "ACC.set.eor" => new ORe($this->get("ACC.set.in")),
-        #"RAM.set" => new AND($this->get("CLK.clks"), $this->get("RAM.set.in"), $this->get("RAM.s")),
-        #"TMP.set" => new AND($this->get("CLK.clks"), $this->get("TMP.set.in"), $this->get("TMP.s")),
-    ) ;
-
     # Hook up the circuit used to process the first 3 steps of each cycle (see page 108 in book), i.e 
     # - Load IAR to MAR and increment IAR in AC
     # - Load the instruction from RAM into IR

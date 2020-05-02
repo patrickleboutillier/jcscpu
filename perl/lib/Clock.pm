@@ -31,7 +31,7 @@ sub new {
         clkd => $wclkd,
         clke => $wclke,
         clks => $wclks,
-        qticks => -1,
+        qticks => 0,
         maxticks => $maxticks,
         name => $name,
     } ;
@@ -66,8 +66,7 @@ sub ticks {
 
     my $qt = $this->qticks() ;
 
-    
-    return ($qt < 0 ? $qt : int($qt / 4)) ;
+    return int($qt / 4) ;
 }
 
 
@@ -78,13 +77,12 @@ sub start {
 
     $this->{maxticks} = $maxticks if defined($maxticks) ;
 
-    # Close the circuit to start the clock
     my $wclk = $this->{clk} ;
     my $wclkd = $this->{clkd} ;
     $wclkd->pause($freqhz ? (1.0 / ($freqhz * 4)) : undef) ;
     $wclk->pause($freqhz ? (1.0 / ($freqhz * 4)) : undef) ;
 
-    # Build the loop circuit.
+    # Close the circuit to start the clock
     if ($CLOCK::MODE eq 'gates'){
         new CONN($wclk, $wclkd) ;
         new NOT($wclkd, $wclk) ;
@@ -97,24 +95,24 @@ sub start {
 }
 
 
-# Maunal advancing of the clock.
+# Manual advancing of the clock.
 sub qtick {
     my $this = shift ;
 
     my $qticks = $this->{qticks} ;
     my $mod = $qticks % 4 ;
 
-    if ($mod == 3){
+    if ($mod == 0){
         $this->{clk}->power(1) ;
     }
-    elsif ($mod == 0){
+    elsif ($mod == 1){
         $this->{clkd}->power(1) ;
     }
-    elsif ($mod == 1){
+    elsif ($mod == 2){
          $this->{clk}->power(0) ;       
     }
     else {
-        # $mod == 2
+        # $mod == 3
         $this->{clkd}->power(0) ;
     }
 }
@@ -127,7 +125,7 @@ sub tick {
     my $qticks = $this->{qticks} ;
     my $mod = $qticks % 4 ;
 
-    croak("Can't tick a clock mid-cycle (qticks: $qticks)!") if $mod != 3 ;
+    croak("Can't tick a clock mid-cycle (qticks: $qticks)!") if $mod ;
 
     map { $this->qtick() } (0..3) ;
 }
@@ -139,7 +137,7 @@ sub _qtick_callback {
     my $s = shift ;
 
     my $maxticks = $this->{maxticks} ;
-    if (($maxticks > -1)&&($this->ticks() >= $maxticks)){
+    if (($maxticks >= 0)&&($this->ticks() >= $maxticks)){
         die("HALTING! (Max clock ticks of $maxticks reached)\n") ;
     }
 
@@ -156,7 +154,7 @@ sub _trace {
 
     my ($ts, $tsm) = Time::HiRes::gettimeofday() ;
     if ($CLOCK::DEBUG){
-        warn sprintf("[$ts.%06d] tick %8.2lf: %-4s %-3s\n", $tsm, $this->{qticks} / 4, $label, ($s ? "on" : "off")) ;
+        warn sprintf("[$ts.%06d] tick %8.2lf/$this->{maxticks}: %-4s %-3s\n", $tsm, $this->{qticks} / 4, $label, ($s ? "on" : "off")) ;
     }
 }
 
@@ -165,7 +163,7 @@ sub show {
     my $this = shift ;
 
     my $qt = $this->qticks() ;
-    my $t = int($qt / 4) ;
+    my $t = $this->ticks() ;
     my $q = $qt % 4 ;
 
     my $clk = $this->{clk}->power() ;

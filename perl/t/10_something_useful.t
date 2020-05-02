@@ -2,7 +2,7 @@ use strict ;
 use Test::More ;
 use Breadboard ;
 
-plan(tests => 35) ;
+plan(tests => 34) ;
 
 
 my $BB = new BREADBOARD() ;
@@ -32,23 +32,20 @@ init() ;
 $BB->get("STP.bus")->wire(0)->prehook(sub { cycle1() if $_[0] }) ;
 $BB->get("STP.bus")->wire(1)->prehook(sub { cycle2() if $_[0] }) ;
 $BB->get("STP.bus")->wire(2)->prehook(sub { cycle3() if $_[0] }) ;
-$BB->get("STP.bus")->wire(3)->prehook(sub { is($BB->get("STP")->step(), 3, "Step 4 does nothing!") if $_[0] }) ;
-$BB->get("STP.bus")->wire(4)->prehook(sub { is($BB->get("STP")->step(), 4, "Step 5 does nothing!") if $_[0] }) ;
-$BB->get("STP.bus")->wire(5)->prehook(sub { is($BB->get("STP")->step(), 5, "Step 6 does nothing!") if $_[0] }) ;
-# To start using the Stepper we have to "start" the breadboard
-$BB->start() ;
-# Install the prehook only after we started not to get the initial reset signal.
-$BB->get("STP.bus")->wire(6)->prehook(sub { is($BB->get("STP")->step(), 5, "Stepper reset (but still at step 5 since we are in prehook)!") if $_[0] }) ;
+$BB->get("STP.bus")->wire(3)->prehook(sub { is($BB->get("STP")->step(), 4, "Step 4 does nothing!") if $_[0] }) ;
+$BB->get("STP.bus")->wire(4)->prehook(sub { is($BB->get("STP")->step(), 5, "Step 5 does nothing!") if $_[0] }) ;
+$BB->get("STP.bus")->wire(5)->prehook(sub { is($BB->get("STP")->step(), 6, "Step 6 does nothing!") if $_[0] }) ;
+$BB->get("STP.bus")->wire(6)->prehook(sub { is($BB->get("STP")->step(), 6, "Stepper reset!") if (($_[0])&&($BB->get("CLK")->ticks() > 0)) }) ;
 
 $BB->get("CLK")->tick() ;
 $BB->get("CLK")->tick() ;
 $BB->get("CLK")->tick() ;
-is($BB->get("STP")->step(), 3, "Stepper is at step 4") ;
+is($BB->get("STP")->step(), 3, "Stepper is at step 3") ;
 
 
 # Fourth time, using the stepper (automatically)
 pass("Using Stepper (automatic)") ;
-is($BB->get("CLK")->ticks(), 3, "Clock has done 4 ticks") ;
+is($BB->get("CLK")->ticks(), 3, "Clock has done 3 ticks") ;
 init() ;
 eval {
     $BB->get("CLK")->start(0, $BB->get("CLK")->ticks() + 6) ;

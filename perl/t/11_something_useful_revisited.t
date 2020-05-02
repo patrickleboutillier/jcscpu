@@ -2,6 +2,7 @@ use strict ;
 use Test::More ;
 use Breadboard ;
 
+
 plan(tests => 8) ;
 
 
@@ -28,10 +29,10 @@ is(oct('0b00101010'), 42, "00101010=42") ;
 
 # Initialize registers with vaues.
 init() ;
-$BB->start() ;
 
 # $CLOCK::DEBUG = 1 ;
 # Since we are hooked on steps 4-5-6, the first 3 ticks do nothing...
+$BB->get("CLK")->tick() ;
 $BB->get("CLK")->tick() ;
 $BB->get("CLK")->tick() ;
 $BB->get("CLK")->tick() ;
@@ -40,7 +41,6 @@ $BB->get("CLK")->tick() ;
 is($BB->get("ACC")->ms(), "00101010", "ACC contains 00101010 (42)") ;
 $BB->get("CLK")->tick() ;
 is($BB->get("R0")->ms(), "00101010", "R0 contains 00101010 (42)") ;
-
 
 sub init {
     # Put a number on the data bus, say 20.
