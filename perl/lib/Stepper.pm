@@ -157,7 +157,7 @@ sub show {
     my @Ss = @{$this->{Ss}} ;
     my @Ms = @{$this->{Ms}} ;
 
-    my $str = "STEPPER($this->{name}): rst:$rst, clk:$clk, steps:$steps\n  " ;
+    my $str = "STEPPER: rst:$rst, clk:$clk, steps:$steps\n  " ;
     foreach my $S (@Ss){
         $str .= "  " . $S->show() . "                " ;
     }
