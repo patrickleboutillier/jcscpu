@@ -4,7 +4,7 @@ use Breadboard ;
 
 plan(tests => 64 + 288) ;
 
-my $BB = new BREADBOARD(instruct => 1) ;
+my $BB = new BREADBOARD('instproc' => 1) ;
 $BB->show() ;
 
 # What we need to test here is that:

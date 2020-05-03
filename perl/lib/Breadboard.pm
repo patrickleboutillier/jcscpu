@@ -10,10 +10,10 @@ use Carp ;
 
 # The BREADBOARD comes loaded with the following components:
 # - ALU, RAM and BUS
-# - All registers (including IAR and IR registers)
+# - All registers (except IAR and IR registers)
 #
 # Using the options hash, you can specify more componnents be added:
-#  enaset: Add elactic ORs to create the Enables and Sets sides of the board for everything except (R0-R3)   
+#  instproc: Add IAR, IR and elactic ORs to create the Enables and Sets sides of the board for everything   
 
 
 sub new {
@@ -50,13 +50,6 @@ sub new {
         "TMP.s" => new WIRE(),
         "TMP.e" => WIRE->on(), # TMP.e is always on
         "TMP.bus" => new BUS(),
-        "IAR.s" => new WIRE(),
-        "IAR.e" => new WIRE(),
-        "IR.s" => new WIRE(),
-        "IR.e" => WIRE->on(), # IR.e is always on
-        "IR.bus" => new BUS(),
-        "IO.clk.e" => new WIRE(),
-        "IO.clk.s" => new WIRE(),
     ) ;
     $this->put(
         'R0' => new REGISTER($this->get(qw/DATA.bus R0.s R0.e DATA.bus/), "R0"),
@@ -65,8 +58,6 @@ sub new {
         'R3' => new REGISTER($this->get(qw/DATA.bus R3.s R3.e DATA.bus/), "R3"), 
         'TMP' => new REGISTER($this->get(qw/DATA.bus TMP.s TMP.e TMP.bus/), "TMP"), 
         "TMP.bus.bit1" => $this->get(qw/TMP.bus/)->wire(7),
-        "IAR" => new REGISTER($this->get(qw/DATA.bus IAR.s IAR.e DATA.bus/), "IAR"),
-        "IR" => new REGISTER($this->get(qw/DATA.bus IR.s IR.e IR.bus/), "IR"),
     ) ;
 
     # ALU
@@ -99,17 +90,32 @@ sub new {
         "STP"  => new STEPPER($this->get(qw/CLK.clk STP.bus/)),
     ) ;
 
-    if ($opts{'instruct'}){
-        $this->instruct() ;
+    if ($opts{'instproc'}){
+        $this->instproc() ;
     }
 
     return $this ;
 }
 
 
-sub instruct {
+sub instproc {
     my $this = shift ;
  
+    # Add instprocion related registers
+    $this->put(
+        "IAR.s" => new WIRE(),
+        "IAR.e" => new WIRE(),
+        "IR.s" => new WIRE(),
+        "IR.e" => WIRE->on(), # IR.e is always on
+        "IR.bus" => new BUS(),
+        "IO.clk.e" => new WIRE(),
+        "IO.clk.s" => new WIRE(),
+    ) ;
+    $this->put(
+        "IAR" => new REGISTER($this->get(qw/DATA.bus IAR.s IAR.e DATA.bus/), "IAR"),
+        "IR" => new REGISTER($this->get(qw/DATA.bus IR.s IR.e IR.bus/), "IR"),
+    ) ;
+
     # ALL ENABLES
     for my $e (qw/IAR RAM ACC ALU.op IO.clk/){
         my $w = new WIRE() ;
@@ -127,7 +133,7 @@ sub instruct {
 
     # Hook up the circuit used to process the first 3 steps of each cycle (see page 108 in book), i.e 
     # - Load IAR to MAR and increment IAR in AC
-    # - Load the instruction from RAM into IR
+    # - Load the instprocion from RAM into IR
     # - Increment the IAR from ACC
     $this->get("TMP.bit1.eor")->add($this->get("STP.bus")->wire(0)) ;
     $this->get("IAR.ena.eor")->add($this->get("STP.bus")->wire(0)) ;
@@ -139,7 +145,7 @@ sub instruct {
     $this->get("ACC.ena.eor")->add($this->get("STP.bus")->wire(2)) ; 
     $this->get("IAR.set.eor")->add($this->get("STP.bus")->wire(2)) ; 
 
-    # Then, we set up the parts that are required to actually process instructions, i.e.
+    # Then, we set up the parts that are required to actually process instprocions, i.e.
     # - Connect the decoders for the enable and set operations on R0-R3 
     $this->put(
         "REGA.e" => new WIRE(),
@@ -179,7 +185,7 @@ sub instruct {
     $this->put("REGA.e.dec" => new DECODER(2, BUS->wrap($this->get("IR")->os()->wire(4), $this->get("IR")->os()->wire(5)), BUS->wrap(@edecoa))) ;
     $this->put("REGB.e.dec" => new DECODER(2, BUS->wrap($this->get("IR")->os()->wire(6), $this->get("IR")->os()->wire(7)), BUS->wrap(@edecob))) ;
 
-    # Finally, install the instruction decoder
+    # Finally, install the instprocion decoder
     $this->put('INST.bus' => new BUS()) ;
     my $notalu = new WIRE() ;
     new NOT($this->get("IR")->os()->wire(0), $notalu) ;
@@ -189,7 +195,7 @@ sub instruct {
     }
     $this->put('INST.dec' => $idec) ;
 
-    # Now, setting up instruction circuits involves:
+    # Now, setting up instprocion circuits involves:
     # - Hook up to the propoer wire of INST.bus 
     # - Wire up the logical circuit and attach it to proper step wires
     # - Use the "elastic" OR gates (xxx.eor) to enable and set 
@@ -231,9 +237,9 @@ sub show {
     $str .= join("  ", map { $this->get($_)->show() } qw/TMP ACC R0 R1 R2 R3/) . "\n" ;
     $str .= $this->get("ALU")->show(oct('0b' . $this->get("ALU.op")->power())) ;
     $str .= $this->get("RAM")->show() ;
-    $str .= "CU:\n" ;
-    $str .= "  " . $this->get("IAR")->show() . "  " .  $this->get("IR")->show() ;
-    if ($this->{opts}->{instruct}){
+    if ($this->{opts}->{instproc}){
+        $str .= "CU:\n" ;
+        $str .= "  " . $this->get("IAR")->show() . "  " .  $this->get("IR")->show() ;
         $str .= "  INST.bus:" . $this->get("INST.bus")->power() ;
         $str .= "  REGA.e:" . $this->get("REGA.e")->power() . '/' . $this->get("REGA.e.dec")->os()->power() ;
         $str .= "  REGB.e:" . $this->get("REGB.e")->power() . '/' . $this->get("REGB.e.dec")->os()->power() ;
