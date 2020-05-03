@@ -1,6 +1,7 @@
 use strict ;
 use Test::More ;
 use Clock ;
+use File::Spec ;
 
 plan(tests => 38) ;
 
@@ -99,7 +100,6 @@ $wclks = new WIRE() ;
 $c = new CLOCK($wclk, $wclke, $wclks) ;
 $wclkd = $c->clkd() ;
 
-# $CLOCK::DEBUG = 1 ;
 $c->qtick() ;
 is($wclk->power(),  1, "clk on") ;
 is($wclkd->power(), 0, "clkd off") ;
@@ -115,7 +115,13 @@ is($wclk->power(),  0, "clk off") ;
 is($wclkd->power(), 1, "clkd on") ;
 is($wclke->power(), 1, "clke on") ;
 is($wclks->power(), 0, "clks off") ;
+
+# Suppress output for CLOCK::DEBUG coverage
+open my $olderr, '>&', \*STDERR or die $! ;
+open STDERR, File::Spec->devnull() ;
+$CLOCK::DEBUG = 1 ;
 $c->qtick() ;
+
 is($wclk->power(),  0, "clk off") ;
 is($wclkd->power(), 0, "clkd off") ;
 is($wclke->power(), 0, "clke off") ;
@@ -125,3 +131,5 @@ is($wclk->power(),  1, "clk on") ;
 is($wclkd->power(), 0, "clkd off") ;
 is($wclke->power(), 1, "clke on") ;
 is($wclks->power(), 0, "clks off") ;
+
+open STDERR, '>&', $olderr or die $! ;

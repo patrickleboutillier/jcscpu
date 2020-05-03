@@ -18,21 +18,21 @@ my $bsteps = new BUS(7) ;
 my $s = new STEPPER($wclk, $bsteps) ;
 $s->show() ;
 
-is($bsteps->power(), "0000000", "initial state, step 0") ;
+is_deeply([$bsteps->power(), $s->step()], ["0000000", 0], "initial state, step 0") ;
 $c->tick() ;
-is($bsteps->power(), "1000000", "step 1") ;
+is_deeply([$bsteps->power(), $s->step()], ["1000000", 1], "step 1") ;
 $c->tick() ;
-is($bsteps->power(), "0100000", "step 2") ;
+is_deeply([$bsteps->power(), $s->step()], ["0100000", 2], "step 2") ;
 $c->tick() ;
-is($bsteps->power(), "0010000", "step 3") ;
+is_deeply([$bsteps->power(), $s->step()], ["0010000", 3], "step 3") ;
 $c->tick() ;
-is($bsteps->power(), "0001000", "step 4") ;
+is_deeply([$bsteps->power(), $s->step()], ["0001000", 4], "step 4") ;
 $c->tick() ;
-is($bsteps->power(), "0000100", "step 5") ;
+is_deeply([$bsteps->power(), $s->step()], ["0000100", 5], "step 5") ;
 $c->tick() ;
-is($bsteps->power(), "0000010", "step 6") ;
+is_deeply([$bsteps->power(), $s->step()], ["0000010", 6], "step 6") ;
 $c->tick() ;
-is($bsteps->power(), "1000000", "step 1, auto reset") ;
+is_deeply([$bsteps->power(), $s->step()], ["1000000", 1], "step 1, auto reset") ;
 
 # Now with an automatic clock
 $wclk = new WIRE() ;

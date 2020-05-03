@@ -21,6 +21,7 @@ sub new {
     my %opts = @_ ;
 
     my $this = {
+        opts => \%opts,
     } ;
     bless $this, $class ;
 
@@ -54,6 +55,8 @@ sub new {
         "IR.s" => new WIRE(),
         "IR.e" => WIRE->on(), # IR.e is always on
         "IR.bus" => new BUS(),
+        "IO.clk.e" => new WIRE(),
+        "IO.clk.s" => new WIRE(),
     ) ;
     $this->put(
         'R0' => new REGISTER($this->get(qw/DATA.bus R0.s R0.e DATA.bus/), "R0"),
@@ -108,7 +111,7 @@ sub instruct {
     my $this = shift ;
  
     # ALL ENABLES
-    for my $e (qw/IAR RAM ACC ALU.op/){
+    for my $e (qw/IAR RAM ACC ALU.op IO.clk/){
         my $w = new WIRE() ;
         new AND($this->get("CLK.clke"), $w, $this->get("$e.e")) ;
         $this->put("$e.ena.eor" => new ORe($w)) ; 
@@ -116,7 +119,7 @@ sub instruct {
     $this->put("TMP.bit1.eor" => new ORe($this->get("TMP.bus.bit1"))) ;
 
     # ALL SETS
-    for my $s (qw/IR RAM.MAR IAR ACC RAM TMP/){
+    for my $s (qw/IR RAM.MAR IAR ACC RAM TMP IO.clk/){
         my $w = new WIRE() ;
         new AND($this->get("CLK.clks"), $w, $this->get("$s.s")) ;
         $this->put("$s.set.eor" => new ORe($w)) ; 
@@ -230,10 +233,12 @@ sub show {
     $str .= $this->get("RAM")->show() ;
     $str .= "CU:\n" ;
     $str .= "  " . $this->get("IAR")->show() . "  " .  $this->get("IR")->show() ;
-    $str .= "  INST.bus:" . $this->get("INST.bus")->power() ;
-    $str .= "  REGA.e:" . $this->get("REGA.e")->power() . '/' . $this->get("REGA.e.dec")->os()->power() ;
-    $str .= "  REGB.e:" . $this->get("REGB.e")->power() . '/' . $this->get("REGB.e.dec")->os()->power() ;
-    $str .= "  REGB.s:" . $this->get("REGB.s")->power() . '/' . $this->get("REGB.s.dec")->os()->power() ;
+    if ($this->{opts}->{instruct}){
+        $str .= "  INST.bus:" . $this->get("INST.bus")->power() ;
+        $str .= "  REGA.e:" . $this->get("REGA.e")->power() . '/' . $this->get("REGA.e.dec")->os()->power() ;
+        $str .= "  REGB.e:" . $this->get("REGB.e")->power() . '/' . $this->get("REGB.e.dec")->os()->power() ;
+        $str .= "  REGB.s:" . $this->get("REGB.s")->power() . '/' . $this->get("REGB.s.dec")->os()->power() ;
+    }
     $str .= "\n" ;
 
     return $str ;

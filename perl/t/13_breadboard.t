@@ -2,7 +2,7 @@ use strict ;
 use Test::More ;
 use Breadboard ;
 
-plan(tests => 2) ;
+plan(tests => 3) ;
 
 my $BB = new BREADBOARD() ;
 
@@ -15,3 +15,6 @@ eval {
 } ;
 like($@, qr/not registered/) ;
 
+my $a = $BB->get(qw/R0 R1/) ;
+my @a = $BB->get(qw/R0 R1/) ;
+is_deeply($a, \@a) ;

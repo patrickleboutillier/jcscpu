@@ -144,7 +144,8 @@ sub step {
         return ($j + 1) if $this->{os}->wire($j)->power() ;        
     }
 
-    croak("Stepper has no active steps!!!") ;
+    # When stepper has not yet been through a tick.
+    return 0 ;
 }
 
 

@@ -154,7 +154,7 @@ sub _trace {
 
     my ($ts, $tsm) = Time::HiRes::gettimeofday() ;
     if ($CLOCK::DEBUG){
-        warn sprintf("[$ts.%06d] tick %8.2lf/$this->{maxticks}: %-4s %-3s\n", $tsm, $this->{qticks} / 4, $label, ($s ? "on" : "off")) ;
+        print STDERR sprintf("# [$ts.%06d] tick %8.2lf/$this->{maxticks}: %-4s %-3s\n", $tsm, $this->{qticks} / 4, $label, ($s ? "on" : "off")) ;
     }
 }
 

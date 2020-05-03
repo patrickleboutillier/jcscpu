@@ -2,9 +2,10 @@ use strict ;
 use Test::More ;
 use Breadboard ;
 
-plan(tests => 64) ;
+plan(tests => 64 + 288) ;
 
 my $BB = new BREADBOARD(instruct => 1) ;
+$BB->show() ;
 
 # What we need to test here is that:
 # 1- Bits 0-3 of the IR setup the proper instruction in the instruction decoder.
@@ -25,7 +26,7 @@ foreach my $t (@ts){
 }
 
 
-@ts = (0..15) ; # , (map { int rand(2) } (0..15))) ;
+@ts = ((0..15), (map { int rand(2) } (0..15))) ;
 my %map = ("00" => "R0",  "01" => "R1", "10" => "R2", "11" => "R3") ;
 foreach my $t (@ts){
     my $rspec = sprintf("%04b", $t) ;
@@ -43,15 +44,15 @@ foreach my $t (@ts){
     $BB->get("CLK.clke")->power(1) ;
     $BB->get("REGA.e")->power(1) ;
     $BB->get("REGB.e")->power(1) ;
-    map { my $res = ($_ eq $ra ? 1 : 0) ; is($BB->get($_ . '.e')->power(), $res, "$_.e is $res")} values %map ;
-    map { my $res = ($_ eq $rb ? 1 : 0) ; is($BB->get($_ . '.e')->power(), $res, "$_.e is $res")} values %map ;
+    # warn $BB->show() ;
+    map { my $res = ((($_ eq $ra)||($_ eq $rb)) ? 1 : 0) ; is($BB->get($_ . '.e')->power(), $res, "$_.e is $res")} sort values %map ;
 
     $BB->get("CLK.clke")->power(0) ;
     $BB->get("REGA.e")->power(0) ;
     $BB->get("REGB.e")->power(0) ;
     $BB->get("CLK.clks")->power(1) ;
     $BB->get("REGB.s")->power(1) ;
-    map { my $res = ($_ eq $rb ? 1 : 0) ; is($BB->get($_ . '.s')->power(), $res, "$_.s is $res")} values %map ;
+    map { my $res = ($_ eq $rb ? 1 : 0) ; is($BB->get($_ . '.s')->power(), $res, "$_.s is $res")} sort values %map ;
     $BB->get("CLK.clks")->power(0) ;
     $BB->get("REGB.s")->power(0) ;
 }
