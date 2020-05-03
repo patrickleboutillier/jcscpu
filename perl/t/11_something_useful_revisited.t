@@ -36,11 +36,11 @@ $BB->get("CLK")->tick() ;
 $BB->get("CLK")->tick() ;
 $BB->get("CLK")->tick() ;
 $BB->get("CLK")->tick() ;
-is($BB->get("TMP")->ms(), "00010110", "TMP contains 00010110 (22)") ;
+is($BB->get("TMP")->power(), "00010110", "TMP contains 00010110 (22)") ;
 $BB->get("CLK")->tick() ;
-is($BB->get("ACC")->ms(), "00101010", "ACC contains 00101010 (42)") ;
+is($BB->get("ACC")->power(), "00101010", "ACC contains 00101010 (42)") ;
 $BB->get("CLK")->tick() ;
-is($BB->get("R0")->ms(), "00101010", "R0 contains 00101010 (42)") ;
+is($BB->get("R0")->power(), "00101010", "R0 contains 00101010 (42)") ;
 
 sub init {
     # Put a number on the data bus, say 20.
@@ -53,6 +53,6 @@ sub init {
     # Let in go into R1.
     $BB->get("R1.s")->power(1) ;
     $BB->get("R1.s")->power(0) ;
-    is($BB->get("R0")->ms(), "00010100", "R0 contains 00010100 (20)") ;
-    is($BB->get("R1")->ms(), "00010110", "R1 contains 00010110 (22)") ;
+    is($BB->get("R0")->power(), "00010100", "R0 contains 00010100 (20)") ;
+    is($BB->get("R1")->power(), "00010110", "R1 contains 00010110 (22)") ;
 } 

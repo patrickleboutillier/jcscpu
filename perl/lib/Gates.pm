@@ -1,6 +1,12 @@
 use Wire ;
 
 
+END {
+    # warn "$GATES::NB_NAND NAND gates created!" ;
+    # warn "$GATES::NB_NOT NOT gates created!" ;
+}
+
+
 package NAND ; 
 use strict ;
 
@@ -27,11 +33,6 @@ sub new {
     $GATES::NB_NAND++ ;
 
     return $this ;
-}
-
-
-END {
-    # warn "$GATES::NB_NAND NAND gates created!" ;
 }
 
 
@@ -77,15 +78,18 @@ sub new {
     my $wb = shift ;
     my $name = shift ;
 
-    new NAND($wa, $wa, $wb, "$name/NAND") ;
+    # Slight optimization to the NOT gate design
+    new NAND($wa, WIRE->on(), $wb, "$name/NAND") ;
 
     my $this = {
         a => $wa,
         b => $wb,
         name => $name,
     } ;
-
     bless $this, $class ;
+
+    $GATES::NB_NOT++ ;
+
     return $this ;
 }
 
@@ -111,8 +115,8 @@ sub new {
         c => $wc,
         name => $name,
     } ;
-
     bless $this, $class ;
+ 
     return $this ;
 }
 
@@ -153,8 +157,8 @@ sub new {
         c => $wc,
         name => $name,
     } ;
-
     bless $this, $class ;
+
     return $this ;
 }
 
@@ -332,8 +336,8 @@ sub new {
         o => $wo,
         n => $n,
     } ;
-
     bless $this, $class ;
+
     return $this ;
 }
 
@@ -349,35 +353,6 @@ sub i {
 sub n {
     my $this = shift ;
     return $this->{n} ;
-}
-
-
-package ANDe ; 
-use strict ;
-
-
-sub new {
-    my $class = shift ;
-    my $wo = shift ;
-    my $name = shift ;
-
-    my $this = {
-        orn => new ANDn(6, BUS->wrap(map { new WIRE(1) } (0..5)), $wo),
-        n => 0,
-    } ;
-    bless $this, $class ;
- 
-    return $this ;
-}
-
-
-sub add {
-    my $this = shift ;
-    my $wi = shift ;
-
-    croak("Elastic AND has reached maximum capacity of 6") if $this->{n} >= 6 ;
-    new CONN($wi, $this->{orn}->i($this->{n})) ;
-    $this->{n}++ ;
 }
 
 
@@ -446,4 +421,35 @@ sub new {
 }
 
 
-return 1 ;
+ 1 ;
+
+
+__DATA__
+package ANDe ; 
+use strict ;
+
+
+sub new {
+    my $class = shift ;
+    my $wo = shift ;
+    my $name = shift ;
+
+    my $this = {
+        orn => new ANDn(6, BUS->wrap(map { new WIRE(1) } (0..5)), $wo),
+        n => 0,
+    } ;
+    bless $this, $class ;
+ 
+    return $this ;
+}
+
+
+sub add {
+    my $this = shift ;
+    my $wi = shift ;
+
+    croak("Elastic AND has reached maximum capacity of 6") if $this->{n} >= 6 ;
+    new CONN($wi, $this->{orn}->i($this->{n})) ;
+    $this->{n}++ ;
+}
+

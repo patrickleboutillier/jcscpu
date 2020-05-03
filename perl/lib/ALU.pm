@@ -27,7 +27,6 @@ sub new {
     my $weqo = shift ;
     my $walo = shift ;
     my $wz = shift ;
-    my $name = shift ;
 
     # Build the ALU circuit
     my $bswitch = new BUS() ;
@@ -41,28 +40,28 @@ sub new {
 
     my @Es = () ;
     my $xor = new XORER($bas, $bbs, new BUS(), $weqo, $walo) ;
-    unshift @Es, new ENABLER($xor->cs(), $bswitch->wire(6), $bcs, "$name/ENABLER(XORER)") ;
+    unshift @Es, new ENABLER($xor->cs(), $bswitch->wire(6), $bcs, "/ENABLER(XORER)") ;
 
     my $or = new ORER($bas, $bbs, new BUS()) ;
-    unshift @Es, new ENABLER($or->cs(), $bswitch->wire(5), $bcs, "$name/ENABLER(ORER)") ;
+    unshift @Es, new ENABLER($or->cs(), $bswitch->wire(5), $bcs, "/ENABLER(ORER)") ;
     
     my $and = new ANDDER($bas, $bbs, new BUS()) ;
-    unshift @Es, new ENABLER($and->cs(), $bswitch->wire(4), $bcs, "$name/ENABLER(ANDDER)") ;
+    unshift @Es, new ENABLER($and->cs(), $bswitch->wire(4), $bcs, "/ENABLER(ANDDER)") ;
     
     my $not = new NOTTER($bas, new BUS()) ;
-    unshift @Es, new ENABLER($not->bs(), $bswitch->wire(3), $bcs, "$name/ENABLER(NOTTER)") ;
+    unshift @Es, new ENABLER($not->bs(), $bswitch->wire(3), $bcs, "/ENABLER(NOTTER)") ;
 
     my $shl = new SHIFTL($bas, $wci, new BUS(), new WIRE()) ;
     new AND($shl->so(), $bswitch->wire(2), $wco) ;
-    unshift @Es, new ENABLER($shl->os(), $bswitch->wire(2), $bcs, "$name/ENABLER(SHIFTL)") ;
+    unshift @Es, new ENABLER($shl->os(), $bswitch->wire(2), $bcs, "/ENABLER(SHIFTL)") ;
 
     my $shr = new SHIFTR($bas, $wci, new BUS(), new WIRE()) ;
     new AND($shr->so(), $bswitch->wire(1), $wco) ;
-    unshift @Es, new ENABLER($shr->os(), $bswitch->wire(1), $bcs, "$name/ENABLER(SHIFTR)") ;
+    unshift @Es, new ENABLER($shr->os(), $bswitch->wire(1), $bcs, "/ENABLER(SHIFTR)") ;
 
     my $add = new ADDER($bas, $bbs, $wci, new BUS(), new WIRE()) ;
     new AND($add->carry_out(), $bswitch->wire(0), $wco) ;
-    unshift @Es, new ENABLER($add->sums(), $bswitch->wire(0), $bcs, "$name/ENABLER(ADDER)") ;
+    unshift @Es, new ENABLER($add->sums(), $bswitch->wire(0), $bcs, "/ENABLER(ADDER)") ;
 
     my @Ms = ($add, $shr, $shl, $not, $and, $or, $xor) ;
     my $zero = new ZERO($bcs, $wz) ;
@@ -78,7 +77,6 @@ sub new {
         eqo => $weqo,
         alo => $walo,
         z => $wz,
-        name => $name,
         Ms => \@Ms,
         Es => \@Es,
         dec => $dec,

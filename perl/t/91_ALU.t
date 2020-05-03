@@ -19,7 +19,7 @@ my $wco = new WIRE() ;
 my $weqo = new WIRE() ;
 my $walo = new WIRE() ;
 my $wz = new WIRE() ;
-my $ALU = new ALU($bas, $bbs, $wci, $bops, $wope, $bcs, $wco, $weqo, $walo, $wz, "ALU") ;
+my $ALU = new ALU($bas, $bbs, $wci, $bops, $wope, $bcs, $wco, $weqo, $walo, $wz) ;
 $ALU->show() ;
 $ALU->show(0) ;
 

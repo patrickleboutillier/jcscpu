@@ -67,8 +67,8 @@ sub init {
     # Let in go into R1.
     $BB->get("R1.s")->power(1) ;
     $BB->get("R1.s")->power(0) ;
-    is($BB->get("R0")->ms(), "00010100", "R0 contains 00010100 (20)") ;
-    is($BB->get("R1")->ms(), "00010110", "R1 contains 00010110 (22)") ;
+    is($BB->get("R0")->power(), "00010100", "R0 contains 00010100 (20)") ;
+    is($BB->get("R1")->power(), "00010110", "R1 contains 00010110 (22)") ;
 } 
 
 
@@ -77,7 +77,7 @@ sub cycle1 {
         $BB->get("TMP.s")->power(1) ;
         $BB->get("TMP.s")->power(0) ;
     $BB->get("R1.e")->power(0) ;
-    is($BB->get("TMP")->ms(), "00010110", "cycle1: TMP contains 00010110 (22)") ;
+    is($BB->get("TMP")->power(), "00010110", "cycle1: TMP contains 00010110 (22)") ;
 }
 
 
@@ -89,7 +89,7 @@ sub cycle2 {
         $BB->get("ACC.s")->power(0) ;
     $BB->get("ALU.op.e")->power(0) ; 
     $BB->get("R0.e")->power(0) ;
-    is($BB->get("ACC")->ms(), "00101010", "cycle2: ACC contains 00101010 (42)") ;
+    is($BB->get("ACC")->power(), "00101010", "cycle2: ACC contains 00101010 (42)") ;
 }
 
 
@@ -98,7 +98,7 @@ sub cycle3 {
         $BB->get("R0.s")->power(1) ;
         $BB->get("R0.s")->power(0) ;
     $BB->get("ACC.e")->power(0) ;
-    is($BB->get("R0")->ms(), "00101010", "cycle3: R0 contains 00101010 (42)") ;
+    is($BB->get("R0")->power(), "00101010", "cycle3: R0 contains 00101010 (42)") ;
 }
 
 

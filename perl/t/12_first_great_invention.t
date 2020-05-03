@@ -2,7 +2,7 @@ use strict ;
 use Test::More ;
 use Breadboard ;
 
-plan(tests => 7) ;
+plan(tests => 8) ;
 # $CLOCK::DEBUG = 1 ;
 
 my $BB = new BREADBOARD('enaset' => 1,  'instruct' => 1) ;
@@ -22,9 +22,8 @@ is($BB->get("ACC")->power(), "00000101", "ACC contains previous contents of IAR 
 $BB->get("CLK")->tick() ;
 is($BB->get("IR")->power(), "10101010", "IR contains our first fake instruction") ;
 $BB->get("CLK")->tick() ;
-warn $BB->show() ;
-exit ;
-# is() ;
+# warn $BB->show() ;
+is($BB->get("IAR")->power(), "00000101", "IR contains the address our our next instruction") ;
 
 
 sub init {

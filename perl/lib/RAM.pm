@@ -12,7 +12,6 @@ sub new {
     my $bio = shift ;
     my $ws = shift ;
     my $we = shift ;
-    my $name = shift ;
 
     # Build the RAM circuit 
     my $on = new WIRE(1, 1) ;
@@ -47,7 +46,6 @@ sub new {
         e => $we,
         s => $ws,
         ios => $bio,
-        name => $name,
         MAR => $MAR,
         GRID => \%GRID,
     } ;
@@ -114,7 +112,6 @@ sub show {
     foreach my $a (@addrs){
         $str .= "  " . $this->{GRID}->{$a}->show() ;
     }
-    # $str .= "\n  e:$e, s:$s, bio:$bio\n" ;
 
     # Coverage
     $this->as()->power() ;

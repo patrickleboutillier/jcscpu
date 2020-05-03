@@ -3,6 +3,8 @@ package WIRE ;
 use strict ;
 use Time::HiRes ;
 
+my $ON = new WIRE(1, 1) ;
+# my $OFF = new WIRE(0, 1) ;
 
 sub new {
     my $class = shift ;
@@ -21,6 +23,11 @@ sub new {
     bless $this, $class ;
 
     return $this ;
+}
+
+
+sub on {
+    return $ON ;
 }
 
 
@@ -79,31 +86,29 @@ sub power {
     my $v = shift ;
     my $soft = shift ; # Soft signal only changes the power value, no signals and no hooks.
 
-    if (defined($v)){
+    if ((defined($v))&&(! $this->{terminal})){
         $v = ($v ? 1 : 0) ;
         if (($v != $this->{power})||($this->{soft})){
             # There is a change in power. Record it and propagate the effect.
-            if (! $this->{terminal}){
-                if ($this->{pause}){
-                    Time::HiRes::sleep($this->{pause}) ;
+            if ($this->{pause}){
+                Time::HiRes::sleep($this->{pause}) ;
+            }
+            $this->{power} = $v ;
+            $this->{soft} = $soft ;
+
+            if (! $soft){
+                # Do prehooks
+                foreach my $hook (@{$this->{prehooks}}){
+                    $hook->($v)  ;
                 }
-                $this->{power} = $v ;
-                $this->{soft} = $soft ;
 
-                if (! $soft){
-                    # Do prehooks
-                    foreach my $hook (@{$this->{prehooks}}){
-                        $hook->($v)  ;
-                    }
+                foreach my $gate (@{$this->{gates}}){
+                    $gate->signal($this) ;  
+                }
 
-                    foreach my $gate (@{$this->{gates}}){
-                        $gate->signal($this) ;  
-                    }
-
-                    # Do posthooks
-                    foreach my $hook (@{$this->{posthooks}}){
-                        $hook->($v)  ;
-                    }
+                # Do posthooks
+                foreach my $hook (@{$this->{posthooks}}){
+                    $hook->($v)  ;
                 }
             }
         }

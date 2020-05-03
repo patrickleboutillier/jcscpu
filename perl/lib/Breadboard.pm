@@ -21,7 +21,6 @@ sub new {
     my %opts = @_ ;
 
     my $this = {
-        started => 0,
     } ;
     bless $this, $class ;
 
@@ -48,12 +47,12 @@ sub new {
         "R3.s" => new WIRE(),
         "R3.e" => new WIRE(),
         "TMP.s" => new WIRE(),
-        "TMP.e" => new WIRE(1, 1), # TMP.e is always on
+        "TMP.e" => WIRE->on(), # TMP.e is always on
         "TMP.bus" => new BUS(),
         "IAR.s" => new WIRE(),
         "IAR.e" => new WIRE(),
         "IR.s" => new WIRE(),
-        "IR.e" => new WIRE(1, 1), # IR.e is always on
+        "IR.e" => WIRE->on(), # IR.e is always on
         "IR.bus" => new BUS(),
     ) ;
     $this->put(
@@ -150,8 +149,6 @@ sub instruct {
 sub put {
     my $this = shift ;
     my %objs = @_ ;
-
-    croak("Can't add components to the breadboard once it's started!") if $this->{started} ;
 
     foreach my $k (keys %objs){
         croak("Component '$k' already registered with Harness!") if (exists $this->{$k}) ;
