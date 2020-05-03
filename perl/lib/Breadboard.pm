@@ -96,9 +96,6 @@ sub new {
         "STP"  => new STEPPER($this->get(qw/CLK.clk STP.bus/)),
     ) ;
 
-    if ($opts{'enaset'}){
-        $this->enaset() ;
-    }
     if ($opts{'instruct'}){
         $this->instruct() ;
     }
@@ -107,9 +104,9 @@ sub new {
 }
 
 
-sub enaset {
+sub instruct {
     my $this = shift ;
-
+ 
     # ALL ENABLES
     for my $e (qw/IAR RAM ACC ALU.op/){
         my $w = new WIRE() ;
@@ -124,12 +121,7 @@ sub enaset {
         new AND($this->get("CLK.clks"), $w, $this->get("$s.s")) ;
         $this->put("$s.set.eor" => new ORe($w)) ; 
     }
-}
 
-
-sub instruct {
-    my $this = shift ;
- 
     # Hook up the circuit used to process the first 3 steps of each cycle (see page 108 in book), i.e 
     # - Load IAR to MAR and increment IAR in AC
     # - Load the instruction from RAM into IR
@@ -143,6 +135,61 @@ sub instruct {
     $this->get("IR.set.eor")->add($this->get("STP.bus")->wire(1)) ; 
     $this->get("ACC.ena.eor")->add($this->get("STP.bus")->wire(2)) ; 
     $this->get("IAR.set.eor")->add($this->get("STP.bus")->wire(2)) ; 
+
+    # Then, we set up the parts that are required to actually process instructions, i.e.
+    # - Connect the decoders for the enable and set operations on R0-R3 
+    $this->put(
+        "REGA.e" => new WIRE(),
+        "REGB.e" => new WIRE(),
+        "REGB.s" => new WIRE(),
+    ) ;
+    $this->put(
+        "REGA.ena.eor" => new ORe($this->get("REGA.e")),
+        "REGB.ena.eor" => new ORe($this->get("REGB.e")),
+        "REGB.set.eor" => new ORe($this->get("REGB.s")),
+    ) ;
+
+    # s side
+    my @sdeco = () ;
+    for my $s (qw/R0 R1 R2 R3/){
+        my $w = new WIRE() ;
+        new ANDn(3, BUS->wrap($this->get("CLK.clks"), $this->get("REGB.s"), $w), $this->get("$s.s")) ;
+        push @sdeco, $w ;
+    }
+    $this->put("REGB.s.dec" => new DECODER(2, BUS->wrap($this->get("IR")->os()->wire(6), $this->get("IR")->os()->wire(7)), BUS->wrap(@sdeco))) ;
+    
+    # e side
+    my @edecoa = () ;
+    my @edecob = () ;
+    for my $s (qw/R0 R1 R2 R3/){
+        my $wora = new WIRE() ;
+        my $worb = new WIRE() ;
+        new OR($wora, $worb, $this->get("$s.e")) ;
+
+        my $wa = new WIRE() ;
+        new ANDn(3, BUS->wrap($this->get("CLK.clke"), $this->get("REGA.e"), $wa), $wora) ;
+        push @edecoa, $wa ;
+        my $wb = new WIRE() ;
+        new ANDn(3, BUS->wrap($this->get("CLK.clke"), $this->get("REGB.e"), $wb), $worb) ;
+        push @edecob, $wb ;
+    }
+    $this->put("REGA.e.dec" => new DECODER(2, BUS->wrap($this->get("IR")->os()->wire(4), $this->get("IR")->os()->wire(5)), BUS->wrap(@edecoa))) ;
+    $this->put("REGB.e.dec" => new DECODER(2, BUS->wrap($this->get("IR")->os()->wire(6), $this->get("IR")->os()->wire(7)), BUS->wrap(@edecob))) ;
+
+    # Finally, install the instruction decoder
+    $this->put('INST.bus' => new BUS()) ;
+    my $notalu = new WIRE() ;
+    new NOT($this->get("IR")->os()->wire(0), $notalu) ;
+    my $idec = new DECODER(3, BUS->wrap(map { $this->get("IR")->os()->wire($_) } (1,2,3)), new BUS()) ;
+    for (my $j = 0 ; $j < 8 ; $j++){
+        new AND($notalu, $idec->os()->wire($j), $this->get("INST.bus")->wire($j)) ; 
+    }
+    $this->put('INST.dec' => $idec) ;
+
+    # Now, setting up instruction circuits involves:
+    # - Hook up to the propoer wire of INST.bus 
+    # - Wire up the logical circuit and attach it to proper step wires
+    # - Use the "elastic" OR gates (xxx.eor) to enable and set 
 }
 
 
@@ -182,7 +229,12 @@ sub show {
     $str .= $this->get("ALU")->show(oct('0b' . $this->get("ALU.op")->power())) ;
     $str .= $this->get("RAM")->show() ;
     $str .= "CU:\n" ;
-    $str .= "  " . $this->get("IAR")->show() . "  " .  $this->get("IR")->show() . "\n" ;
+    $str .= "  " . $this->get("IAR")->show() . "  " .  $this->get("IR")->show() ;
+    $str .= "  INST.bus:" . $this->get("INST.bus")->power() ;
+    $str .= "  REGA.e:" . $this->get("REGA.e")->power() . '/' . $this->get("REGA.e.dec")->os()->power() ;
+    $str .= "  REGB.e:" . $this->get("REGB.e")->power() . '/' . $this->get("REGB.e.dec")->os()->power() ;
+    $str .= "  REGB.s:" . $this->get("REGB.s")->power() . '/' . $this->get("REGB.s.dec")->os()->power() ;
+    $str .= "\n" ;
 
     return $str ;
 }

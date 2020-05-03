@@ -14,3 +14,4 @@ eval {
     $BB->get("RAM2") ;
 } ;
 like($@, qr/not registered/) ;
+
