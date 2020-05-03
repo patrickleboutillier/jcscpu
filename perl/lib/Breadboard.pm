@@ -93,6 +93,9 @@ sub new {
     if ($opts{'instproc'}){
         $this->instproc() ;
     }
+    if ($opts{'instimpl'}){
+        $this->instimpl() ;
+    }
 
     return $this ;
 }
@@ -101,7 +104,7 @@ sub new {
 sub instproc {
     my $this = shift ;
  
-    # Add instprocion related registers
+    # Add instrucion related registers
     $this->put(
         "IAR.s" => new WIRE(),
         "IAR.e" => new WIRE(),
@@ -144,8 +147,13 @@ sub instproc {
     $this->get("IR.set.eor")->add($this->get("STP.bus")->wire(1)) ; 
     $this->get("ACC.ena.eor")->add($this->get("STP.bus")->wire(2)) ; 
     $this->get("IAR.set.eor")->add($this->get("STP.bus")->wire(2)) ; 
+}
 
-    # Then, we set up the parts that are required to actually process instprocions, i.e.
+
+sub instimpl {
+    my $this = shift ;
+
+    # Then, we set up the parts that are required to actually implement instrucions, i.e.
     # - Connect the decoders for the enable and set operations on R0-R3 
     $this->put(
         "REGA.e" => new WIRE(),
@@ -185,7 +193,7 @@ sub instproc {
     $this->put("REGA.e.dec" => new DECODER(2, BUS->wrap($this->get("IR")->os()->wire(4), $this->get("IR")->os()->wire(5)), BUS->wrap(@edecoa))) ;
     $this->put("REGB.e.dec" => new DECODER(2, BUS->wrap($this->get("IR")->os()->wire(6), $this->get("IR")->os()->wire(7)), BUS->wrap(@edecob))) ;
 
-    # Finally, install the instprocion decoder
+    # Finally, install the instruction decoder
     $this->put('INST.bus' => new BUS()) ;
     my $notalu = new WIRE() ;
     new NOT($this->get("IR")->os()->wire(0), $notalu) ;
@@ -195,7 +203,7 @@ sub instproc {
     }
     $this->put('INST.dec' => $idec) ;
 
-    # Now, setting up instprocion circuits involves:
+    # Now, setting up instruction circuits involves:
     # - Hook up to the propoer wire of INST.bus 
     # - Wire up the logical circuit and attach it to proper step wires
     # - Use the "elastic" OR gates (xxx.eor) to enable and set 

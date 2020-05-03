@@ -5,7 +5,9 @@ use Breadboard ;
 plan(tests => 8) ;
 # $CLOCK::DEBUG = 1 ;
 
-my $BB = new BREADBOARD('instproc' => 1) ;
+my $BB = new BREADBOARD(
+    'instproc' => 1
+) ;
 
 # Place some fake instructions in RAM
 init() ;
