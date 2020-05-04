@@ -121,13 +121,15 @@ sub qtick {
 # Maunal advancing of the clock.
 sub tick {
     my $this = shift ;
+    my $nb = shift || 1 ;
 
     my $qticks = $this->{qticks} ;
     my $mod = $qticks % 4 ;
-
     croak("Can't tick a clock mid-cycle (qticks: $qticks)!") if $mod ;
 
-    map { $this->qtick() } (0..3) ;
+    for (my $j = 0 ; $j < $nb ; $j++){
+        map { $this->qtick() } (0..3) ;
+    }
 }
 
 

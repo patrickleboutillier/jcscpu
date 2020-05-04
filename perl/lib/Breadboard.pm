@@ -3,8 +3,10 @@ package BREADBOARD ;
 use strict ;
 use RAM ;
 use ALU ;
+use BUS1 ;
 use Clock ;
 use Stepper ;
+use Instructions ;
 use Carp ;
 
 
@@ -50,6 +52,8 @@ sub new {
         "TMP.s" => new WIRE(),
         "TMP.e" => WIRE->on(), # TMP.e is always on
         "TMP.bus" => new BUS(),
+        "BUS1.bit1" => new WIRE(),
+        "BUS1.bus" => new BUS(),
     ) ;
     $this->put(
         'R0' => new REGISTER($this->get(qw/DATA.bus R0.s R0.e DATA.bus/), "R0"),
@@ -57,7 +61,7 @@ sub new {
         'R2' => new REGISTER($this->get(qw/DATA.bus R2.s R2.e DATA.bus/), "R2"), 
         'R3' => new REGISTER($this->get(qw/DATA.bus R3.s R3.e DATA.bus/), "R3"), 
         'TMP' => new REGISTER($this->get(qw/DATA.bus TMP.s TMP.e TMP.bus/), "TMP"), 
-        "TMP.bus.bit1" => $this->get(qw/TMP.bus/)->wire(7),
+        'BUS1' => new BUS1($this->get(qw/TMP.bus BUS1.bit1 BUS1.bus/)),
     ) ;
 
     # ALU
@@ -75,7 +79,7 @@ sub new {
     ) ;
     $this->put(
         "ACC" => new REGISTER($this->get(qw/ALU.bus ACC.s ACC.e DATA.bus/), "ACC"), 
-        "ALU" => new ALU($this->get(qw/DATA.bus TMP.bus ALU.ci ALU.op ALU.op.e ALU.bus ALU.co ALU.eqo ALU.alo ALU.z/)), 
+        "ALU" => new ALU($this->get(qw/DATA.bus BUS1.bus ALU.ci ALU.op ALU.op.e ALU.bus ALU.co ALU.eqo ALU.alo ALU.z/)), 
     ) ;
 
     # CLOCK & STEPPER
@@ -95,6 +99,14 @@ sub new {
     }
     if ($opts{'instimpl'}){
         $this->instimpl() ;
+    }
+    if ($opts{'insts'}){
+        require Instructions ;
+        my $insts = $opts{'insts'} ;
+        my @insts = ($insts =~ /^all$/i ? sort keys %INSTRUCTIONS::INSTS : @{$opts{'insts'}}) ;
+        foreach my $i (@insts){
+            $INSTRUCTIONS::INSTS{$i}->($this) ;
+        }
     }
 
     return $this ;
@@ -125,7 +137,7 @@ sub instproc {
         new AND($this->get("CLK.clke"), $w, $this->get("$e.e")) ;
         $this->put("$e.ena.eor" => new ORe($w)) ; 
     }
-    $this->put("TMP.bit1.eor" => new ORe($this->get("TMP.bus.bit1"))) ;
+    $this->put("BUS1.bit1.eor" => new ORe($this->get("BUS1.bit1"))) ;
 
     # ALL SETS
     for my $s (qw/IR RAM.MAR IAR ACC RAM TMP IO.clk/){
@@ -136,9 +148,9 @@ sub instproc {
 
     # Hook up the circuit used to process the first 3 steps of each cycle (see page 108 in book), i.e 
     # - Load IAR to MAR and increment IAR in AC
-    # - Load the instprocion from RAM into IR
+    # - Load the instrucion from RAM into IR
     # - Increment the IAR from ACC
-    $this->get("TMP.bit1.eor")->add($this->get("STP.bus")->wire(0)) ;
+    $this->get("BUS1.bit1.eor")->add($this->get("STP.bus")->wire(0)) ;
     $this->get("IAR.ena.eor")->add($this->get("STP.bus")->wire(0)) ;
     $this->get("RAM.MAR.set.eor")->add($this->get("STP.bus")->wire(0)) ;
     $this->get("ACC.set.eor")->add($this->get("STP.bus")->wire(0)) ;
@@ -242,7 +254,7 @@ sub show {
     $str .= $this->get("CLK")->show() ;
     $str .= $this->get("STP")->show() ;
     $str .= "BUS:" . $this->get("DATA.bus")->show() . "  " ;
-    $str .= join("  ", map { $this->get($_)->show() } qw/TMP ACC R0 R1 R2 R3/) . "\n" ;
+    $str .= join("  ", map { $this->get($_)->show() } qw/TMP BUS1 ACC R0 R1 R2 R3/) . "\n" ;
     $str .= $this->get("ALU")->show(oct('0b' . $this->get("ALU.op")->power())) ;
     $str .= $this->get("RAM")->show() ;
     if ($this->{opts}->{instproc}){
@@ -256,6 +268,59 @@ sub show {
     $str .= "\n" ;
 
     return $str ;
+}
+
+
+#
+# Convenience methods
+#
+
+
+sub setRAM {
+    my $this = shift ;
+    my $addr = shift ;
+    my $data = shift ;
+
+    $this->get("DATA.bus")->power($addr) ;
+    $this->get("RAM.MAR.s")->power(1) ;
+    $this->get("RAM.MAR.s")->power(0) ;
+    $this->get("DATA.bus")->power($data) ;
+    $this->get("RAM.s")->power(1) ;
+    $this->get("RAM.s")->power(0) ;
+}
+
+
+sub setREG {
+    my $this = shift ;
+    my $reg = shift ;
+    my $data = shift ;
+
+    $this->get("DATA.bus")->power($data) ;
+    $this->get("$reg.s")->power(1) ;
+    $this->get("$reg.s")->power(0) ;
+}
+
+
+sub qtick {
+    my $this = shift ;
+
+    return $this->get("CLK")->qtick() ;
+}
+
+
+sub tick {
+    my $this = shift ;
+
+    return $this->get("CLK")->tick(@_) ;
+}
+
+
+sub step {
+    my $this = shift ;
+
+    my $cur = $this->get("STP")->step() ;
+    croak("Can't step mid-instruction (step: $cur)!") unless (($cur == 0)||($cur == 6)) ;
+    map { $this->get("CLK")->tick() } (0..5) ;
 }
 
 

@@ -1,5 +1,3 @@
 - Remove dependencies on Algorhithm::Combinatorics and List::Utils qw(shuffle)
   - In progress
 - Figure out how to remove ALU extra enabler
-
-

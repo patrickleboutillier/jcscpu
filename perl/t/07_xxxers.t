@@ -6,6 +6,7 @@ use ORER ;
 use XORER ;
 use ADDER ;
 use ZERO ;
+use BUS1 ;
 use Algorithm::Combinatorics qw(tuples_with_repetition) ;
 use List::Util qw(shuffle) ;
 
@@ -60,6 +61,7 @@ my $x = new XORER($bas, $bbs, $bcs, $weqo, $walo) ;
 $x->show() ;
 make_xorer_test(1) ;
 
+
 $bas = new BUS() ;
 $bbs = new BUS() ;
 my $wci = new WIRE() ;
@@ -70,8 +72,16 @@ $a->show() ;
 make_adder_test(1) ;
 
 
+$bis = new BUS() ;
+my $bos = new BUS() ;
+my $wbus1 = new WIRE() ;
+$b = new BUS1($bis, $wbus1, $bos) ;
+$b->show() ;
+make_bus1_test(1) ;
+
+
 sub nb_xxxer_tests { 
-    return 256*4 + ($make_xxer_size*($make_xxer_size+1))*5  ;
+    return 256*5 + ($make_xxer_size*($make_xxer_size+1))*5  ;
 }
 
 
@@ -213,5 +223,23 @@ sub make_zero_test {
         my @res = map { ($_ ? 1 : 0) } map {! $_ } @{$t} ;
         my $res = ($bin eq "00000000" ? 1 : 0) ;
         is($wz->power(), $res, "ZERO($bin)=$res") ;
+    }
+}
+
+
+sub make_bus1_test {
+    my $random = shift ;
+
+    my @ts = tuples_with_repetition([0, 1], 8) ;
+    @ts = shuffle @ts if $random ;
+    foreach my $t (@ts){
+        my $bin = join('', @{$t}) ;
+        $bis->power($bin) ;
+        my $bus1 = int rand(2) ;
+        $wbus1->power($bus1) ;
+
+        my @res = map { ($_ ? 1 : 0) } map {! $_ } @{$t} ;
+        my $res = ($bus1 ? "00000001" : $bin) ;
+        is($bos->power(), $res, "BUS1($bin,$bus1)=$res") ;
     }
 }
