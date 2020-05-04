@@ -7,7 +7,7 @@ push @INC, './t' ;
 require 'test_alu.pm' ;
 
 
-my $nb_test_per_op = 256 ;
+my $nb_test_per_op = 128 ;
 my @ops = (0,1,2,3,4,5,6,7) ;
 plan(tests => $nb_test_per_op*(scalar(@ops)+1)) ;
 

@@ -34,4 +34,29 @@ $INSTRUCTIONS::INSTS{'ALU'} = sub {
     my $aluope = new WIRE() ;
     new AND($BB->get("STP.bus")->wire(4), $BB->get("IR.bus")->wire(0), $aluope) ;
     $BB->get("ALU.op.ena.eor")->add($aluope) ;
-}
+} ;
+
+
+$INSTRUCTIONS::INSTS{'LDST'} = sub {
+    my $BB = shift ;
+
+    my $l1 = new WIRE() ;
+    new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.dec")->o(0), $l1) ;
+    $BB->get("REGA.ena.eor")->add($l1) ;
+    $BB->get("RAM.MAR.set.eor")->add($l1) ;
+
+    my $l2 = new WIRE() ;
+    new AND($BB->get("STP.bus")->wire(4), $BB->get("INST.dec")->o(0), $l2) ;
+    $BB->get("RAM.ena.eor")->add($l2) ;
+    $BB->get("REGB.set.eor")->add($l2) ;
+
+    my $s1 = new WIRE() ;
+    new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.dec")->o(1), $s1) ;
+    $BB->get("REGA.ena.eor")->add($s1) ;
+    $BB->get("RAM.MAR.set.eor")->add($s1) ;
+
+    my $s2 = new WIRE() ;
+    new AND($BB->get("STP.bus")->wire(4), $BB->get("INST.dec")->o(1), $s2) ;
+    $BB->get("REGB.ena.eor")->add($s2) ;
+    $BB->get("RAM.set.eor")->add($s2) ;
+} ;

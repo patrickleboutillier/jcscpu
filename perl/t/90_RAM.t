@@ -2,11 +2,10 @@ use strict ;
 use Test::More ;
 use RAM ;
 use Data::Dumper ;
-use Algorithm::Combinatorics qw(tuples_with_repetition) ;
-use List::Util qw(shuffle) ;
 
 
-plan(tests => 3 + 256*2) ;
+my $nb_ram_tests = 256 ;
+plan(tests => 3 + $nb_ram_tests) ;
 
 
 my $ba = new BUS() ;
@@ -61,36 +60,33 @@ $we->power(1) ;
 is($bio->power(), $data1) ;
 $we->power(0) ;
 
-make_ram_test(0) ;
 make_ram_test(1) ;
 
 sub make_ram_test {
     my $random = shift ;
 
-    my @ts = tuples_with_repetition([0, 1], 8) ;
-    @ts = shuffle @ts if $random ;
-
+    my @ts = map { int rand(255) } (1..$nb_ram_tests) ;
     foreach my $t (@ts){
-        my $addr = join('', @{$t}) ;
+        my $addr = sprintf("%08b", $t) ;
         $ba->power($addr) ;
         $wsa->power(1) ;
         $wsa->power(0) ;
         # Then setup some data on the I/O bus and store it.
-        my $data = join('', reverse @{$t}) ;
+        my $data = join('', scalar(reverse($addr))) ;
         $bio->power($data) ;
         $ws->power(1) ;
         $ws->power(0) ;
     }
 
     foreach my $t (@ts){
-        my $addr = join('', @{$t}) ;
+        my $addr = sprintf("%08b", $t) ;
         $ba->power($addr) ;
         $wsa->power(1) ;
         $wsa->power(0) ;
 
         # Now if we turn on the e, we should get our data back on the bus.
         $we->power(1) ;
-        my $data = join('', reverse @{$t}) ;
+        my $data = join('', scalar(reverse($addr))) ;
         is($bio->power(), $data) ;
         $we->power(0) ;
     }
