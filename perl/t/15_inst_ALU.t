@@ -7,7 +7,7 @@ push @INC, './t' ;
 require 'test_alu.pm' ;
 
 
-my $nb_test_per_op = 32 ;
+my $nb_test_per_op = 8 ;
 my @ops = (0,1,2,3,4,5,6,7) ;
 plan(tests => 4 + $nb_test_per_op*(scalar(@ops))) ;
 
@@ -95,7 +95,7 @@ sub alu {
     $BB->setREG("R$res{rb}", $res{binb}) ;
     $BB->setRAM($addr, $res{inst}) ; 
     $BB->setREG("IAR", $addr) ;
-    $BB->tick(6) ;
+    $BB->step() ;
     #warn Dumper($tc) ;
     #warn $BB->show() ;
     #for (my $j = 0 ; $j < 12 ; $j++){
@@ -104,13 +104,9 @@ sub alu {
     #}
 
     $res{out} = oct("0b" . $BB->get("R$res{rb}")->power()) if ($res{op} < 7) ;   
-    # $res{co} = $BB->get("ALU")->co()->power() if ($res{op} < 3) ;
 
     if (defined($res{out})){
         $res{binout} = sprintf("%08b", $res{out}) ; 
-        # $res{z} = $BB->get("ALU")->z()->power() ;
-        # $res{eqo} = $BB->get("ALU")->eqo()->power() ;
-        # $res{alo} = $BB->get("ALU")->alo()->power() ;
     }
 
     return \%res ;

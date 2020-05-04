@@ -125,7 +125,7 @@ sub tick {
 
     my $qticks = $this->{qticks} ;
     my $mod = $qticks % 4 ;
-    croak("Can't tick a clock mid-cycle (qticks: $qticks)!") if $mod ;
+    croak("Can't tick mid-cycle (qticks: $qticks)!") if $mod ;
 
     for (my $j = 0 ; $j < $nb ; $j++){
         map { $this->qtick() } (0..3) ;

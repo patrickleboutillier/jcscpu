@@ -78,7 +78,7 @@ $wclk = new WIRE() ;
 $wclke = new WIRE() ;
 $wclks = new WIRE() ;
 $c = new CLOCK($wclk, $wclke, $wclks) ;
-map { $c->tick() } (1..2) ;
+$c->tick(2) ;
 
 is($c->qticks(), 8, "Clock did 8 qticks") ;
 map { $c->qtick() } (1..4) ;
@@ -89,7 +89,7 @@ eval {
     $c->tick() ;
 } ;
 if ($@){
-    like($@, qr/Can't tick a clock mid-cycle/, "Clock can't tick mid-cycle") ;   
+    like($@, qr/Can't tick mid-cycle/, "Clock can't tick mid-cycle") ;   
 }
 
 
