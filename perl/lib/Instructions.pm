@@ -60,3 +60,25 @@ $INSTRUCTIONS::INSTS{'LDST'} = sub {
     $BB->get("REGB.ena.eor")->add($s2) ;
     $BB->get("RAM.set.eor")->add($s2) ;
 } ;
+
+
+$INSTRUCTIONS::INSTS{'DATA'} = sub {
+    my $BB = shift ;
+
+    my $d1 = new WIRE() ;
+    new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.dec")->o(2), $d1) ;
+    $BB->get("BUS1.bit1.eor")->add($d1) ;
+    $BB->get("IAR.ena.eor")->add($d1) ;
+    $BB->get("RAM.MAR.set.eor")->add($d1) ;
+    $BB->get("ACC.set.eor")->add($d1) ;
+
+    my $d2 = new WIRE() ;
+    new AND($BB->get("STP.bus")->wire(4), $BB->get("INST.dec")->o(2), $d2) ;
+    $BB->get("RAM.ena.eor")->add($d2) ;
+    $BB->get("REGB.set.eor")->add($d2) ;
+
+    my $d3 = new WIRE() ;
+    new AND($BB->get("STP.bus")->wire(5), $BB->get("INST.dec")->o(2), $d3) ;
+    $BB->get("ACC.ena.eor")->add($d3) ;
+    $BB->get("IAR.set.eor")->add($d3) ;
+} ;
