@@ -76,10 +76,24 @@ sub new {
         "ALU.eqo" => new WIRE(),
         "ALU.alo" => new WIRE(),
         "ALU.z" => new WIRE(),
+        "FLAGS.e" => WIRE->on(), # FLAGS.e is always on
+        "FLAGS.s" => new WIRE(),
     ) ;
     $this->put(
         "ACC" => new REGISTER($this->get(qw/ALU.bus ACC.s ACC.e DATA.bus/), "ACC"), 
         "ALU" => new ALU($this->get(qw/DATA.bus BUS1.bus ALU.ci ALU.op ALU.op.e ALU.bus ALU.co ALU.eqo ALU.alo ALU.z/)), 
+    ) ;
+    $this->put(
+        "FLAGS" => new REGISTER(
+            BUS->wrap(
+                $this->get("ALU")->co(), $this->get("ALU")->alo(), $this->get("ALU")->eqo(), $this->get("ALU")->z(),
+                map { WIRE->off() } (0..3)
+            ),
+            $this->get(qw/FLAGS.s FLAGS.e/),
+            BUS->wrap(
+                $this->get("ALU")->ci(), map { new WIRE() } (1..3),
+                map { WIRE->off() } (0..3)
+            ), "FLAGS"),
     ) ;
 
     # CLOCK & STEPPER

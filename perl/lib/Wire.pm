@@ -4,7 +4,7 @@ use strict ;
 use Time::HiRes ;
 
 my $ON = new WIRE(1, 1) ;
-# my $OFF = new WIRE(0, 1) ;
+my $OFF = new WIRE(0, 1) ;
 
 sub new {
     my $class = shift ;
@@ -27,6 +27,11 @@ sub new {
 
 
 sub on {
+    return $ON ;
+}
+
+
+sub off {
     return $ON ;
 }
 
