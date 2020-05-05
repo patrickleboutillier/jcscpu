@@ -3,16 +3,16 @@ package ALU ;
 use strict ;
 use Wire ;
 use Gates ;
-use DECODER ;
-use ENABLER ;
-use NOTTER ;
-use ANDDER ;
-use ORER ;
-use XORER ;
-use ADDER ;
-use ZERO ;
-use SHIFTL ;
-use SHIFTR ;
+use Decoder ;
+use Enabler ;
+use NOTter ;
+use ANDder ;
+use ORer ;
+use XORer ;
+use ADDer ;
+use Zero ;
+use ShiftL ;
+use ShiftR ;
 
 
 sub new {

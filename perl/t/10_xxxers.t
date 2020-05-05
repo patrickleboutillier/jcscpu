@@ -1,11 +1,11 @@
 use strict ;
 use Test::More ;
-use NOTTER ;
-use ANDDER ;
-use ORER ;
-use XORER ;
-use ADDER ;
-use ZERO ;
+use NOTter ;
+use ANDder ;
+use ORer ;
+use XORer ;
+use ADDer ;
+use Zero ;
 use BUS1 ;
 
 
