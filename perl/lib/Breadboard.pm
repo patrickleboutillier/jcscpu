@@ -109,6 +109,15 @@ sub new {
         "STP"  => new STEPPER($this->get(qw/CLK.clk STP.bus/)),
     ) ;
 
+    # Hook up the FLAGS Register co output to the ALU ci, adding the AND gate describes in the Errata #2
+    # Errata stuff: http://www.buthowdoitknow.com/errata.html
+    # Naively: new CONN($this->get("FLAGS")->os()->wire(0), $this->get("ALU")->ci()) ;
+    my $weor = new WIRE() ;
+    my $wco = new WIRE() ;
+    new MEMORY($this->get("FLAGS")->os()->wire(0), $this->get("TMP")->s(), $wco) ;
+    new AND($wco, $weor, $this->get("ALU")->ci()) ;
+    $this->put("ALU.ci.ena.eor" => new ORe($weor)) ; 
+
     if ($opts{'instproc'}){
         $this->instproc() ;
     }

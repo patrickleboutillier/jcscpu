@@ -5,15 +5,6 @@ use strict ;
 $INSTRUCTIONS::INSTS{'ALU'} = sub {
     my $BB = shift ;
 
-    # Hook up the FLAGS Register co output to the ALU ci, adding the AND gate describes in the Errata #2
-    # Errata stuff: http://www.buthowdoitknow.com/errata.html
-    # Naively: new CONN($BB->get("FLAGS")->os()->wire(0), $BB->get("ALU")->ci()) ;
-    my $weor = new WIRE() ;
-    my $wco = new WIRE() ;
-    new MEMORY($BB->get("FLAGS")->os()->wire(0), $BB->get("TMP")->s(), $wco) ;
-    new AND($wco, $weor, $BB->get("ALU")->ci()) ;
-    $BB->put("ALU.ci.ena.eor" => new ORe($weor)) ; 
-
     my $aa1 = new WIRE() ;
     new AND($BB->get("STP.bus")->wire(3), $BB->get("IR.bus")->wire(0), $aa1) ;
     $BB->get("REGB.ena.eor")->add($aa1) ;
@@ -141,4 +132,18 @@ $INSTRUCTIONS::INSTS{'JUMP'} = sub {
         new AND($BB->get("FLAGS")->os()->wire($j), $BB->get("IR.bus")->wire($j + 4), $fbus->wire($j)) ;
     }
     new ORn(4, $fbus, $flago) ;
+} ;
+
+
+$INSTRUCTIONS::INSTS{'CLF'} = sub {
+    my $BB = shift ;
+
+    # CLF
+    my $cl1 = new WIRE() ;
+    new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.dec")->o(6), $cl1) ;
+    $BB->get("BUS1.bit1.eor")->add($cl1) ;
+    $BB->get("ALU.op.ena.eor")->add($cl1) ; # HACK
+    $BB->get("FLAGS.set.eor")->add($cl1) ;
+
+    # $BB->get("FLAGS.s")->prehook( sub { die("FLAG.s") if $_[0] ; }) ;
 } ;
