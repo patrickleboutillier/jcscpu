@@ -22,7 +22,7 @@ $INSTRUCTIONS::INSTS{'ALU'} = sub {
     my $aa2 = new WIRE() ;
     new AND($BB->get("STP.bus")->wire(4), $BB->get("IR.bus")->wire(0), $aa2) ;
     $BB->get("REGA.ena.eor")->add($aa2) ;
-    # $BB->get("ALU.ci.ena.eor")->add($aa2) ; # Errata #2
+    $BB->get("ALU.ci.ena.eor")->add($aa2) ; # Errata #2
     $BB->get("ACC.set.eor")->add($aa2) ;
     $BB->get("FLAGS.set.eor")->add($aa2) ;
 

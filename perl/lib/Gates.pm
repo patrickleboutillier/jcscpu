@@ -358,6 +358,7 @@ sub n {
 
 package ORe ; 
 use strict ;
+use Carp ;
 
 
 sub new {

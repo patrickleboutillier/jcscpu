@@ -91,6 +91,15 @@ sub alu {
     # Generate a random RAM address
     my $addr = sprintf("%08b", int rand(255)) ;
 
+    # When this is implemented, there is no CLF instruction available yet.
+    # We need to reset the FLAGS register because the presence of a trailing CI bit will give a bad answer.
+    # We also bump s on TMP to let the value into the Ctmp M. 
+    $BB->get("FLAGS")->is()->power("00000000") ;
+    $BB->get("FLAGS")->s()->power(1) ;
+    $BB->get("FLAGS")->s()->power(0) ;
+    $BB->get("TMP")->s()->power(1) ;
+    $BB->get("TMP")->s()->power(0) ;
+
     $BB->setREG("R$res{ra}", $res{bina}) ;
     $BB->setREG("R$res{rb}", $res{binb}) ;
     $BB->setRAM($addr, $res{inst}) ; 

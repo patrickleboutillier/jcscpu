@@ -3,6 +3,7 @@ package WIRE ;
 use strict ;
 use Time::HiRes ;
 
+
 my $ON = new WIRE(1, 1) ;
 my $OFF = new WIRE(0, 1) ;
 

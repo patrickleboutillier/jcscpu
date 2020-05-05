@@ -6,7 +6,7 @@ use Gates ;
 
 
 my $max_n_tests = 8 ;
-plan(tests => 57 +
+plan(tests => 58 +
     8 + nb_andn_tests() + nb_orn_tests()) ;
 
 
@@ -21,7 +21,8 @@ $w->terminal() ;
 $w->power(0) ;
 $w->pause() ;
 is($w->power(), 1, "Terminal froze the wire") ;
-
+$w->power(0, 1) ;
+$w->power(1, 1) ;
 
 # NAND
 my $wa = new WIRE() ;
@@ -259,6 +260,16 @@ eval { $o->i(-1) ;} ;
 like($@, qr/Invalid input index/, "Invalid input index <0") ;
 eval { $o->i(6) ;} ;
 like($@, qr/Invalid input index/, "Invalid input index >n") ;
+
+
+# ORe coverage
+my $o = new ORe(new WIRE()) ;
+map { $o->add(new WIRE()) } (0..5) ;
+eval {
+    $o->add(new WIRE()) ;
+} ;
+like($@, qr/Elastic OR has reached maximum capacity/) ;
+
 
 
 sub nb_andn_tests {
