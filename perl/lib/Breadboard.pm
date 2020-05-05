@@ -90,9 +90,10 @@ sub new {
                 map { WIRE->off() } (0..3)
             ),
             $this->get(qw/FLAGS.s FLAGS.e/),
+            # We DO NOT hook up the ALU carry in just yet, we will do that when we setup ALU instructions processing
             BUS->wrap(
-                $this->get("ALU")->ci(), map { new WIRE() } (1..3),
-                map { WIRE->off() } (0..3)
+                map { new WIRE() } (0..3),
+                map { WIRE->off() } (0..3),
             ), "FLAGS"),
     ) ;
 
@@ -130,7 +131,7 @@ sub new {
 sub instproc {
     my $this = shift ;
  
-    # Add instrucion related registers
+    # Add instruction related registers
     $this->put(
         "IAR.s" => new WIRE(),
         "IAR.e" => new WIRE(),
@@ -154,7 +155,7 @@ sub instproc {
     $this->put("BUS1.bit1.eor" => new ORe($this->get("BUS1.bit1"))) ;
 
     # ALL SETS
-    for my $s (qw/IR RAM.MAR IAR ACC RAM TMP IO.clk/){
+    for my $s (qw/IR RAM.MAR IAR ACC RAM TMP FLAGS IO.clk/){
         my $w = new WIRE() ;
         new AND($this->get("CLK.clks"), $w, $this->get("$s.s")) ;
         $this->put("$s.set.eor" => new ORe($w)) ; 
@@ -162,15 +163,17 @@ sub instproc {
 
     # Hook up the circuit used to process the first 3 steps of each cycle (see page 108 in book), i.e 
     # - Load IAR to MAR and increment IAR in AC
-    # - Load the instrucion from RAM into IR
+    # - Load the instruction from RAM into IR
     # - Increment the IAR from ACC
     $this->get("BUS1.bit1.eor")->add($this->get("STP.bus")->wire(0)) ;
     $this->get("IAR.ena.eor")->add($this->get("STP.bus")->wire(0)) ;
     $this->get("RAM.MAR.set.eor")->add($this->get("STP.bus")->wire(0)) ;
     $this->get("ACC.set.eor")->add($this->get("STP.bus")->wire(0)) ;
     $this->get("ALU.op.ena.eor")->add($this->get("STP.bus")->wire(0)) ;
+
     $this->get("RAM.ena.eor")->add($this->get("STP.bus")->wire(1)) ; 
     $this->get("IR.set.eor")->add($this->get("STP.bus")->wire(1)) ; 
+    
     $this->get("ACC.ena.eor")->add($this->get("STP.bus")->wire(2)) ; 
     $this->get("IAR.set.eor")->add($this->get("STP.bus")->wire(2)) ; 
 }
@@ -179,7 +182,7 @@ sub instproc {
 sub instimpl {
     my $this = shift ;
 
-    # Then, we set up the parts that are required to actually implement instrucions, i.e.
+    # Then, we set up the parts that are required to actually implement instructions, i.e.
     # - Connect the decoders for the enable and set operations on R0-R3 
     $this->put(
         "REGA.e" => new WIRE(),
@@ -268,7 +271,7 @@ sub show {
     $str .= $this->get("CLK")->show() ;
     $str .= $this->get("STP")->show() ;
     $str .= "BUS:" . $this->get("DATA.bus")->show() . "  " ;
-    $str .= join("  ", map { $this->get($_)->show() } qw/TMP BUS1 ACC R0 R1 R2 R3/) . "\n" ;
+    $str .= join("  ", map { $this->get($_)->show() } qw/TMP BUS1 ACC FLAGS R0 R1 R2 R3/) . "\n" ;
     $str .= $this->get("ALU")->show(oct('0b' . $this->get("ALU.op")->power())) ;
     $str .= $this->get("RAM")->show() ;
     if ($this->{opts}->{instproc}){

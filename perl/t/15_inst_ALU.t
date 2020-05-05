@@ -77,7 +77,7 @@ sub do_test_case {
 
     my $desc = Dumper($tc) ;
     $desc =~ s/\n\s*//gs ;
-    is_deeply($res, $vres, "inst:$tc->{inst}, $desc") or die() ;
+    is_deeply($res, $vres, "inst:$tc->{inst}, $desc") ;
 }
 
 

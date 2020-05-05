@@ -19,11 +19,11 @@ map { make_data_test() } (1..$nb_test_per_op) ;
 # Testing of DATA instructions.
 # Generate a random addr, 2 registers and data
 sub make_data_test {
-    my $a = int(rand(254)) ;
+    my $a = int(rand(255)) ;
     my $iaddr = sprintf("%08b", $a) ;
     my $daddr = sprintf("%08b", $a + 1) ;
     my $rb = int rand(4) ;
-    my $data = sprintf("%08b", int rand(255)) ;
+    my $data = sprintf("%08b", int rand(256)) ;
     my $dinst = "001000" . sprintf("%02b", $rb) ;
 
     $BB->setRAM($iaddr, $dinst) ; 

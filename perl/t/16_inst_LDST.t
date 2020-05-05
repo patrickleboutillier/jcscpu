@@ -20,12 +20,12 @@ map { make_store_test() } (1..$nb_test_per_op) ;
 # Testing of LOAD/STORE instructions.
 # Generate a random addr, 2 registers and data
 sub make_load_test {
-    my $a = int(rand(254)) + 1 ;
+    my $a = int(rand(255)) + 1 ;
     my $addr = sprintf("%08b", $a) ;
     my $iaddr = sprintf("%08b", $a - 1) ;
     my $ra = int rand(4) ;
     my $rb = int rand(4) ;
-    my $data = sprintf("%08b", int rand(255)) ;
+    my $data = sprintf("%08b", int rand(256)) ;
     my $linst = "0000" . sprintf("%02b%02b", $ra, $rb) ;
 
     $BB->setREG("R$ra", $addr) ;
@@ -39,12 +39,12 @@ sub make_load_test {
 
 
 sub make_store_test {
-    my $a = int(rand(254)) + 1 ;
+    my $a = int(rand(255)) + 1 ;
     my $addr = sprintf("%08b", $a) ;
     my $iaddr = sprintf("%08b", $a - 1) ;
     my $ra = int rand(4) ;
     my $rb = int rand(4) ;
-    my $data = sprintf("%08b", int rand(255)) ;
+    my $data = sprintf("%08b", int rand(256)) ;
     my $linst = "0001" . sprintf("%02b%2b", $ra, $rb) ;
 
     $BB->setREG("R$ra", $addr) ;
