@@ -1,7 +1,5 @@
 use strict ;
 use Test::More ;
-use Algorithm::Combinatorics qw(tuples_with_repetition) ;
-use List::Util qw(all) ;
 use Gates ;
 
 
@@ -21,8 +19,7 @@ $w->terminal() ;
 $w->power(0) ;
 $w->pause() ;
 is($w->power(), 1, "Terminal froze the wire") ;
-$w->power(0, 1) ;
-$w->power(1, 1) ;
+
 
 # NAND
 my $wa = new WIRE() ;

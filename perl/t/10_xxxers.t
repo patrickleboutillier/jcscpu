@@ -7,8 +7,7 @@ use XORER ;
 use ADDER ;
 use ZERO ;
 use BUS1 ;
-use Algorithm::Combinatorics qw(tuples_with_repetition) ;
-use List::Util qw(shuffle) ;
+
 
 my $make_xxer_size = 64 ;
 $make_xxer_size = 8 ;
@@ -88,13 +87,12 @@ sub nb_xxxer_tests {
 sub make_notter_test {
     my $random = shift ;
 
-    my @ts = tuples_with_repetition([0, 1], 8) ;
-    @ts = shuffle @ts if $random ;
+    my @ts = map { ($random ? int rand(256) : $_) } (0..255) ;
     foreach my $t (@ts){
-        my $bin = join('', @{$t}) ;
+        my $bin = sprintf("%08b", $t) ;
         $bas->power($bin) ;
 
-        my @res = map { ($_ ? 1 : 0) } map {! $_ } @{$t} ;
+        my @res = map { ($_ ? 1 : 0) } map {! $_ } split(//, $bin) ;
         my $res = join('', @res) ;
         is($bbs->power(), $res, "NOTTER($bin)=$res") ;
     }
@@ -103,21 +101,22 @@ sub make_notter_test {
 sub make_andder_test {
     my $random = shift ;
 
-    my @ts = tuples_with_repetition([0, 1], 8) ;
-    @ts = shuffle @ts if $random ;
+    my @ts = map { ($random ? int rand(256) : $_) } (0..255) ;
     my @ts1 = @ts[0..($make_xxer_size-1)] ;
     my @ts2 = @ts[($make_xxer_size-1)..($make_xxer_size*2-1)] ;
 
     foreach my $t1 (@ts1){
         foreach my $t2 (@ts2){
-            my $bin1 = join('', @{$t1}) ;
-            my $bin2 = join('', @{$t2}) ;
+            my $bin1 = sprintf("%08b", $t1) ;
+            my $bin2 = sprintf("%08b", $t2) ;
             $bas->power($bin1) ;
             $bbs->power($bin2) ;
 
             my @res = () ;
+            my @t1 = split(//, $bin1) ;
+            my @t2 = split(//, $bin2) ;
             for (my $j = 0 ; $j < 8 ; $j++){
-                push @res, map { ($_ ? 1 : 0) } ($t1->[$j] and $t2->[$j]) ;
+                push @res, map { ($_ ? 1 : 0) } ($t1[$j] and $t2[$j]) ;
             }
             my $res = join('', @res) ;
             is($bcs->power(), $res, "ANDDER($bin1,$bin2)=$res") ;
@@ -128,21 +127,22 @@ sub make_andder_test {
 sub make_orer_test {
     my $random = shift ;
 
-    my @ts = tuples_with_repetition([0, 1], 8) ;
-    @ts = shuffle @ts if $random ;
+    my @ts = map { ($random ? int rand(256) : $_) } (0..255) ;
     my @ts1 = @ts[0..($make_xxer_size-1)] ;
     my @ts2 = @ts[($make_xxer_size-1)..($make_xxer_size*2-1)] ;
 
     foreach my $t1 (@ts1){
         foreach my $t2 (@ts2){
-            my $bin1 = join('', @{$t1}) ;
-            my $bin2 = join('', @{$t2}) ;
+            my $bin1 = sprintf("%08b", $t1) ;
+            my $bin2 = sprintf("%08b", $t2) ;
             $bas->power($bin1) ;
             $bbs->power($bin2) ;
 
             my @res = () ;
+            my @t1 = split(//, $bin1) ;
+            my @t2 = split(//, $bin2) ;
             for (my $j = 0 ; $j < 8 ; $j++){
-                push @res, map { ($_ ? 1 : 0) } ($t1->[$j] or $t2->[$j]) ;
+                push @res, map { ($_ ? 1 : 0) } ($t1[$j] or $t2[$j]) ;
             }
             my $res = join('', @res) ;
             is($bcs->power(), $res, "ORER($bin1,$bin2)=$res") ;
@@ -153,21 +153,22 @@ sub make_orer_test {
 sub make_xorer_test {
     my $random = shift ;
 
-    my @ts = tuples_with_repetition([0, 1], 8) ;
-    @ts = shuffle @ts if $random ;
+    my @ts = map { ($random ? int rand(256) : $_) } (0..255) ;
     my @ts1 = @ts[0..($make_xxer_size-1)] ;
     my @ts2 = @ts[($make_xxer_size-1)..($make_xxer_size*2-1)] ;
 
     foreach my $t1 (@ts1){
         foreach my $t2 (@ts2){
-            my $bin1 = join('', @{$t1}) ;
-            my $bin2 = join('', @{$t2}) ;
+            my $bin1 = sprintf("%08b", $t1) ;
+            my $bin2 = sprintf("%08b", $t2) ;
             $bas->power($bin1) ;
             $bbs->power($bin2) ;
 
             my @res = () ;
+            my @t1 = split(//, $bin1) ;
+            my @t2 = split(//, $bin2) ;
             for (my $j = 0 ; $j < 8 ; $j++){
-                push @res, map { ($_ ? 1 : 0) } ($t1->[$j] xor $t2->[$j]) ;
+                push @res, map { ($_ ? 1 : 0) } ($t1[$j] xor $t2[$j]) ;
             }
             my $res = join('', @res) ;
 
@@ -183,14 +184,13 @@ sub make_xorer_test {
 sub make_adder_test {
     my $random = shift ;
 
-    my @ts = tuples_with_repetition([0, 1], 8) ;
-    @ts = shuffle @ts if $random ;
+    my @ts = map { ($random ? int rand(256) : $_) } (0..255) ;
     my @ts1 = @ts[0..($make_xxer_size-1)] ;
     my @ts2 = @ts[($make_xxer_size-1)..($make_xxer_size*2-1)] ;
     foreach my $t1 (@ts1){
         foreach my $t2 (@ts2){
-            my $bin1 = join('', @{$t1}) ;
-            my $bin2 = join('', @{$t2}) ;
+            my $bin1 = sprintf("%08b", $t1) ;
+            my $bin2 = sprintf("%08b", $t2) ;
             my $ci = int rand(2) ;
             $bas->power($bin1) ;
             $bbs->power($bin2) ;
@@ -214,13 +214,12 @@ sub make_adder_test {
 sub make_zero_test {
     my $random = shift ;
 
-    my @ts = tuples_with_repetition([0, 1], 8) ;
-    @ts = shuffle @ts if $random ;
+    my @ts = map { ($random ? int rand(256) : $_) } (0..255) ;
     foreach my $t (@ts){
-        my $bin = join('', @{$t}) ;
+        my $bin = sprintf("%08b", $t) ;
         $bis->power($bin) ;
 
-        my @res = map { ($_ ? 1 : 0) } map {! $_ } @{$t} ;
+        my @res = map { ($_ ? 1 : 0) } map {! $_ } split(//, $bin) ;
         my $res = ($bin eq "00000000" ? 1 : 0) ;
         is($wz->power(), $res, "ZERO($bin)=$res") ;
     }
@@ -230,15 +229,14 @@ sub make_zero_test {
 sub make_bus1_test {
     my $random = shift ;
 
-    my @ts = tuples_with_repetition([0, 1], 8) ;
-    @ts = shuffle @ts if $random ;
+    my @ts = map { ($random ? int rand(256) : $_) } (0..255) ;
     foreach my $t (@ts){
-        my $bin = join('', @{$t}) ;
+        my $bin = sprintf("%08b", $t) ;
         $bis->power($bin) ;
         my $bus1 = int rand(2) ;
         $wbus1->power($bus1) ;
 
-        my @res = map { ($_ ? 1 : 0) } map {! $_ } @{$t} ;
+        my @res = map { ($_ ? 1 : 0) } map {! $_ } split(//, $bin) ;
         my $res = ($bus1 ? "00000001" : $bin) ;
         is($bos->power(), $res, "BUS1($bin,$bus1)=$res") ;
     }

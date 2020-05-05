@@ -2,8 +2,6 @@ use strict ;
 use Test::More ;
 use ShiftL ;
 use ShiftR ;
-use Algorithm::Combinatorics qw(tuples_with_repetition) ;
-use List::Util qw(shuffle) ;
 
 
 plan(tests => nb_shifter_tests()) ;
@@ -36,13 +34,12 @@ sub nb_shifter_tests {
 sub make_shifterl_test {
     my $random = shift ;
 
-    my @ts = tuples_with_repetition([0, 1], 8) ;
-    @ts = shuffle @ts if $random ;
+    my @ts = map { ($random ? int rand(256) : $_) } (0..255) ;
     foreach my $t (@ts){
-        my $bin = join('', @{$t}) ;
+        my $bin = sprintf("%08b", $t) ;
         $bis->power($bin) ;
 
-        my @res = @{$t} ;
+        my @res = split(//, $bin) ;
         my $head = shift @res ;
         push @res, $head ;
         my $res = join('', @res) ;
@@ -53,14 +50,13 @@ sub make_shifterl_test {
 
 sub make_shifterr_test {
     my $random = shift ;
-
-    my @ts = tuples_with_repetition([0, 1], 8) ;
-    @ts = shuffle @ts if $random ;
+ 
+    my @ts = map { ($random ? int rand(256) : $_) } (0..255) ;
     foreach my $t (@ts){
-        my $bin = join('', @{$t}) ;
+        my $bin = sprintf("%08b", $t) ;
         $bis->power($bin) ;
 
-        my @res = @{$t} ;
+        my @res = split(//, $bin) ;
         my $head = pop @res ;
         unshift @res, $head ;
         my $res = join('', @res) ;
