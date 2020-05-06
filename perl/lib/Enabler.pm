@@ -49,12 +49,12 @@ sub os {
 sub show {
     my $this = shift ;
 
-    my $i = $this->is()->power() ;
-    my $e = $this->e()->power() ;
-    my $o = $this->os()->power() ;
+    my $i = $this->{is}->power() ;
+    my $e = $this->{e}->power() ;
+    my $o = $this->{os}->power() ;
 
     return "ENABLER($this->{name}): i:$i, e:$e, o:$o\n" ;
 }
 
 
-return 1 ;
+1 ;

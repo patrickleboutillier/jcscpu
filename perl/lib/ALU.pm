@@ -34,25 +34,33 @@ sub new {
     $bdec->wire(7)->terminal() ;
 
     my @Es = () ;
-    my $xor = new XORER($bas, $bbs, new BUS(), $weqo, $walo) ;
-    unshift @Es, new ENABLER($xor->cs(), $bdec->wire(6), $bcs, "/ENABLER(XORER)") ;
+    my $bxor = new BUS() ;
+    my $xor = new XORER($bas, $bbs, $bxor, $weqo, $walo) ;
+    unshift @Es, new ENABLER($bxor, $bdec->wire(6), $bcs, "/ENABLER(XORER)") ;
 
-    my $or = new ORER($bas, $bbs, new BUS()) ;
-    unshift @Es, new ENABLER($or->cs(), $bdec->wire(5), $bcs, "/ENABLER(ORER)") ;
-    
-    my $and = new ANDDER($bas, $bbs, new BUS()) ;
-    unshift @Es, new ENABLER($and->cs(), $bdec->wire(4), $bcs, "/ENABLER(ANDDER)") ;
-    
-    my $not = new NOTTER($bas, new BUS()) ;
-    unshift @Es, new ENABLER($not->bs(), $bdec->wire(3), $bcs, "/ENABLER(NOTTER)") ;
+    my $bor = new BUS() ;
+    my $or = new ORER($bas, $bbs, $bor) ;
+    unshift @Es, new ENABLER($bor, $bdec->wire(5), $bcs, "/ENABLER(ORER)") ;
+ 
+    my $band = new BUS() ;   
+    my $and = new ANDDER($bas, $bbs, $band) ;
+    unshift @Es, new ENABLER($band, $bdec->wire(4), $bcs, "/ENABLER(ANDDER)") ;
 
-    my $shl = new SHIFTL($bas, $wci, new BUS(), new WIRE()) ;
-    new AND($shl->so(), $bdec->wire(2), $wco) ;
-    unshift @Es, new ENABLER($shl->os(), $bdec->wire(2), $bcs, "/ENABLER(SHIFTL)") ;
+    my $bnot = new BUS() ;  
+    my $not = new NOTTER($bas, $bnot) ;
+    unshift @Es, new ENABLER($bnot, $bdec->wire(3), $bcs, "/ENABLER(NOTTER)") ;
 
-    my $shr = new SHIFTR($bas, $wci, new BUS(), new WIRE()) ;
-    new AND($shr->so(), $bdec->wire(1), $wco) ;
-    unshift @Es, new ENABLER($shr->os(), $bdec->wire(1), $bcs, "/ENABLER(SHIFTR)") ;
+    my $bshl = new BUS() ; 
+    my $woshl = new WIRE() ;  
+    my $shl = new SHIFTL($bas, $wci, $bshl, $woshl) ;
+    new AND($woshl, $bdec->wire(2), $wco) ;
+    unshift @Es, new ENABLER($bshl, $bdec->wire(2), $bcs, "/ENABLER(SHIFTL)") ;
+
+    my $bshr = new BUS() ;
+    my $woshr = new WIRE() ;
+    my $shr = new SHIFTR($bas, $wci, $bshr, $woshr) ;
+    new AND($woshr, $bdec->wire(1), $wco) ;
+    unshift @Es, new ENABLER($bshr, $bdec->wire(1), $bcs, "/ENABLER(SHIFTR)") ;
 
     my $add = new ADDER($bas, $bbs, $wci, new BUS(), new WIRE()) ;
     new AND($add->carry_out(), $bdec->wire(0), $wco) ;
@@ -166,4 +174,4 @@ sub show {
 }
 
 
-return 1 ;
+1 ;

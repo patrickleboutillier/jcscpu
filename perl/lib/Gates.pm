@@ -121,10 +121,10 @@ sub new {
 }
 
 
-sub c {
-    my $this = shift ;
-    return $this->{c} ;
-}
+#sub c {
+#    my $this = shift ;
+#    return $this->{c} ;
+#}
 
 
 sub show {
@@ -284,7 +284,7 @@ sub new {
     # Todo: make sure bis->n() == $n
     my $last = new AND($bis->wire(0), $bis->wire(1), (($n == 2) ? $wo : new WIRE()), "$name/AND[0]") ;
     for (my $j = 0 ; $j < ($n-2) ; $j++){
-            my $next = new AND($last->c(), $bis->wire($j+2), (($n == ($j+3)) ? $wo : new WIRE()), "$name/AND[" . ($j+1) . "]") ;
+            my $next = new AND($last->{c}, $bis->wire($j+2), (($n == ($j+3)) ? $wo : new WIRE()), "$name/AND[" . ($j+1) . "]") ;
             $last = $next ;
     }
 

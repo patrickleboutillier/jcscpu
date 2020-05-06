@@ -28,5 +28,4 @@ sub new {
 }
 
 
-
-return 1 ;
+1 ;

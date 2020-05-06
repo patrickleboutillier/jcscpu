@@ -25,8 +25,6 @@ sub new {
         e => $we,
         os => $bos,
         name => $name,
-        #B => $B, 
-        #E => $E, 
         bus => $bus,
     } ;
     bless $this, $class ;
@@ -68,15 +66,15 @@ sub power {
 sub show {
     my $this = shift ;
 
-    my $is = $this->is()->power() ;
+    my $is = $this->{is}->power() ;
     my $bus = $this->{bus}->power() ;
-    my $os = $this->os()->power() ;
-    my $e = $this->e()->power() ;
-    my $s = $this->s()->power() ;
+    my $os = $this->{os}->power() ;
+    my $e = $this->{e}->power() ;
+    my $s = $this->{s}->power() ;
     my $name = $this->{name} || "REGISTER" ;
 
     return "$name:$s/$bus/$e" ;
 }
 
 
-return 1 ;
+1 ;
