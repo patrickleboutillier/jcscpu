@@ -58,10 +58,11 @@ sub alu {
 
     my %res = %{$tc} ;
 
-    # Reset the ALU buses before setting the new value. 
+    # Reset the ALU before setting the new value. 
     # In the final setup this will not be necessary as each instruction will start with empty ALU buses 
     $bas->power("00000000") ;
     $bbs->power("00000000") ;
+    $wci->power(0) ;
     $bops->power("000") ;
 
     # Place values on bus
