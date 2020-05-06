@@ -10,26 +10,12 @@ sub new {
     my $bcpu = shift ;
     my $bio = shift ;
 
-    my $bop = new BUS(16) ;
-    my $opdec = new DECODER(4, $bio, $bop) ;
-
     my $this = {
-        indata => $opdec->o(oct("0b0100")),
-        inaddr => $opdec->o(oct("0b0110")),
-        outdata => $opdec->o(oct("0b1001")),
-        outaddr => $opdec->o(oct("0b1011")),       
+        bcpu => $bcpu,
+        bio => $bio,    
         devs => [],
-        mems => [],
     } ;
     bless $this, $class ;
-
-    my $bdev = new BUS(256) ;
-    my $devdec = new DECODER(8, $bcpu, $bdev) ;
-    for (my $j = 0 ; $j < 256 ; $j++){
-        $this->{mems}->[$j] = new MEMORY($devdec->o($j), $this->{outaddr}, new WIRE(), $j) ;
-    }
-
-    $this->{devdec} = $devdec ;
 
     return $this ;
 }
@@ -46,7 +32,7 @@ sub active {
         croak("No device registered at address $n!") ;
     }
 
-    return $this->{mems}->[$n]->o()->power() ;
+    return $this->{devs}->[$n]->{mem}->o()->power() ;
 }
 
 
@@ -77,16 +63,26 @@ sub register {
         croak("Device already registered at address $n") ;
     }
 
-    if (defined($outdata)){
-        my $active = $this->{mems}->[$n]->o() ;
-        new AND($active, $this->{outdata}, $outdata) ; 
-    }
-    if (defined($indata)){
-        my $active = $this->{mems}->[$n]->o() ;
-        new AND($active, $this->{indata}, $indata) ; 
+    if (! $this->{devdec}){
+        my $bop = new BUS(16) ;
+        my $opdec = new DECODER(4, $this->{bio}, $bop) ;
+        my $bdev = new BUS(256) ;
+        $this->{devdec} = new DECODER(8, $this->{bcpu}, $bdev) ;
+        $this->{indata} = $opdec->o(oct("0b0100")) ;
+        $this->{inaddr} = $opdec->o(oct("0b0110")) ;
+        $this->{outdata} = $opdec->o(oct("0b1001")) ;
+        $this->{outaddr} = $opdec->o(oct("0b1011")) ;
     }
 
-    $this->{devs}->[$n] = { name => $name } ;
+    my $wmem = new WIRE() ;
+    my $mem = new MEMORY($this->{devdec}->o($n), $this->{outaddr}, $wmem, $n) ;
+    $this->{devs}->[$n] = { 
+        name => $name, 
+        mem => $mem,
+    } ;
+
+    new AND($wmem, $this->{outdata}, $outdata) if defined($outdata) ;
+    new AND($wmem, $this->{indata}, $indata) if defined($indata) ; 
 }
 
 
