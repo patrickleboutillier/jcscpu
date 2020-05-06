@@ -71,7 +71,6 @@ sub new {
         "ALU.bus" => new BUS(), 
         "ALU.ci"  => new WIRE(),
         "ALU.op" => new BUS(3),
-        "ALU.op.e" => new WIRE(),
         "ALU.co" => new WIRE(),
         "ALU.eqo" => new WIRE(),
         "ALU.alo" => new WIRE(),
@@ -81,7 +80,7 @@ sub new {
     ) ;
     $this->put(
         "ACC" => new REGISTER($this->get(qw/ALU.bus ACC.s ACC.e DATA.bus/), "ACC"), 
-        "ALU" => new ALU($this->get(qw/DATA.bus BUS1.bus ALU.ci ALU.op ALU.op.e ALU.bus ALU.co ALU.eqo ALU.alo ALU.z/)), 
+        "ALU" => new ALU($this->get(qw/DATA.bus BUS1.bus ALU.ci ALU.op ALU.bus ALU.co ALU.eqo ALU.alo ALU.z/)), 
     ) ;
     $this->put(
         "FLAGS" => new REGISTER(
@@ -156,7 +155,7 @@ sub instproc {
     ) ;
 
     # ALL ENABLES
-    for my $e (qw/IAR RAM ACC ALU.op IO.clk/){
+    for my $e (qw/IAR RAM ACC IO.clk/){
         my $w = new WIRE() ;
         new AND($this->get("CLK.clke"), $w, $this->get("$e.e")) ;
         $this->put("$e.ena.eor" => new ORe($w)) ; 
@@ -178,7 +177,6 @@ sub instproc {
     $this->get("IAR.ena.eor")->add($this->get("STP.bus")->wire(0)) ;
     $this->get("RAM.MAR.set.eor")->add($this->get("STP.bus")->wire(0)) ;
     $this->get("ACC.set.eor")->add($this->get("STP.bus")->wire(0)) ;
-    $this->get("ALU.op.ena.eor")->add($this->get("STP.bus")->wire(0)) ;
 
     $this->get("RAM.ena.eor")->add($this->get("STP.bus")->wire(1)) ; 
     $this->get("IR.set.eor")->add($this->get("STP.bus")->wire(1)) ; 

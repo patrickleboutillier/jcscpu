@@ -32,10 +32,6 @@ $INSTRUCTIONS::INSTS{'ALU'} = sub {
     for (my $j = 0 ; $j < 3 ; $j++){
         new ANDn(3, BUS->wrap($BB->get("STP.bus")->wire(4), $BB->get("IR.bus")->wire(0), $cmpbus->wire($j)), $BB->get("ALU.op")->wire($j)) ;
     }
-
-    my $aluope = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(4), $BB->get("IR.bus")->wire(0), $aluope) ;
-    $BB->get("ALU.op.ena.eor")->add($aluope) ;
 } ;
 
 
@@ -73,7 +69,6 @@ $INSTRUCTIONS::INSTS{'DATA'} = sub {
     $BB->get("IAR.ena.eor")->add($d1) ;
     $BB->get("RAM.MAR.set.eor")->add($d1) ;
     $BB->get("ACC.set.eor")->add($d1) ;
-    $BB->get("ALU.op.ena.eor")->add($d1) ; # HACK
 
     my $d2 = new WIRE() ;
     new AND($BB->get("STP.bus")->wire(4), $BB->get("INST.dec")->o(2), $d2) ;
@@ -114,7 +109,6 @@ $INSTRUCTIONS::INSTS{'JUMP'} = sub {
     $BB->get("IAR.ena.eor")->add($ji1) ;
     $BB->get("RAM.MAR.set.eor")->add($ji1) ;
     $BB->get("ACC.set.eor")->add($ji1) ;
-    $BB->get("ALU.op.ena.eor")->add($ji1) ; # HACK
 
     my $ji2 = new WIRE() ;
     new AND($BB->get("STP.bus")->wire(4), $BB->get("INST.dec")->o(5), $ji2) ;
@@ -142,8 +136,5 @@ $INSTRUCTIONS::INSTS{'CLF'} = sub {
     my $cl1 = new WIRE() ;
     new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.dec")->o(6), $cl1) ;
     $BB->get("BUS1.bit1.eor")->add($cl1) ;
-    $BB->get("ALU.op.ena.eor")->add($cl1) ; # HACK
     $BB->get("FLAGS.set.eor")->add($cl1) ;
-
-    # $BB->get("FLAGS.s")->prehook( sub { die("FLAG.s") if $_[0] ; }) ;
 } ;
