@@ -84,6 +84,10 @@ sub make_ram_test {
         $wsa->power(1) ;
         $wsa->power(0) ;
 
+        # Clear the IO bus before enabling.
+        # In the final setup this will not be necessary as each instruction will start with a clean bus.
+        $bio->power("00000000") ;
+
         # Now if we turn on the e, we should get our data back on the bus.
         $we->power(1) ;
         my $data = join('', scalar(reverse($addr))) ;

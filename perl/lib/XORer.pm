@@ -12,7 +12,6 @@ sub new {
     my $bcs = shift ;
     my $weqo = shift ;
     my $walo = shift ; 
-    my $name = shift ;
 
     # Build the XORer circuit
     my $weqi = new WIRE(1, 1) ;
@@ -38,49 +37,17 @@ sub new {
 }
 
 
-sub as {
-    my $this = shift ;
-    return $this->{as} ;
-}
-
-
-sub bs {
-    my $this = shift ;
-    return $this->{bs} ;
-}
-
-
-sub cs {
-    my $this = shift ;
-    return $this->{cs} ;
-}
-
-
-# 'a' larger out
-sub alo {
-    my $this = shift ;
-    return $this->{alo} ;
-}
-
-
-# 'equal so far' out
-sub eqo {
-    my $this = shift ;
-    return $this->{eqo} ;
-}
-
-
 sub show {
     my $this = shift ;
 
-    my $a = $this->as()->power() ;
-    my $b = $this->bs()->power() ;
-    my $c = $this->cs()->power() ;
-    my $alo = $this->alo()->power() ;
-    my $eqo = $this->eqo()->power() ;
+    my $a = $this->{as}->power() ;
+    my $b = $this->{bs}->power() ;
+    my $c = $this->{cs}->power() ;
+    my $alo = $this->{alo}->power() ;
+    my $eqo = $this->{eqo}->power() ;
 
-    return "XORER($this->{name}): a:$a, b:$b, c:$c, eqo:$eqo, alo:$alo\n" ;
+    return "XORER: a:$a, b:$b, c:$c, eqo:$eqo, alo:$alo\n" ;
 }
 
 
-return 1 ;
+1 ;

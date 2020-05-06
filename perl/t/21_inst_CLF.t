@@ -30,7 +30,7 @@ sub make_clf_test {
     $BB->setREG("IAR", $iaddr) ;
     $BB->step() ;
 
-    is($BB->get("FLAGS")->power(), "00001111", "FLAGS reset") or die() ;
+    is($BB->get("FLAGS")->power(), "00001111", "FLAGS reset") ;
 }
 
 

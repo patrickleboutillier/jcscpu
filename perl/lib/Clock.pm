@@ -172,8 +172,8 @@ sub show {
     my $clkd = $this->{clkd}->power() ;
     my $clke = $this->{clke}->power() ;
     my $clks = $this->{clks}->power() ;
-    return "CLK(\@$t.$q\[$qt]): clk:$clk  clkd:$clkd  clke:$clke  clks:$clks)\n" ;
+    return "CLK(\@$t.$q\[$qt]): clk:$clk  clkd:$clkd  clke:$clke  clks:$clks\n" ;
 }
 
 
-return 1 ;
+1 ;

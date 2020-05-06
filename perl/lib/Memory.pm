@@ -34,18 +34,6 @@ sub new {
 }
 
 
-sub i {
-    my $this = shift ;
-    return $this->{i} ;
-}
-
-
-sub s {
-    my $this = shift ;
-    return $this->{s} ;
-}
-
-
 sub o {
     my $this = shift ;
     return $this->{o} ;
@@ -61,12 +49,12 @@ sub m {
 sub show {
     my $this = shift ;
 
-    my $i = $this->i()->power() ;
-    my $s = $this->s()->power() ;
-    my $o = $this->o()->power() ;
+    my $i = $this->{i}->power() ;
+    my $s = $this->{s}->power() ;
+    my $o = $this->{o}->power() ;
 
     return "M($this->{name})[$i/$s/$o]" ;
 }
 
 
-return 1 ;
+1 ;

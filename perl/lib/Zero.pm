@@ -9,7 +9,6 @@ sub new {
     my $class = shift ;
     my $bis = shift ;
     my $wz = shift ;
-    my $name = shift ;
 
     # Build the ZERO circuit
     my $wi = new WIRE() ;
@@ -26,26 +25,14 @@ sub new {
 }
 
 
-sub is {
-    my $this = shift ;
-    return $this->{is} ;
-}
-
-
-sub z {
-    my $this = shift ;
-    return $this->{z} ;
-}
-
-
 sub show {
     my $this = shift ;
 
-    my $i = $this->is()->power() ;
-    my $z = $this->z()->power() ;
+    my $i = $this->{is}->power() ;
+    my $z = $this->{z}->power() ;
 
-    return "ZERO($this->{name}): i:$i, z:$z\n" ;
+    return "ZERO: i:$i, z:$z\n" ;
 }
 
 
-return 1 ;
+1 ;

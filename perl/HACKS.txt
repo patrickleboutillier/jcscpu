@@ -1,14 +1,3 @@
-ENABLER BUS RESETS
-==================
-Clear bus before ENABLER fires.
-    $we->prehook(sub { $this->clear_bus_before_set(@_) }) ; 
-
-
-ALU ENABLER
-===========
-Added an enabler to the ALU ops decoder to ed the bit signals in the right order.
-
-
 STEPPER
 =======
 Send power signals "faster" to the 's' pins of the Ms so that the calculations happen in the right order.

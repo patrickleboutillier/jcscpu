@@ -12,7 +12,6 @@ sub new {
     my $wci = shift ;
     my $bsums = shift ;
     my $wco = shift ;
-    my $name = shift ;
 
     # Build the ADDer circuit
     my $twci = new WIRE() ;
@@ -69,14 +68,14 @@ sub carry_out {
 sub show {
     my $this = shift ;
 
-    my $a = $this->as()->power() ;
-    my $b = $this->bs()->power() ;
-    my $ci = $this->carry_in()->power() ;
-    my $co = $this->carry_out()->power() ;    
-    my $sum = $this->sums()->power() ;
+    my $a = $this->{as}->power() ;
+    my $b = $this->{bs}->power() ;
+    my $ci = $this->{carry_in}->power() ;
+    my $co = $this->{carry_out}->power() ;    
+    my $sum = $this->{sums}->power() ;
 
-    return "ADDER($this->{name}): a:$a, b:$b, ci:$ci, co:$co, sum:$sum\n" ;
+    return "ADDER: a:$a, b:$b, ci:$ci, co:$co, sum:$sum\n" ;
 }
 
 
-return 1 ;
+1 ;

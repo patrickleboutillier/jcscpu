@@ -84,10 +84,8 @@ sub cycle1 {
 sub cycle2 {
     $BB->get("R0.e")->power(1) ;
     $BB->get("ALU.op")->power("000") ;
-    $BB->get("ALU.op.e")->power(1) ;
         $BB->get("ACC.s")->power(1) ;
         $BB->get("ACC.s")->power(0) ;
-    $BB->get("ALU.op.e")->power(0) ; 
     $BB->get("R0.e")->power(0) ;
     is($BB->get("ACC")->power(), "00101010", "cycle2: ACC contains 00101010 (42)") ;
 }

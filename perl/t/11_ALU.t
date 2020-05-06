@@ -16,13 +16,12 @@ my $bas = new BUS() ;
 my $bbs = new BUS() ;
 my $wci = new WIRE() ;
 my $bops = new BUS(3) ;
-my $wope = new WIRE() ;
 my $bcs = new BUS() ; 
 my $wco = new WIRE() ;
 my $weqo = new WIRE() ;
 my $walo = new WIRE() ;
 my $wz = new WIRE() ;
-my $ALU = new ALU($bas, $bbs, $wci, $bops, $wope, $bcs, $wco, $weqo, $walo, $wz) ;
+my $ALU = new ALU($bas, $bbs, $wci, $bops, $bcs, $wco, $weqo, $walo, $wz) ;
 $ALU->show() ;
 $ALU->show(0) ;
 
@@ -50,7 +49,7 @@ sub do_test_case {
 
     my $desc = Dumper($tc) ;
     $desc =~ s/\n\s*//gs ;
-    is_deeply($res, $vres, $desc) ;
+    is_deeply($res, $vres, $desc) or die() ;
 }
 
 
@@ -59,14 +58,21 @@ sub alu {
 
     my %res = %{$tc} ;
 
+    # Reset the ALU before setting the new value. 
+    # In the final setup this will not be necessary as each instruction will start with empty ALU buses 
+    $bas->power("00000000") ;
+    $bbs->power("00000000") ;
+    $wci->power(0) ;
+    $bops->power("000") ;
+
     # Place values on bus
     $bas->power(sprintf("%08b", $res{a})) ;
     $bbs->power(sprintf("%08b", $res{b})) ;
     $wci->power($res{ci}) ;
     # warn $ALU->show($res{op}) ;
 
+    # warn $ALU->show($res{op}) ;
     $bops->power(sprintf("%03b", $res{op})) ;
-    $wope->power(1) ;
     # warn $ALU->show($res{op}) ;
 
     $res{out} = oct("0b" . $bcs->power()) if ($res{op} < 7) ;   
@@ -78,7 +84,6 @@ sub alu {
         $res{eqo} = $weqo->power() ;
         $res{alo} = $walo->power() ;
     }
-    $wope->power(0) ;
 
     return \%res ;
 }

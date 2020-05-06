@@ -21,7 +21,6 @@ sub new {
     my $bbs = shift ;
     my $wci = shift ;
     my $bops = shift ;
-    my $wope = shift ;
     my $bcs = shift ; 
     my $wco = shift ;
     my $weqo = shift ;
@@ -29,39 +28,43 @@ sub new {
     my $wz = shift ;
 
     # Build the ALU circuit
-    my $bswitch = new BUS() ;
     my $bdec = new BUS() ;
-    # NOTE: This enabler gate is not in the original Scott design, but if it is not used the signals arrive
-    # at the enablers in random order. This forces a consistent signal acroos the bus for each operation.
-    my $decen = new ENABLER($bdec, $wope, $bswitch) ;
     my $dec = new DECODER(3, $bops, $bdec, "3x8 op") ;
-    $bswitch->wire(7)->power(0) ;
-    $bswitch->wire(7)->terminal() ;
+    $bdec->wire(7)->power(0) ;
+    $bdec->wire(7)->terminal() ;
 
     my @Es = () ;
-    my $xor = new XORER($bas, $bbs, new BUS(), $weqo, $walo) ;
-    unshift @Es, new ENABLER($xor->cs(), $bswitch->wire(6), $bcs, "/ENABLER(XORER)") ;
+    my $bxor = new BUS() ;
+    my $xor = new XORER($bas, $bbs, $bxor, $weqo, $walo) ;
+    unshift @Es, new ENABLER($bxor, $bdec->wire(6), $bcs, "/ENABLER(XORER)") ;
 
-    my $or = new ORER($bas, $bbs, new BUS()) ;
-    unshift @Es, new ENABLER($or->cs(), $bswitch->wire(5), $bcs, "/ENABLER(ORER)") ;
-    
-    my $and = new ANDDER($bas, $bbs, new BUS()) ;
-    unshift @Es, new ENABLER($and->cs(), $bswitch->wire(4), $bcs, "/ENABLER(ANDDER)") ;
-    
-    my $not = new NOTTER($bas, new BUS()) ;
-    unshift @Es, new ENABLER($not->bs(), $bswitch->wire(3), $bcs, "/ENABLER(NOTTER)") ;
+    my $bor = new BUS() ;
+    my $or = new ORER($bas, $bbs, $bor) ;
+    unshift @Es, new ENABLER($bor, $bdec->wire(5), $bcs, "/ENABLER(ORER)") ;
+ 
+    my $band = new BUS() ;   
+    my $and = new ANDDER($bas, $bbs, $band) ;
+    unshift @Es, new ENABLER($band, $bdec->wire(4), $bcs, "/ENABLER(ANDDER)") ;
 
-    my $shl = new SHIFTL($bas, $wci, new BUS(), new WIRE()) ;
-    new AND($shl->so(), $bswitch->wire(2), $wco) ;
-    unshift @Es, new ENABLER($shl->os(), $bswitch->wire(2), $bcs, "/ENABLER(SHIFTL)") ;
+    my $bnot = new BUS() ;  
+    my $not = new NOTTER($bas, $bnot) ;
+    unshift @Es, new ENABLER($bnot, $bdec->wire(3), $bcs, "/ENABLER(NOTTER)") ;
 
-    my $shr = new SHIFTR($bas, $wci, new BUS(), new WIRE()) ;
-    new AND($shr->so(), $bswitch->wire(1), $wco) ;
-    unshift @Es, new ENABLER($shr->os(), $bswitch->wire(1), $bcs, "/ENABLER(SHIFTR)") ;
+    my $bshl = new BUS() ; 
+    my $woshl = new WIRE() ;  
+    my $shl = new SHIFTL($bas, $wci, $bshl, $woshl) ;
+    new AND($woshl, $bdec->wire(2), $wco) ;
+    unshift @Es, new ENABLER($bshl, $bdec->wire(2), $bcs, "/ENABLER(SHIFTL)") ;
+
+    my $bshr = new BUS() ;
+    my $woshr = new WIRE() ;
+    my $shr = new SHIFTR($bas, $wci, $bshr, $woshr) ;
+    new AND($woshr, $bdec->wire(1), $wco) ;
+    unshift @Es, new ENABLER($bshr, $bdec->wire(1), $bcs, "/ENABLER(SHIFTR)") ;
 
     my $add = new ADDER($bas, $bbs, $wci, new BUS(), new WIRE()) ;
-    new AND($add->carry_out(), $bswitch->wire(0), $wco) ;
-    unshift @Es, new ENABLER($add->sums(), $bswitch->wire(0), $bcs, "/ENABLER(ADDER)") ;
+    new AND($add->carry_out(), $bdec->wire(0), $wco) ;
+    unshift @Es, new ENABLER($add->sums(), $bdec->wire(0), $bcs, "/ENABLER(ADDER)") ;
 
     my @Ms = ($add, $shr, $shl, $not, $and, $or, $xor) ;
     my $zero = new ZERO($bcs, $wz) ;
@@ -71,7 +74,6 @@ sub new {
         bs => $bbs,
         cs => $bcs,
         ops => $bops,
-        ope => $wope,
         ci => $wci,
         co => $wco,
         eqo => $weqo,
@@ -108,12 +110,6 @@ sub cs {
 sub ops {
     my $this = shift ;
     return $this->{ops};
-}
-
-
-sub ope {
-    my $this = shift ;
-    return $this->{ope} ;
 }
 
 
@@ -156,7 +152,6 @@ sub show {
     my $a = $this->as()->power() ;
     my $b = $this->bs()->power() ;
     my $c = $this->cs()->power() ;
-    my $ope = $this->ope()->power() ;
     my $ci = $this->ci()->power() ;
     my $co = $this->co()->power() ;  
     my $alo = $this->alo()->power() ;
@@ -168,7 +163,7 @@ sub show {
 
     my $filter = scalar(@ops) ;
     my %ops = map { ($_ => 1) } @ops ;
-    my $str = "ALU: op:$op  a:$a  b:$b  ci:$ci  c:$c  dec:$deci  ope:$ope  sw:$deco  co:$co  eqo:$eqo  alo:$alo  z:$z\n" ;
+    my $str = "ALU: op:$op  a:$a  b:$b  ci:$ci  c:$c  dec:$deci  sw:$deco  co:$co  eqo:$eqo  alo:$alo  z:$z\n" ;
     for (my $j = 6 ; $j >= 0 ; $j--){
         next if (($filter)&&(! $ops{$j})) ;
         $str .= "    " . $this->{Ms}->[$j]->show() ;
@@ -179,4 +174,4 @@ sub show {
 }
 
 
-return 1 ;
+1 ;

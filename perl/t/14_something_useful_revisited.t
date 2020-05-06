@@ -13,8 +13,6 @@ $BB->show() ;
 my $steps = $BB->get("STP.bus") ;
 my $clke = $BB->get("CLK.clke") ;
 new AND($clke, $steps->wire(5), $BB->get("ACC.e")) ;
-# Specific to my installation (extra enabler in ALU)
-new AND($clke, $steps->wire(4), $BB->get("ALU.op.e")) ;
 new AND($clke, $steps->wire(4), $BB->get("R0.e")) ;
 new AND($clke, $steps->wire(3), $BB->get("R1.e")) ;
 my $clks = $BB->get("CLK.clks") ;
