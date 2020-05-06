@@ -7,6 +7,7 @@ use BUS1 ;
 use Clock ;
 use Stepper ;
 use Instructions ;
+use IOAdapter ;
 use Carp ;
 
 
@@ -108,6 +109,21 @@ sub new {
         "STP"  => new STEPPER($this->get(qw/CLK.clk STP.bus/)),
     ) ;
 
+    # I/O
+    $this->put(
+        "IO.clks" => new WIRE(), 
+        "IO.clke" => new WIRE(),
+        "IO.da" => new WIRE(),
+        "IO.io" => new WIRE(),
+    ) ;
+    $this->put(
+        "IO.bus" => BUS->wrap($this->get(qw/IO.clks IO.clke IO.da IO.io/)), 
+    ) ;
+    $this->put(
+        "IO.adapter" => new IOADAPTER($this->get(qw/DATA.bus IO.bus/)),
+    ) ;
+
+
     # Hook up the FLAGS Register co output to the ALU ci, adding the AND gate describes in the Errata #2
     # Errata stuff: http://www.buthowdoitknow.com/errata.html
     # Naively: new CONN($this->get("FLAGS")->os()->wire(0), $this->get("ALU")->ci()) ;
@@ -146,8 +162,6 @@ sub instproc {
         "IR.s" => new WIRE(),
         "IR.e" => WIRE->on(), # IR.e is always on
         "IR.bus" => new BUS(),
-        "IO.clk.e" => new WIRE(),
-        "IO.clk.s" => new WIRE(),
     ) ;
     $this->put(
         "IAR" => new REGISTER($this->get(qw/DATA.bus IAR.s IAR.e DATA.bus/), "IAR"),
@@ -155,7 +169,7 @@ sub instproc {
     ) ;
 
     # ALL ENABLES
-    for my $e (qw/IAR RAM ACC IO.clk/){
+    for my $e (qw/IAR RAM ACC/){
         my $w = new WIRE() ;
         new AND($this->get("CLK.clke"), $w, $this->get("$e.e")) ;
         $this->put("$e.ena.eor" => new ORe($w)) ; 
@@ -163,7 +177,7 @@ sub instproc {
     $this->put("BUS1.bit1.eor" => new ORe($this->get("BUS1.bit1"))) ;
 
     # ALL SETS
-    for my $s (qw/IR RAM.MAR IAR ACC RAM TMP FLAGS IO.clk/){
+    for my $s (qw/IR RAM.MAR IAR ACC RAM TMP FLAGS/){
         my $w = new WIRE() ;
         new AND($this->get("CLK.clks"), $w, $this->get("$s.s")) ;
         $this->put("$s.set.eor" => new ORe($w)) ; 
@@ -288,6 +302,12 @@ sub show {
         $str .= "  REGA.e:" . $this->get("REGA.e")->power() . '/' . $this->get("REGA.e.dec")->os()->power() ;
         $str .= "  REGB.e:" . $this->get("REGB.e")->power() . '/' . $this->get("REGB.e.dec")->os()->power() ;
         $str .= "  REGB.s:" . $this->get("REGB.s")->power() . '/' . $this->get("REGB.s.dec")->os()->power() ;
+        $str .= "\nIO:\n" ;
+        $str .= "  IO.clks:" . $this->get("IO.clks")->power() ;        
+        $str .= "  IO.clke:" . $this->get("IO.clke")->power() ;        
+        $str .= "  IO.da:" . $this->get("IO.da")->power() ;        
+        $str .= "  IO.io:" . $this->get("IO.io")->power() . "\n" ;
+        $str .= $this->get("IO.adapter")->show() ;        
     }
     $str .= "\n" ;
 

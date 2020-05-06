@@ -138,3 +138,24 @@ $INSTRUCTIONS::INSTS{'CLF'} = sub {
     $BB->get("BUS1.bit1.eor")->add($cl1) ;
     $BB->get("FLAGS.set.eor")->add($cl1) ;
 } ;
+
+
+$INSTRUCTIONS::INSTS{'IO'} = sub {
+    my $BB = shift ;
+
+    # IO
+    my $io1 = new WIRE() ;
+    new ANDn(3, BUS->wrap($BB->get("STP.bus")->wire(3), $BB->get("INST.dec")->o(7), $BB->get("IR.bus")->wire(4)), $io1) ;
+    $BB->get("REGB.ena.eor")->add($io1) ;
+
+    my $ion4 = new WIRE() ;
+    new NOT($BB->get("IR.bus")->wire(4), $ion4) ;
+    my $io2 = new WIRE() ;
+    new ANDn(3, BUS->wrap($BB->get("STP.bus")->wire(4), $BB->get("INST.dec")->o(7), $ion4), $io2) ;   
+    $BB->get("REGB.set.eor")->add($io2) ;
+
+    new AND($BB->get("CLK.clks"), $io1, $BB->get("IO.clks")) ;
+    new AND($BB->get("CLK.clke"), $io2, $BB->get("IO.clke")) ;
+    new CONN($BB->get("IR.bus")->wire(4), $BB->get("IO.io")) ;
+    new CONN($BB->get("IR.bus")->wire(5), $BB->get("IO.da")) ;
+} ;

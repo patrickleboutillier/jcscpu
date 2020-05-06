@@ -3,7 +3,7 @@ use strict ;
 use Carp ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
-our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD ST DATA JMPR JMP CLF) ;
+our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD ST DATA JMPR JMP CLF JC JA JE JZ JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ) ;
 
 
 my $PRINT = 1 ;
@@ -129,6 +129,34 @@ sub JMP {
     push @LINES, sprintf("01000000 # JMP   %s (%s)", $bin, $byte) ;
     push @LINES, sprintf("%s # ...   %s", $bin, $byte) ;
 }
+
+
+sub _JMPXXX {
+    my $flags = shift ;
+    my $desc = shift ;
+    my ($byte) = _check_proto("A", @_) ;
+
+    my $bin = sprintf("%08b", $byte) ;
+    push @LINES, sprintf("0101$flags # J$desc %s (%s)", $bin, $byte) ;
+    push @LINES, sprintf("%s # ...   %s", $bin, $byte) ;
+}
+
+
+sub JC    { return _JMPXXX("1000", "C   ", @_) ;}
+sub JA    { return _JMPXXX("0100", "A   ", @_) ;}
+sub JE    { return _JMPXXX("0010", "E   ", @_) ;}
+sub JZ    { return _JMPXXX("0001", "Z   ", @_) ;}
+sub JCA   { return _JMPXXX("1100", "CA  ", @_) ;}
+sub JCE   { return _JMPXXX("1010", "CE  ", @_) ;}
+sub JCZ   { return _JMPXXX("1001", "CZ  ", @_) ;}
+sub JAE   { return _JMPXXX("0110", "AE  ", @_) ;}
+sub JAZ   { return _JMPXXX("0101", "AZ  ", @_) ;}
+sub JEZ   { return _JMPXXX("0011", "EZ  ", @_) ;}
+sub JCAE  { return _JMPXXX("1110", "CAE ", @_) ;}
+sub JCAZ  { return _JMPXXX("1101", "CAZ ", @_) ;}
+sub JCEZ  { return _JMPXXX("1011", "CEZ ", @_) ;}
+sub JAEZ  { return _JMPXXX("0111", "AEZ ", @_) ;}
+sub JCAEZ { return _JMPXXX("1111", "CAEZ", @_) ;}
 
 
 sub _check_proto {
