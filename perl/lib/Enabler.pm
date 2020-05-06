@@ -24,9 +24,6 @@ sub new {
     } ;
     bless $this, $class ;
 
-    # Setup a hook when e changes to clear the bus
-    # $we->prehook(sub { $this->clear_bus_before_set(@_) }) ;
-
     return $this ;
 }
 
@@ -57,24 +54,6 @@ sub show {
     my $o = $this->os()->power() ;
 
     return "ENABLER($this->{name}): i:$i, e:$e, o:$o\n" ;
-}
-
-
-sub clear_bus_before_set {
-    my $this = shift ;
-    my $v = shift ;
-
-    if ($v){
-        my $i = $this->{is}->power() ;
-        my $o = $this->{os}->power() ;
-        #warn "e $this->{name} is turning on ($v): i:$i, o:$o\n" ;
-        $this->{os}->power("00000000") ;
-        $o = $this->{os}->power() ;
-        #warn "  after bus reset: i:$i, o:$o\n" ;
-    }
-    else {
-        #warn "e $this->{name} is turning off\n" ;
-    }
 }
 
 
