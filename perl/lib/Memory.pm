@@ -34,24 +34,6 @@ sub new {
 }
 
 
-sub i {
-    my $this = shift ;
-    return $this->{i} ;
-}
-
-
-sub s {
-    my $this = shift ;
-    return $this->{s} ;
-}
-
-
-sub o {
-    my $this = shift ;
-    return $this->{o} ;
-}
-
-
 sub m {
     my $this = shift ;
     return (! $this->{m}->power()) || 0 ;

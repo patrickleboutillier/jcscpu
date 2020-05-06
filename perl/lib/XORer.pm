@@ -37,38 +37,6 @@ sub new {
 }
 
 
-sub as {
-    my $this = shift ;
-    return $this->{as} ;
-}
-
-
-sub bs {
-    my $this = shift ;
-    return $this->{bs} ;
-}
-
-
-sub cs {
-    my $this = shift ;
-    return $this->{cs} ;
-}
-
-
-# 'a' larger out
-sub alo {
-    my $this = shift ;
-    return $this->{alo} ;
-}
-
-
-# 'equal so far' out
-sub eqo {
-    my $this = shift ;
-    return $this->{eqo} ;
-}
-
-
 sub show {
     my $this = shift ;
 

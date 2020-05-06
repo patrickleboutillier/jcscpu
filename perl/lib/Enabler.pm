@@ -28,24 +28,6 @@ sub new {
 }
 
 
-sub is {
-    my $this = shift ;
-    return $this->{is} ;
-}
-
-
-sub e {
-    my $this = shift ;
-    return $this->{e} ;
-}
-
-
-sub os {
-    my $this = shift ;
-    return $this->{os} ;
-}
-
-
 sub show {
     my $this = shift ;
 
