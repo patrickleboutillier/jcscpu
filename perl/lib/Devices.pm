@@ -9,6 +9,7 @@ use Carp ;
 # These implementations are really hackish, just a way to complete the loop to be able
 # to have the computer communicate with the outside world.
 
+
 # An output-only TTY implementation, just grabs the ASCII code on the bus and prints
 # the corresponding character to STDOUT (or elsewhere if $DEVICES::TTY_OUTPUT was changed) 
 $DEVICES::TTY_OUTPUT = \*STDOUT ;
@@ -39,48 +40,30 @@ $DEVICES::DEVS{'TTY'} = sub {
 # is not perfect and can trigger some resets.
 $DEVICES::ROM_FILE = "ROM.txt" ;
 sub ROM { return 0 } ;
-my @ROM = () ;
-my $ROM_ADDR = 0 ;
-my $in_ticks = 0 ;
-my $out_inst = 0 ;
-my $HALT = "01100001" ;
 $DEVICES::DEVS{'ROM'} = sub {
     my $BB = shift ;
 
+    my @ROM = () ;
+    my $ROM_ADDR = 0 ;
+
     # This file should be the output of a jcsasm program
     open(ROMF, "<$DEVICES::ROM_FILE") or croak("Can't open ROM file '$DEVICES::ROM_FILE': $!") ;
-    while (<ROMF>){
-        my $line = $_ ;
-        chomp($line) ;
-        $line =~ s/[^[:print:]]//g ; 
-        next unless $line =~ /^([01]{8})\b/ ;
-        my $inst = $1 ;
-        push @ROM, $inst ;
-    }
+    @ROM = @{$BB->readINSTS(\*ROMF)} ;
 
     my $outdata = new WIRE() ;
     $outdata->posthook(sub {
         return unless $_[0] ;
-        my $qticks = $BB->get("CLK")->qticks() ;
-        my $ticks = $BB->get("CLK")->ticks() ;
-        my $step = $BB->get("STP")->step() ;
-        my $inst = int($ticks / 24) ;
-        my $addr = $BB->get("DATA.bus")->power() ;
-        $ROM_ADDR = oct("0b$addr") ;
-        warn "out (write addr) addr:$ROM_ADDR inst:$inst step:$step ticks:$ticks qticks:$qticks " . ($qticks % 4) ;        
-        $out_inst = $inst ;
+        $ROM_ADDR = oct("0b" . $BB->get("DATA.bus")->power()) ;
+        # warn "out (write addr) addr:$ROM_ADDR" ;       
     }) ;
+
     my $indata = new WIRE() ;
     $indata->posthook(sub {
         return unless $_[0] ;
-        my $qticks = $BB->get("CLK")->qticks() ;
-        my $ticks = $BB->get("CLK")->ticks() ;
-        my $step = $BB->get("STP")->step() ;
-        my $inst = int($ticks / 24) ;
         $BB->get("DATA.bus")->power($ROM[$ROM_ADDR]) ;
-        # warn "in (read addr) addr:$ROM_ADDR step:$step ticks:$ticks" ;
-        warn "in  (read addr) addr:$ROM_ADDR data:$ROM[$ROM_ADDR] inst:$inst step:$step ticks:$ticks qticks:$qticks " . ($qticks % 4) ;
+        # warn "in (read addr) addr:$ROM_ADDR data:$ROM[$ROM_ADDR]" ;
     }) ;
+    
     $BB->get("IO.adapter")->register(ROM(),
         $outdata,
         $indata,

@@ -371,14 +371,28 @@ sub initRAMh {
     my $handle = shift ;
 
     my $addr = 0 ;
+    foreach my $inst (@{$this->readINSTS($handle)}){
+        $this->setRAM(sprintf("%08b", $addr++), $inst) ;
+    }
+}
+
+
+# This file should be the output of a jcsasm program
+sub readINSTS {
+    my $this = shift ;
+    my $handle = shift ;
+
+    my @insts = () ;
     while (<$handle>){
         my $line = $_ ;
         chomp($line) ;
         $line =~ s/[^[:print:]]//g ; 
         next unless $line =~ /^([01]{8})\b/ ;
         my $inst = $1 ;
-        $this->setRAM(sprintf("%08b", $addr++), $inst) ;
-    }
+        push @insts, $inst ;
+    }   
+
+    return \@insts ;
 }
 
 
