@@ -169,28 +169,28 @@ sub JAEZ  { return _JMPXXX("0111", "AEZ ", @_) ;}
 sub JCAEZ { return _JMPXXX("1111", "CAEZ", @_) ;}
 
 
-sub IND {
+sub IND($){
     my ($rb) = _check_proto("R", @_) ;
 
     push @LINES, sprintf("011100%s # IND   %s", $rb->{v}, $rb->{n}) ;
 }
 
 
-sub INA {
+sub INA($) {
     my ($rb) = _check_proto("R", @_) ;
 
     push @LINES, sprintf("011101%s # INA   %s", $rb->{v}, $rb->{n}) ;
 }
 
 
-sub OUTD {
+sub OUTD($) {
     my ($rb) = _check_proto("R", @_) ;
 
     push @LINES, sprintf("011110%s # OUTD  %s", $rb->{v}, $rb->{n}) ;
 }
 
 
-sub OUTA {
+sub OUTA($) {
     my ($rb) = _check_proto("R", @_) ;
 
     push @LINES, sprintf("011111%s # OUTA  %s", $rb->{v}, $rb->{n}) ;

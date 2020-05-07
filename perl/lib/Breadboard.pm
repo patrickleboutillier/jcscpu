@@ -258,10 +258,11 @@ sub instimpl {
     for (my $j = 0 ; $j < 8 ; $j++){
         new AND($notalu, $idec->os()->wire($j), $this->get("INST.bus")->wire($j)) ; 
     }
-    $this->put('INST.dec' => $idec) ;
+    # Not required to store it.
+    # $this->put('INST.dec' => $idec) ;
 
     # Now, setting up instruction circuits involves:
-    # - Hook up to the propoer wire of INST.bus 
+    # - Hook up to the proper wire of INST.bus 
     # - Wire up the logical circuit and attach it to proper step wires
     # - Use the "elastic" OR gates (xxx.eor) to enable and set 
 }
@@ -352,6 +353,35 @@ sub setREG {
 }
 
 
+# Initialize RAM contents from a file.
+# This file should be the output of a jcsasm program
+sub initRAM {
+    my $this = shift ;
+    my $file = shift ;
+
+    open(RAMF, "<$file") or croak("Can't open RAM init file '$file': $!") ;
+    return $this->initRAMh(\*RAMF) ;
+}
+
+
+# Initialize RAM contents from a file.
+# This file should be the output of a jcsasm program
+sub initRAMh {
+    my $this = shift ;
+    my $handle = shift ;
+
+    my $addr = 0 ;
+    while (<$handle>){
+        my $line = $_ ;
+        chomp($line) ;
+        $line =~ s/[^[:print:]]//g ; 
+        next unless $line =~ /^([01]{8})\b/ ;
+        my $inst = $1 ;
+        $this->setRAM(sprintf("%08b", $addr++), $inst) ;
+    }
+}
+
+
 sub qtick {
     my $this = shift ;
 
@@ -369,9 +399,19 @@ sub tick {
 sub step {
     my $this = shift ;
 
+    return $this->tick(@_) ;
+}
+
+
+sub inst {
+    my $this = shift ;
+    my $n = shift || 1 ;
+
     my $cur = $this->get("STP")->step() ;
     croak("Can't step mid-instruction (step: $cur)!") unless (($cur == 0)||($cur == 6)) ;
-    map { $this->get("CLK")->tick() } (0..5) ;
+    map {
+        map { $this->get("CLK")->tick() } (0..5) ;
+    } (1..$n) ;
 }
 
 

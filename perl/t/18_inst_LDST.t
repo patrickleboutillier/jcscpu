@@ -32,7 +32,7 @@ sub make_load_test {
     $BB->setRAM($addr, $data) ; 
     $BB->setRAM($iaddr, $linst) ; 
     $BB->setREG("IAR", $iaddr) ;
-    $BB->step() ; 
+    $BB->inst() ; 
     is($BB->get("R$rb")->power(), $data, "$data copied from RAM\@$addr (R$ra) to R$rb") ;
     is($BB->get("IAR")->power(), $addr, "IAR has advanced to $addr") ;
 }
@@ -51,7 +51,7 @@ sub make_store_test {
     $BB->setREG("R$rb", $data) ;
     $BB->setRAM($iaddr, $linst) ; 
     $BB->setREG("IAR", $iaddr) ;
-    $BB->step() ;
+    $BB->inst() ;
     is($BB->get("R$rb")->power(), $data, "$data stored from R$rb to RAM\@$addr") ;
     is($BB->get("IAR")->power(), $addr, "IAR has advanced to $addr") ;
 }

@@ -97,6 +97,7 @@ sub new {
     } ;
     bless $this, $class ;
 
+    # Hook to forward signals to the s inputs to ensure they arrive before the i inputs.
     $wclk->prehook(sub {
         my $v = shift ;
         $wmsn->power(! $v, 1) ;

@@ -92,7 +92,7 @@ sub show {
     my $str = '' ;
     for (my $j = 0 ; $j < 256 ; $j++){
         if ($this->{devs}->[$j]){
-            $str .= "  DEV($this->{devs}->[$j]->{name}, $j): " . $this->{mems}->[$j]->show() . "\n" ;
+            $str .= "  DEV($this->{devs}->[$j]->{name}, $j): " . $this->{devs}->[$j]->{mem}->show() . "\n" ;
         }
     }
 

@@ -29,6 +29,6 @@ sub make_data_test {
     $BB->setRAM($iaddr, $dinst) ; 
     $BB->setRAM($daddr, $data) ; 
     $BB->setREG("IAR", $iaddr) ;
-    $BB->step() ; 
+    $BB->inst() ; 
     is($BB->get("R$rb")->power(), $data, "$data copied from program (RAM\@$daddr) to R$rb") ;
 }

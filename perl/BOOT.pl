@@ -1,0 +1,22 @@
+use strict ;
+use jcsasm ;
+use Devices ;
+
+REM "Activate ROM" ;
+DATA R0, DEVICES::ROM() ;
+OUTA R0 ;
+REM "R0 is our 1, R3 is our 0, R1 is our ROM address, R2 is our ROM data" ;
+DATA R0, 1 ;
+DATA R3, 0 ;
+DATA R1, 0 ;
+my $loop = LABEL "Ask for address in R1" ;
+OUTD R1 ;
+REM "Receive data in R2 and copy it to RAM at address that is in R1" ;
+IND R2 ;
+ST R2, R1 ;
+REM "IF R2 == 0 jump to byte 0 in RAM" ;
+CMP R2, R3 ;
+JE 0 ;
+REM "# Increment R1 and loop back" ;
+ADD R0, R1 ;
+JMP $loop ;

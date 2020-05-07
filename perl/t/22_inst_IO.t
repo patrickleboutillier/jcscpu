@@ -65,7 +65,7 @@ sub make_io_test {
     $BB->setREG("R$rb", sprintf("%08b", $n)) ;
     $BB->setRAM($iaddr, $iinst) ; 
     $BB->setREG("IAR", $iaddr) ;
-    $BB->step() ;
+    $BB->inst() ;
     is($BB->get("IO.adapter")->active($n), 1, "Adapter is active") ;
     #warn $BB->show() ;
 
@@ -75,7 +75,7 @@ sub make_io_test {
     $BB->setREG("R$rb", $data) ;
     $BB->setRAM($iaddr, $iinst) ; 
     $BB->setREG("IAR", $iaddr) ;
-    $BB->step() ;
+    $BB->inst() ;
     is($outpower, $data, "Data $data is was grabbed from the bus by device $n") ;
     #warn $BB->show() ;
 
@@ -84,7 +84,7 @@ sub make_io_test {
     # warn "inst: $iinst" ;
     $BB->setRAM($iaddr, $iinst) ; 
     $BB->setREG("IAR", $iaddr) ;
-    $BB->step() ;
+    $BB->inst() ;
     # warn $BB->show() ;
 
     is($BB->get("R$rb")->power(), $gendata, "Data $data is was grabbed from the bus by device $n") ;

@@ -1,3 +1,9 @@
+ENABLER BUS RESETS
+==================
+Clear bus before ENABLER fires.
+    $we->prehook(sub { $this->clear_bus_before_set(@_) }) ; 
+
+
 STEPPER
 =======
 Send power signals "faster" to the 's' pins of the Ms so that the calculations happen in the right order.

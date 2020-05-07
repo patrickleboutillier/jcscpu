@@ -32,7 +32,7 @@ sub make_tty_test {
     $BB->setREG("R$rb", sprintf("%08b", DEVICES::TTY())) ;
     $BB->setRAM($iaddr, $iinst) ; 
     $BB->setREG("IAR", $iaddr) ;
-    $BB->step() ;
+    $BB->inst() ;
     is($BB->get("IO.adapter")->active(DEVICES::TTY()), 1, "TTY is active") ;
 
     # Then, send data to the device
@@ -40,7 +40,7 @@ sub make_tty_test {
     $BB->setREG("R$rb", $data) ;
     $BB->setRAM($iaddr, $iinst) ;
     $BB->setREG("IAR", $iaddr) ;
-    $BB->step() ;
+    $BB->inst() ;
     my $char = undef ;
     my $nb = sysread(\*READ, $char, 1) ;
     is($nb, 1, "One byte returned by sysread") ;

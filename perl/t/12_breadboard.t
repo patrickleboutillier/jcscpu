@@ -30,6 +30,6 @@ eval {
 } ;
 like($@, qr/Can't tick mid-cycle/, "Badly timed tick") ;
 eval {
-    $BB->step() ;
+    $BB->inst() ;
 } ;
 like($@, qr/Can't step mid-instruction/, "Badly timed step") ;

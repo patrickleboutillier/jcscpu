@@ -27,7 +27,7 @@ sub make_jumpr_test {
     $BB->setREG("R$rb", $jaddr) ;
     $BB->setRAM($iaddr, $jinst) ; 
     $BB->setREG("IAR", $iaddr) ;
-    $BB->step() ; 
+    $BB->inst() ; 
     is($BB->get("IAR")->power(), $jaddr, "IAR is now $jaddr") ;
 }
 
@@ -41,7 +41,7 @@ sub make_jump_test {
     $BB->setRAM($iaddr, $jinst) ; 
     $BB->setRAM($i2addr, $jaddr) ; 
     $BB->setREG("IAR", $iaddr) ;
-    $BB->step() ; 
+    $BB->inst() ; 
     is($BB->get("IAR")->power(), $jaddr, "IAR is now $jaddr") ;
 }
 
@@ -74,7 +74,7 @@ sub make_jumpif_test {
     $BB->get("FLAGS")->is()->power($aluflags . "0000") ;
     $BB->get("FLAGS.s")->power(1) ;
     $BB->get("FLAGS.s")->power(0) ;
-    $BB->step() ;
+    $BB->inst() ;
 
     if ($j){
         is($BB->get("IAR")->power(), $jaddr, "IAR is now $jaddr") ;

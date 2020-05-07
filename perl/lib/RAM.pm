@@ -121,4 +121,17 @@ sub show {
 }
 
 
+sub dump {
+    my $this = shift ;
+    my $max = shift ;
+
+    my $n = 0 ;
+    foreach my $addr (sort keys %{$this->{GRID}}){
+        my $n = oct("0b$addr") ;
+        printf("$addr (%3d): %s\n", $n, $this->{GRID}->{$addr}->power()) ;
+        last if $n++ >= $max ;
+    }
+}
+
+
 1 ;

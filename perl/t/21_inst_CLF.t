@@ -28,7 +28,7 @@ sub make_clf_test {
     $BB->get("FLAGS.s")->power(0) ;
     $BB->setRAM($iaddr, $cinst) ; 
     $BB->setREG("IAR", $iaddr) ;
-    $BB->step() ;
+    $BB->inst() ;
 
     is($BB->get("FLAGS")->power(), "00001111", "FLAGS reset") ;
 }
