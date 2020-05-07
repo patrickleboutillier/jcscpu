@@ -129,7 +129,7 @@ sub dump {
     foreach my $addr (sort keys %{$this->{GRID}}){
         my $n = oct("0b$addr") ;
         printf("$addr (%3d): %s\n", $n, $this->{GRID}->{$addr}->power()) ;
-        last if $n++ >= $max ;
+        last if (($max > 0)&&($n++ >= $max)) ;
     }
 }
 

@@ -14,30 +14,70 @@ name: jcscpu
 provides:
   ADD:
     file: lib/Gates.pm
+  ADDER:
+    file: lib/ADDer.pm
+  ALU:
+    file: lib/ALU.pm
   AND:
     file: lib/Gates.pm
+  ANDDER:
+    file: lib/ANDder.pm
   ANDn:
     file: lib/Gates.pm
+  BREADBOARD:
+    file: lib/Breadboard.pm
+  BUS:
+    file: lib/Wire.pm
+  BUS1:
+    file: lib/BUS1.pm
   BYTE:
     file: lib/Byte.pm
+  CLOCK:
+    file: lib/Clock.pm
   CMP:
     file: lib/Gates.pm
   CONN:
     file: lib/Gates.pm
+  DECODER:
+    file: lib/Decoder.pm
   ENABLER:
     file: lib/Enabler.pm
+  INSTRUCTIONS:
+    file: lib/Instructions.pm
   MEMORY:
     file: lib/Memory.pm
   NAND:
     file: lib/Gates.pm
   NOT:
     file: lib/Gates.pm
+  NOTTER:
+    file: lib/NOTter.pm
   OR:
+    file: lib/Gates.pm
+  ORER:
+    file: lib/ORer.pm
+  ORe:
     file: lib/Gates.pm
   ORn:
     file: lib/Gates.pm
+  RAM:
+    file: lib/RAM.pm
+  REGISTER:
+    file: lib/Register.pm
+  SHIFTL:
+    file: lib/ShiftL.pm
+  SHIFTR:
+    file: lib/ShiftR.pm
+  STEPPER:
+    file: lib/Stepper.pm
+  WIRE:
+    file: lib/Wire.pm
   XOR:
     file: lib/Gates.pm
+  XORER:
+    file: lib/XORer.pm
+  ZERO:
+    file: lib/Zero.pm
   jcscpu:
     file: lib/jcscpu.pm
     version: '1.0'
