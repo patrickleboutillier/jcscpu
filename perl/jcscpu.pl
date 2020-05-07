@@ -24,36 +24,36 @@ while (<BOOT>){
 }
 $BB->get("RAM")->dump(20) ;
 
-# $BB->step(10) ;
+$BB->get("CLK")->start() ;
+
+$BB->inst(7) ;
+while (1){
+    #warn $BB->show() ;
+    $BB->inst() ;
+    #warn $BB->show() ;
+    # $BB->get("RAM")->dump(20) ;
+    $BB->inst(6) ;
+}
+exit ;
+
 my $inst = 0 ;
 while (1){
-    warn "INSTRUCTION " . $inst++ ;
+    if ($inst == 73){
+        $BB->get("RAM")->dump(20) ;
+        exit ;
+    }
     map {
         $BB->step() ;
-    } (0..6) ;   
+    } (0..2) ;   
+    warn "INSTRUCTION " . $inst++ . ": " . $BB->get("IR")->power() . ", addr:" . $BB->get("IAR")->power() ;
+    map {
+        $BB->step() ;
+    } (0..2) ;  
 }
+
+
 $BB->get("CLK")->start() ;
-$BB->tick(4) ;
-warn $BB->show() ;
-$BB->qtick() ;
-warn $BB->show() ;
-$BB->qtick() ;
-warn $BB->show() ;
-$BB->qtick() ;
-warn $BB->show() ;
-$BB->qtick() ;
-warn $BB->show() ;
-warn $BB->show() ;
-$BB->qtick() ;
-warn $BB->show() ;
-$BB->qtick() ;
-warn $BB->show() ;
-$BB->qtick() ;
-warn $BB->show() ;
-$BB->qtick() ;
-warn $BB->show() ;
-$BB->tick() ;
-warn $BB->show() ;
+
 
 
 __DATA__

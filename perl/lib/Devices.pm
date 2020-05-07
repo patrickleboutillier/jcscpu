@@ -43,7 +43,7 @@ my @ROM = () ;
 my $ROM_ADDR = 0 ;
 my $in_ticks = 0 ;
 my $out_inst = 0 ;
-my $init = 0 ;
+my $HALT = "01100001" ;
 $DEVICES::DEVS{'ROM'} = sub {
     my $BB = shift ;
 
@@ -65,27 +65,21 @@ $DEVICES::DEVS{'ROM'} = sub {
         my $ticks = $BB->get("CLK")->ticks() ;
         my $step = $BB->get("STP")->step() ;
         my $inst = int($ticks / 24) ;
-        # return if $out_inst == $inst ;
-        my $addr = oct("0b" . $BB->get("DATA.bus")->power()) ;
-        if ($addr == 0){
-            if ($init){
-                return ;
-            }
-            $init = 1 ;
-        }
-
-        $ROM_ADDR = $addr ;
-        warn "out (write addr) addr:$ROM_ADDR inst:$inst step:$step ticks:$ticks qticks:$qticks " . ($qticks % 4) ;
-        
+        my $addr = $BB->get("DATA.bus")->power() ;
+        $ROM_ADDR = oct("0b$addr") ;
+        warn "out (write addr) addr:$ROM_ADDR inst:$inst step:$step ticks:$ticks qticks:$qticks " . ($qticks % 4) ;        
         $out_inst = $inst ;
     }) ;
     my $indata = new WIRE() ;
     $indata->posthook(sub {
         return unless $_[0] ;
+        my $qticks = $BB->get("CLK")->qticks() ;
         my $ticks = $BB->get("CLK")->ticks() ;
         my $step = $BB->get("STP")->step() ;
+        my $inst = int($ticks / 24) ;
         $BB->get("DATA.bus")->power($ROM[$ROM_ADDR]) ;
         # warn "in (read addr) addr:$ROM_ADDR step:$step ticks:$ticks" ;
+        warn "in  (read addr) addr:$ROM_ADDR data:$ROM[$ROM_ADDR] inst:$inst step:$step ticks:$ticks qticks:$qticks " . ($qticks % 4) ;
     }) ;
     $BB->get("IO.adapter")->register(ROM(),
         $outdata,
