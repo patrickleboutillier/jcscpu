@@ -29,11 +29,11 @@ sub make_tty_test {
 
     # First, activate the device
     my $iinst = sprintf("011111%02b", $rb) ;
-    $BB->setREG("R$rb", sprintf("%08b", 0)) ;
+    $BB->setREG("R$rb", sprintf("%08b", DEVICES::TTY())) ;
     $BB->setRAM($iaddr, $iinst) ; 
     $BB->setREG("IAR", $iaddr) ;
     $BB->step() ;
-    is($BB->get("IO.adapter")->active(0), 1, "TTY is active") ;
+    is($BB->get("IO.adapter")->active(DEVICES::TTY()), 1, "TTY is active") ;
 
     # Then, send data to the device
     my $iinst = sprintf("011110%02b", $rb) ;

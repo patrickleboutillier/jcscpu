@@ -3,12 +3,12 @@ use strict ;
 use Carp ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
-our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD ST DATA JMPR JMP CLF JC JA JE JZ JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ) ;
+our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD ST DATA JMPR JMP CLF JC JA JE JZ JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL) ;
 
 
 my $PRINT = 1 ;
 my @LINES = () ;
-
+my $NB_REM = 0 ;
 
 $SIG{__DIE__} = sub {
     $PRINT = 0 ;
@@ -50,6 +50,7 @@ sub R3() {
 
 sub REM {
     push @LINES, "# " . join('', @_) ;
+    $NB_REM++ ;
 }
 
 
@@ -108,21 +109,21 @@ sub DATA($$) {
 }
 
 
-sub JMPR {
+sub JMPR($) {
     my ($rb) = _check_proto("R", @_) ;
 
     push @LINES, sprintf("001100%s # JMPR  %s", $rb->{v}, $rb->{n}) ;
 }
 
 
-sub CLF {
+sub CLF() {
     _check_proto("", @_) ;
 
     push @LINES, sprintf("01100000 # CLF  ") ;
 }
 
 
-sub JMP {
+sub JMP($) {
     my ($byte) = _check_proto("A", @_) ;
 
     my $bin = sprintf("%08b", $byte) ;
@@ -142,6 +143,15 @@ sub _JMPXXX {
 }
 
 
+sub LABEL($) {
+    my $desc = shift ;  
+
+    my $pos = scalar(@LINES) - $NB_REM ;
+    REM("Label '$desc' at position $pos") ;
+    return $pos ;
+}
+
+
 sub JC    { return _JMPXXX("1000", "C   ", @_) ;}
 sub JA    { return _JMPXXX("0100", "A   ", @_) ;}
 sub JE    { return _JMPXXX("0010", "E   ", @_) ;}
@@ -157,6 +167,34 @@ sub JCAZ  { return _JMPXXX("1101", "CAZ ", @_) ;}
 sub JCEZ  { return _JMPXXX("1011", "CEZ ", @_) ;}
 sub JAEZ  { return _JMPXXX("0111", "AEZ ", @_) ;}
 sub JCAEZ { return _JMPXXX("1111", "CAEZ", @_) ;}
+
+
+sub IND {
+    my ($rb) = _check_proto("R", @_) ;
+
+    push @LINES, sprintf("011100%s # IND   %s", $rb->{v}, $rb->{n}) ;
+}
+
+
+sub INA {
+    my ($rb) = _check_proto("R", @_) ;
+
+    push @LINES, sprintf("011101%s # INA   %s", $rb->{v}, $rb->{n}) ;
+}
+
+
+sub OUTD {
+    my ($rb) = _check_proto("R", @_) ;
+
+    push @LINES, sprintf("011110%s # OUTD  %s", $rb->{v}, $rb->{n}) ;
+}
+
+
+sub OUTA {
+    my ($rb) = _check_proto("R", @_) ;
+
+    push @LINES, sprintf("011111%s # OUTA  %s", $rb->{v}, $rb->{n}) ;
+}
 
 
 sub _check_proto {
@@ -203,7 +241,7 @@ sub _valid_dec {
 sub _valid_bin {
     my $b = shift ;
 
-    if ($b =~ /^(0b)([0-1]{8})$/){ 
+    if ($b =~ /^(0b)([01]{8})$/){ 
         return oct($b) ;
     }
 
