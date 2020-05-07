@@ -8,3 +8,4 @@ ADD R0, R1 ;
 DATA R0, DEVICES::TTY() ;
 OUTA R0 ;
 OUTD R1 ;
+HALT ;

@@ -137,6 +137,10 @@ $INSTRUCTIONS::INSTS{'CLF'} = sub {
     new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.bus")->wire(6), $cl1) ;
     $BB->get("BUS1.bit1.eor")->add($cl1) ;
     $BB->get("FLAGS.set.eor")->add($cl1) ;
+
+    my $h1 = new WIRE() ;
+    $h1->prehook(sub { exit(0) }) ;
+    new AND($BB->get("INST.bus")->wire(6), $BB->get("IR.bus")->wire(7), $h1) ;
 } ;
 
 

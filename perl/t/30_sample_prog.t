@@ -35,6 +35,9 @@ my $nb = sysread(\*READ, $char, 1) ;
 is($nb, 1, "One byte returned by sysread") ;
 is($char, "*", "*") ;
 
+# HALT instruction will stop the computer
+$BB->get("CLK")->start() ;
+
 __DATA__
 # Place to values in R0 and R1, add them and send the code as ASCII to the TTY.
 00100000 # DATA  R0, 00010100 (20)
@@ -46,3 +49,4 @@ __DATA__
 00000001 # ...   1
 01111100 # OUTA  R0
 01111001 # OUTD  R1
+01100001 # HALT

@@ -3,7 +3,8 @@ use strict ;
 use Carp ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
-our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD ST DATA JMPR JMP CLF JC JA JE JZ JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL) ;
+our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD ST DATA JMPR JMP CLF JC JA JE JZ 
+    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL HALT) ;
 
 
 my $PRINT = 1 ;
@@ -120,6 +121,13 @@ sub CLF() {
     _check_proto("", @_) ;
 
     push @LINES, sprintf("01100000 # CLF  ") ;
+}
+
+
+sub HALT() {
+    _check_proto("", @_) ;
+
+    push @LINES, sprintf("01100001 # HALT  ") ;
 }
 
 
