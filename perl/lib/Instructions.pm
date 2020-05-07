@@ -49,7 +49,6 @@ $INSTRUCTIONS::INSTS{'LDST'} = sub {
     $BB->get("REGB.set.eor")->add($l2) ;
 
     my $s1 = new WIRE() ;
-    $s1->prehook(sub { warn "LDST s1 @_" }) ;
     new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.bus")->wire(1), $s1) ;
     $BB->get("REGA.ena.eor")->add($s1) ;
     $BB->get("RAM.MAR.set.eor")->add($s1) ;
