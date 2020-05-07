@@ -6,7 +6,6 @@ use ALU ;
 use BUS1 ;
 use Clock ;
 use Stepper ;
-use Instructions ;
 use IOAdapter ;
 use Carp ;
 
@@ -145,6 +144,14 @@ sub new {
         my @insts = ($insts =~ /^all$/i ? sort keys %INSTRUCTIONS::INSTS : @{$opts{'insts'}}) ;
         foreach my $i (@insts){
             $INSTRUCTIONS::INSTS{$i}->($this) ;
+        }
+    }
+    if ($opts{'devs'}){
+        require Devices ;
+        my $devs = $opts{'devs'} ;
+        my @devs = ($devs =~ /^all$/i ? sort keys %DEVICES::DEVS : @{$opts{'devs'}}) ;
+        foreach my $d (@devs){
+            $DEVICES::DEVS{$d}->($this) ;
         }
     }
 
