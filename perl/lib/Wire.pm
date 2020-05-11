@@ -56,30 +56,30 @@ sub prehook {
 
 # Get or set power on a wire.
 sub power {
-    my $this = shift ;
-    my $v = shift ;
-    my $soft = shift ; # Soft signal only changes the power value, no signals and no hooks.
+    my $this = $_[0] ;
+    my $v = $_[1] ;
+    my $soft = $_[2] ; # Soft signal only changes the power value, no signals and no hooks.
 
-    if ((defined($v))&&(! $this->{terminal})){
-        # $v = ($v ? 1 : 0) ;
+    return $this->{power} unless defined($v) ;
+    return $this->{power} if $this->{terminal} ;
 
-        $this->{power} = $v ;
-        $this->{soft} = $soft ;
+    # $v = ($v ? 1 : 0) ;
+    $this->{power} = $v ;
+    $this->{soft} = $soft ;
 
-        if (! $soft){
-            # Do prehooks
-            foreach my $hook (@{$this->{prehooks}}){
-                $hook->($v)  ;
-            }
+    if (! $soft){
+        # Do prehooks
+        foreach my $hook (@{$this->{prehooks}}){
+            $hook->($v)  ;
+        }
 
-            foreach my $gate (@{$this->{gates}}){
-                # Don't send signals to output pin.
-                $gate->signal() if ($this ne $gate->{c}) ;
-            }
+        foreach my $gate (@{$this->{gates}}){
+            # Don't send signals to output pin.
+            $gate->signal() if ($this ne $gate->{c}) ;
         }
     }
 
-    return $this->{power} ;
+    return $v ;
 }
 
 
