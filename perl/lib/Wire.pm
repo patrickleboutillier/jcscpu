@@ -57,6 +57,20 @@ sub pause {
 }
 
 
+sub name {
+    my $this = shift ;
+    my $name = shift ;
+
+    if (defined($name)){
+        $this->{name} = $name ;
+        $this->prehook(sub {
+            warn "Wire $this->{name}\@$this (smart:$this->{smart}) changing power to $_[0]\n" ;
+        }) ;
+    }
+
+    return $this->{name} ;
+}
+
 sub prehook {
     my $this = shift ;
     my $sub = shift ;
@@ -94,28 +108,26 @@ sub power {
 
     if ((defined($v))&&(! $this->{terminal})){
         $v = ($v ? 1 : 0) ;
-        if (($v != $this->{power})||($this->{soft})){
-            # There is a change in power. Record it and propagate the effect.
-            if ($this->{pause}){
-                Time::HiRes::sleep($this->{pause}) ;
+
+        if ($this->{pause}){
+            Time::HiRes::sleep($this->{pause}) ;
+        }
+        $this->{power} = $v ;
+        $this->{soft} = $soft ;
+
+        if (! $soft){
+            # Do prehooks
+            foreach my $hook (@{$this->{prehooks}}){
+                $hook->($v)  ;
             }
-            $this->{power} = $v ;
-            $this->{soft} = $soft ;
 
-            if (! $soft){
-                # Do prehooks
-                foreach my $hook (@{$this->{prehooks}}){
-                    $hook->($v)  ;
-                }
+            foreach my $gate (@{$this->{gates}}){
+                $gate->signal($this, $v) ;  
+            }
 
-                foreach my $gate (@{$this->{gates}}){
-                    $gate->signal($this) ;  
-                }
-
-                # Do posthooks
-                foreach my $hook (@{$this->{posthooks}}){
-                    $hook->($v)  ;
-                }
+            # Do posthooks
+            foreach my $hook (@{$this->{posthooks}}){
+                $hook->($v)  ;
             }
         }
     }
@@ -134,7 +146,7 @@ sub connect {
 
     foreach my $gate (@gates){
         push @{$this->{gates}}, $gate ;
-        $gate->connect($this) ;
+        # $gate->connect($this) ;
     }
 
     return $this ;

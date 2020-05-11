@@ -20,15 +20,21 @@ sub new {
 
     my $this = {
         name => $name,
+        state => {},
     } ;
     bless $this, $class ;
     
     $this->{a} = $wa ;
     $wa->connect($this) ;
+    $this->{state}->{a} = $wa->power() ;
     $this->{b} = $wb ;
     $wb->connect($this) ;
+    $this->{state}->{b} = $wb->power() ;    
     $this->{c} = $wc ;
     $wc->connect($this) ;
+    $this->{state}->{c} = $wc->power() ;    
+
+    $this->eval() ;
 
     $GATES::NB_NAND++ ;
 
@@ -39,13 +45,32 @@ sub new {
 sub eval {
     my $this = shift ;
     my $wire = shift ;
+    my $v = shift ;
 
     my $a = $this->{a}->power() ;
     my $b = $this->{b}->power() ;
+    my $c = (! ($a && $b)) || 0 ;
+ 
+    #if ($wire eq $this->{a}){
+    #    $this->{state}->{a} = $v ;
+    #    $this->{state}->{b} = $this->{b}->power() ;
+    #} 
+    #if ($wire eq $this->{b}){
+    #    $this->{state}->{b} = $v ;
+    #    $this->{state}->{a} = $this->{a}->power() ;
+    #} 
 
     # This code could be replaced by a truth table. No need to actually the language operators to perform
     # the boolean and and the not.
-    $this->{c}->power(! ($a && $b)) ;
+    #my $c = (! ($this->{state}->{a} && $this->{state}->{b})) || 0 ;
+    # warn "$this->{name}: $this->{state}->{a} $this->{state}->{b} $this->{state}->{c} $c" ;
+
+    if (($this->{state}->{c} != $c)||($this->{state}->{a} != $a)||($this->{state}->{b} != $b)){
+        $this->{state}->{a} = $a ;
+        $this->{state}->{b} = $b ;
+        $this->{state}->{c} = $c ;
+        $this->{c}->power($c) ;
+    }
 }
 
 
@@ -53,18 +78,19 @@ sub connect {
     my $this = shift ;
     my $wire = shift ;
 
-    $this->eval($wire) if ($wire eq $this->{c}) ;
+    # $this->eval($wire) if ($wire eq $this->{c}) ;
 }
 
 
 sub signal {
     my $this = shift ;
     my $wire = shift ;
+    my $v = shift ;
  
     # Ignore signals from our output pin.
     return if ($wire eq $this->{c}) ;
 
-    $this->eval($wire) ;
+    $this->eval($wire, $v) ;
 }
 
 
@@ -78,8 +104,7 @@ sub new {
     my $wb = shift ;
     my $name = shift ;
 
-    # Slight optimization to the NOT gate design
-    new NAND($wa, WIRE->on(), $wb, "$name/NAND") ;
+    new NAND($wa, $wa, $wb, "$name/NAND") ;
 
     my $this = {
         a => $wa,
