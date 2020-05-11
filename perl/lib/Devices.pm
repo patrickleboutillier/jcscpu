@@ -18,7 +18,7 @@ $DEVICES::DEVS{'TTY'} = sub {
     my $BB = shift ;
 
     my $outdata = new WIRE() ;
-    $outdata->posthook(sub {
+    $outdata->prehook(sub {
         return unless $_[0] ;
         my $byte = $BB->get("DATA.bus")->power() ;
         my $dec = oct("0b$byte") ;
@@ -51,14 +51,14 @@ $DEVICES::DEVS{'ROM'} = sub {
     @ROM = @{$BB->readINSTS(\*ROMF)} ;
 
     my $outdata = new WIRE() ;
-    $outdata->posthook(sub {
+    $outdata->prehook(sub {
         return unless $_[0] ;
         $ROM_ADDR = oct("0b" . $BB->get("DATA.bus")->power()) ;
         # warn "out (write addr) addr:$ROM_ADDR" ;       
     }) ;
 
     my $indata = new WIRE() ;
-    $indata->posthook(sub {
+    $indata->prehook(sub {
         return unless $_[0] ;
         $BB->get("DATA.bus")->power($ROM[$ROM_ADDR]) ;
         # warn "in (read addr) addr:$ROM_ADDR data:$ROM[$ROM_ADDR]" ;

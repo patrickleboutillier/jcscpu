@@ -4,20 +4,17 @@ use Gates ;
 
 
 my $max_n_tests = 8 ;
-plan(tests => 58 +
+plan(tests => 57 +
     8 + nb_andn_tests() + nb_orn_tests()) ;
 
 
 # Coverage for WIRE
 my $w = new WIRE() ;
 $w->prehook(sub { ok(1, "Hook called") }) ;
-$w->posthook(sub { ok(1, "Hook called") }) ;
 $w->prehook() ;
-$w->posthook() ;
 $w->power(1) ;
 $w->terminal() ;
 $w->power(0) ;
-$w->pause() ;
 is($w->power(), 1, "Terminal froze the wire") ;
 
 

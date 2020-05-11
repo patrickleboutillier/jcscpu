@@ -5,9 +5,6 @@ use Time::HiRes ;
 use Gates ;
 use Carp ;
 
-# NOTE: Each tick of this clock calls itself recursively. A more performant lopp-based clock may be required on the future...
-# This allowed the implementation to be faithful to the book. A loop could easily be used instead
-
 
 $CLOCK::DEBUG = 0 ;
 $CLOCK::MODE = 'loop' ;
@@ -34,6 +31,7 @@ sub new {
         qticks => 0,
         maxticks => $maxticks,
         name => $name,
+        pause => 0,
     } ;
     bless $this, $class ;
 
@@ -79,8 +77,7 @@ sub start {
 
     my $wclk = $this->{clk} ;
     my $wclkd = $this->{clkd} ;
-    $wclkd->pause($freqhz ? (1.0 / ($freqhz * 4)) : undef) ;
-    $wclk->pause($freqhz ? (1.0 / ($freqhz * 4)) : undef) ;
+    $this->{pause} = ($freqhz ? (1.0 / ($freqhz * 4)) : 0) ;
 
     # Close the circuit to start the clock
     if ($CLOCK::MODE eq 'gates'){
@@ -137,6 +134,11 @@ sub _qtick_callback {
     my $this = shift ;
     my $label = shift ;
     my $s = shift ;
+
+
+    if ($this->{pause}){
+        Time::HiRes::sleep($this->{pause}) ;
+    }
 
     my $maxticks = $this->{maxticks} ;
     if (($maxticks >= 0)&&($this->ticks() >= $maxticks)){

@@ -374,6 +374,10 @@ sub initRAMh {
     foreach my $inst (@{$this->readINSTS($handle)}){
         $this->setRAM(sprintf("%08b", $addr++), $inst) ;
     }
+
+    # Important to reset the DATA.bus after loading RAM as it will leave data there
+    # that will mess up the rest of the instruction loading.
+    $this->get("DATA.bus")->power("00000000") ;
 }
 
 

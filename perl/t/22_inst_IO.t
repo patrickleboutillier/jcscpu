@@ -28,7 +28,7 @@ sub make_io_test {
     # Register the device
     if (! $BB->get("IO.adapter")->registered($n)){
         my $outdata = new WIRE() ;
-        $outdata->posthook(sub {
+        $outdata->prehook(sub {
             if ($_[0]){
                 # Data was made available to our device on the DATA.bus.
                 # Let's grab it and put it in a local var.  
