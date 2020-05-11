@@ -1,7 +1,7 @@
 package WIRE ;
 
 use strict ;
-use Time::HiRes ;
+use Carp ;
 
 
 my $ON = new WIRE(1, 1) ;
@@ -17,8 +17,6 @@ sub new {
         terminal => $terminal,  # Terminal wires cannot change power.
         gates => [],
         prehooks => [],
-        posthooks => [],
-        pause => 0,
         soft => 0,
     } ;
     bless $this, $class ;
@@ -45,18 +43,6 @@ sub terminal {
 }
 
 
-sub pause {
-    my $this = shift ;
-    my $ms = shift ;
-
-    if (defined($ms)){
-        $this->{pause} = $ms ;
-    }
-
-    return $this->{pause} ;
-}
-
-
 sub prehook {
     my $this = shift ;
     my $sub = shift ;
@@ -68,59 +54,29 @@ sub prehook {
 }
 
 
-sub posthook {
-    my $this = shift ;
-    my $sub = shift ;
-
-    if (defined($sub)){
-        # Set posthook
-        push @{$this->{posthooks}}, $sub ;
-    }
-}
-
-
-sub show {
-    my $this = shift ;
-
-    return $this->power() ;
-}
-
-
 # Get or set power on a wire.
 sub power {
-    my $this = shift ;
-    my $v = shift ;
-    my $soft = shift ; # Soft signal only changes the power value, no signals and no hooks.
+    my $this = $_[0] ;
+    my $v = $_[1] ;
+    my $soft = $_[2] ; # Soft signal only changes the power value, no signals and no hooks.
 
-    if ((defined($v))&&(! $this->{terminal})){
-        $v = ($v ? 1 : 0) ;
-        if (($v != $this->{power})||($this->{soft})){
-            # There is a change in power. Record it and propagate the effect.
-            if ($this->{pause}){
-                Time::HiRes::sleep($this->{pause}) ;
-            }
-            $this->{power} = $v ;
-            $this->{soft} = $soft ;
+    return $this->{power} unless defined($v) ;
+    return $this->{power} if $this->{terminal} ;
 
-            if (! $soft){
-                # Do prehooks
-                foreach my $hook (@{$this->{prehooks}}){
-                    $hook->($v)  ;
-                }
+    # $v = ($v ? 1 : 0) ;
+    $this->{power} = $v ;
+    $this->{soft} = $soft ;
 
-                foreach my $gate (@{$this->{gates}}){
-                    $gate->signal($this) ;  
-                }
-
-                # Do posthooks
-                foreach my $hook (@{$this->{posthooks}}){
-                    $hook->($v)  ;
-                }
-            }
+    if (! $soft){
+        # Do prehooks
+        foreach my $hook (@{$this->{prehooks}}){
+            $hook->($v)  ;
         }
-    }
-    else {
-        $v = $this->{power} ;
+
+        foreach my $gate (@{$this->{gates}}){
+            # Don't send signals to output pin.
+            $gate->signal() if ($this ne $gate->{c}) ;
+        }
     }
 
     return $v ;
@@ -134,10 +90,31 @@ sub connect {
 
     foreach my $gate (@gates){
         push @{$this->{gates}}, $gate ;
-        $gate->connect($this) ;
     }
 
     return $this ;
+}
+
+
+sub show {
+    my $this = shift ;
+
+    return $this->power() ;
+}
+
+
+sub name {
+    my $this = shift ;
+    my $name = shift ;
+
+    if (defined($name)){
+        $this->{name} = $name ;
+        $this->prehook(sub {
+            warn "Wire $this->{name}\@$this (smart:$this->{smart}) changing power to $_[0]\n" ;
+        }) ;
+    }
+
+    return $this->{name} ;
 }
 
 

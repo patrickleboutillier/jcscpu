@@ -23,12 +23,11 @@ sub new {
     } ;
     bless $this, $class ;
     
-    $this->{a} = $wa ;
-    $wa->connect($this) ;
-    $this->{b} = $wb ;
-    $wb->connect($this) ;
-    $this->{c} = $wc ;
-    $wc->connect($this) ;
+    $this->{a} = $wa->connect($this) ;
+    $this->{b} = $wb->connect($this) ;
+    $this->{c} = $wc->connect($this) ;
+
+    $this->signal() ;
 
     $GATES::NB_NAND++ ;
 
@@ -36,35 +35,15 @@ sub new {
 }
 
 
-sub eval {
-    my $this = shift ;
-    my $wire = shift ;
-
-    my $a = $this->{a}->power() ;
-    my $b = $this->{b}->power() ;
-
-    # This code could be replaced by a truth table. No need to actually the language operators to perform
-    # the boolean and and the not.
-    $this->{c}->power(! ($a && $b)) ;
-}
-
-
-sub connect {
-    my $this = shift ;
-    my $wire = shift ;
-
-    $this->eval($wire) if ($wire eq $this->{c}) ;
-}
-
-
 sub signal {
-    my $this = shift ;
-    my $wire = shift ;
+    my $this = $_[0] ;
  
-    # Ignore signals from our output pin.
-    return if ($wire eq $this->{c}) ;
+    # NOTE: HIGHLY optimized function, grabs wire values directly instead of issuing function calls to getters!
+    my $c = (! ($this->{a}->{power} && $this->{b}->{power})) || 0 ;
 
-    $this->eval($wire) ;
+    if (($this->{c}->{power} != $c)||($this->{c}->{soft})){
+        $this->{c}->power($c) ;
+    }
 }
 
 
@@ -78,8 +57,7 @@ sub new {
     my $wb = shift ;
     my $name = shift ;
 
-    # Slight optimization to the NOT gate design
-    new NAND($wa, WIRE->on(), $wb, "$name/NAND") ;
+    new NAND($wa, $wa, $wb, "$name/NAND") ;
 
     my $this = {
         a => $wa,

@@ -139,9 +139,11 @@ $INSTRUCTIONS::INSTS{'CLF'} = sub {
     $BB->get("FLAGS.set.eor")->add($cl1) ;
 
     my $h1 = new WIRE() ;
-    $h1->prehook(sub { 
-        # warn "HALTING!" ;
-        exit(0) ;
+    $h1->prehook(sub {
+        if ($_[0]){ 
+            # warn "HALTING!" ;
+            exit(0) ;
+        }
     }) ;
     new ANDn(3, BUS->wrap($BB->get("INST.bus")->wire(6), $BB->get("IR.bus")->wire(7), $BB->get("STP.bus")->wire(3)), $h1) ;
 } ;
