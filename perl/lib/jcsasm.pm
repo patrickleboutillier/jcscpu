@@ -4,7 +4,7 @@ use Carp ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
 our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD ST DATA JMPR JMP CLF JC JA JE JZ 
-    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL HALT ASM) ;
+    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL GOTO HALT ASM) ;
 
 
 my $HALT = "01100001" ;
@@ -32,10 +32,29 @@ sub ASM (&){
 
 
 sub done {
+    return [] unless scalar(@LINES) ;
+
     my $last = $LINES[-1] ;
     # Add HALT at the end if not already there.
-    if ($last ne $HALT){
+    if ($last !~ /^$HALT /){
         HALT("(automatically inserted by jscasm)") ;
+    }
+    
+    # Process GOTOs
+    for (my $i = 0 ; $i < scalar(@LINES) ; $i++){
+        my $l = $LINES[$i] ;
+        if ($l =~ /^\@(\w+)/){
+            my $label = $1 ;
+            my $byte = $LABELS{$label} ;
+
+            if (! defined($byte)){
+                print STDERR "Undefined label '$label'!\n" ;
+                exit(1) ;
+            }
+            my $bin = sprintf("%08b", $byte) ;
+            $LINES[$i] =~ s/^\@$label/$bin/ ;
+            $LINES[$i] =~ s/\@\@$label/$byte/ ;
+        }
     }
 
     my @ret = @LINES ;
@@ -52,7 +71,8 @@ sub add_inst {
     my $comment = shift ;
 
     my $no = scalar(@LINES) ;
-    push @LINES, sprintf("$byte # line %3d - %s", $no, $comment) ;
+    my $pos = $no - $NB_REM ;
+    push @LINES, sprintf("$byte # line %3d, pos %3d - %s", $no, $pos, $comment) ;
 }
 
 
@@ -86,7 +106,7 @@ sub R3() {
 
 
 sub REM {
-    push @LINES, "# " . join('', @_) ;
+    add_inst("        ", join('', @_)) ;
     $NB_REM++ ;
 }
 
@@ -170,27 +190,26 @@ sub HALT(;$) {
 sub JMP($) {
     my ($byte) = _check_proto("A", @_) ;
 
-    _JMP($byte) ;
+    my $bin = sprintf("%08b", $byte) ;
+    _JMP($byte, $bin) ;
 }
 
 
-sub _JMP($) {
+sub _JMP {
     my $byte = shift ;
+    my $bin = shift ;
 
-    my $bin = sprintf("%08b", $byte) ;
     add_inst("01000000", sprintf("JMP   %s (%s)", $bin, $byte)) ;
     add_inst($bin, sprintf("      %s (%s)", $bin, $byte)) ;
 }
 
 
-sub _JMPXXX {
-    my $flags = shift ;
+sub GOTO($) {
     my $label = shift ;
-    my ($byte) = _check_proto("A", @_) ;
 
-    my $bin = sprintf("%08b", $byte) ;
-    add_inst("0101$flags", sprintf("J$label %s (%s)", $bin, $byte)) ;
-    add_inst($bin, sprintf("      %s (%s)", $bin, $byte)) ;
+    croak("JCSASM: Invalid label '$label'") unless $label =~ /^\w+$/ ;
+    REM("GOTO  \@$label") ;
+    _JMP("\@\@$label", "\@$label") ;
 }
 
 
@@ -201,16 +220,27 @@ sub LABEL($) {
     croak("JCSASM: Label '$label' already defined") if $LABELS{$label} ;
     my $pos = scalar(@LINES) - $NB_REM ;
     $LABELS{$label} = $pos ;
-    REM("Label '$label' at position $pos") ;
+    REM("Label '$label' at pos $pos") ;
     return $pos ;
 }
 
 
-sub GOTO($) {
+sub _JMPXXX {
+    my $flags = shift ;
     my $label = shift ;
+    my ($byte) = _check_proto("A", @_) ;
 
-    croak("JCSASM: Invalid label '$label'") unless $label =~ /^\w+$/ ;
-    _JMP("\@$label") ;
+    my $bin = undef ;
+    if ($byte =~ /^[01]$/){
+        $bin = sprintf("%08b", $byte) ;
+    }
+    else {
+        $bin = $byte ;
+        $byte = "\@$bin" ;
+    }
+
+    add_inst("0101$flags", sprintf("J$label %s (%s)", $bin, $byte)) ;
+    add_inst($bin, sprintf("      %s (%s)", $bin, $byte)) ;
 }
 
 
@@ -272,11 +302,13 @@ sub _check_proto {
             $ok = 0 ;
         }
         if ($ps[$j] eq "A"){
-            my $argn = _valid_num($arg) ;
-            if ((! defined($arg))||($argn == -1)){
-                $ok = 0 ;
-            }          
-            $arg = $argn ;
+            if ($arg !~ /^\@\w+$/){
+                my $argn = _valid_num($arg) ;
+                if ((! defined($arg))||($argn == -1)){
+                    $ok = 0 ;
+                }          
+                $arg = $argn ;
+            }
         }     
 
         croak("JCSASM: Invalid syntax") unless $ok ;

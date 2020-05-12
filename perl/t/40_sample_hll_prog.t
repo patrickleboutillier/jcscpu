@@ -22,7 +22,9 @@ $BB->initRAMl(HLL {
     my $a = VAR(20) ;
     my $b = VAR(22) ;
     my $c = PLUS($a, $b) ;
-    PRINT($c) ;
+    IF $c, sub {
+        PRINT($c) ;
+    }
 }) ;
 
 

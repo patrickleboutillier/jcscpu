@@ -33,14 +33,13 @@ use Carp ;
 use jcsasm ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
-our @EXPORT = qw(VAR PLUS SET PRINT HALT HLL) ;
+our @EXPORT = qw(VAR PLUS SET PRINT REM IF HALT HLL) ;
 
 
 sub HLL (&){
     my $sub = shift ;
     return ASM(sub { 
         $sub->() ;
-        HALT ;
     }) ;
 }
 
@@ -99,7 +98,23 @@ sub PRINT($){
 }
 
 
+sub IF($&){
+    my $tvar = shift ;
+    my $block = shift ;
 
+    # Put $var in R0
+    DATA R0, ${tied $$tvar} ;
+    LD R0, R0 ; 
+    XOR R1, R1 ;  # Put 0 in R1
+    CLF ;
+    # eqo flag will be set if R0 == 0
+    CMP R0, R1 ;
+
+    my $fi = "FI" . jcsasm::nb_lines() ; 
+    JE "\@$fi" ;
+    $block->() ;
+    LABEL $fi ;
+}
 
 
 1 ;
