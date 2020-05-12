@@ -4,24 +4,42 @@ use Carp ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
 our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD ST DATA JMPR JMP CLF JC JA JE JZ 
-    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL HALT) ;
+    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL HALT ASM) ;
 
 
 my $PRINT = 1 ;
 my @LINES = () ;
 my $NB_REM = 0 ;
 
+
 $SIG{__DIE__} = sub {
     $PRINT = 0 ;
 } ;
 
 
+sub nb_lines {
+    return scalar(@LINES) - $NB_REM ;
+}
+
+
+sub ASM (&){
+    my $sub = shift ;
+    $sub->() ;
+    return done() ;
+}
+
+
+sub done {
+    my @ret = @LINES ;
+    @LINES = () ;
+    $NB_REM = 0 ;
+
+    return \@ret ;
+}
+
+
 END {
-    if ($PRINT){
-        foreach my $l (@LINES){
-            print "$l\n" ;
-        }    
-    }
+    print(join("\n", @{done()})) if $PRINT ;
 }
 
 

@@ -24,6 +24,7 @@ sub new {
 
     my $this = {
         opts => \%opts,
+        halt => undef,
     } ;
     bless $this, $class ;
 
@@ -370,8 +371,16 @@ sub initRAMh {
     my $this = shift ;
     my $handle = shift ;
 
+    return $this->initRAMl($this->readINSTS($handle)) ;
+}
+
+
+sub initRAMl {
+    my $this = shift ;
+    my $lines = shift ;
+
     my $addr = 0 ;
-    foreach my $inst (@{$this->readINSTS($handle)}){
+    foreach my $inst (@{$this->readINSTSl($lines)}){
         $this->setRAM(sprintf("%08b", $addr++), $inst) ;
     }
 
@@ -386,9 +395,17 @@ sub readINSTS {
     my $this = shift ;
     my $handle = shift ;
 
+    my @lines = (<$handle>) ;
+    return $this->readINSTSl(\@lines) ;
+}
+
+
+sub readINSTSl {
+    my $this = shift ;
+    my $lines = shift ;
+
     my @insts = () ;
-    while (<$handle>){
-        my $line = $_ ;
+    foreach my $line (@{$lines}){
         chomp($line) ;
         $line =~ s/[^[:print:]]//g ; 
         next unless $line =~ /^([01]{8})\b/ ;
@@ -404,6 +421,18 @@ sub qtick {
     my $this = shift ;
 
     return $this->get("CLK")->qtick() ;
+}
+
+
+sub on_halt {
+    my $this = shift ;
+    my $sub = shift ;
+
+    if (defined($sub)){
+        $this->{halt} = $sub ;
+    }
+
+    return $this->{halt} ;
 }
 
 
