@@ -1,0 +1,7 @@
+- Add DEBUG instruction to ASM
+- Create folders to stores programs.
+
+Organize programs:
+- jcscpu.pl reads and interprets machine code (instructions)
+- jcsasm.pl reads assembly code DSL (a Perl file) and produces machine code
+- jcshll.pl read HLL code DSL (a Perl file) and produces assembly code
