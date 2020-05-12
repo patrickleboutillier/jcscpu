@@ -1,7 +1,11 @@
 - Add DEBUG instruction to ASM
-- Create folders to stores programs.
+  - Not clear how to do that yet... 
+  - Code must serialized along with the instructions in the ASM file, recorded when the directive is run
+    - ... and involked when the referring instruction is executed...
+
+- ASM: Implement LABELs and GOTOs to simplify branching and looping
 
 Organize programs:
 - jcscpu.pl reads and interprets machine code (instructions)
 - jcsasm.pl reads assembly code DSL (a Perl file) and produces machine code
-- jcshll.pl read HLL code DSL (a Perl file) and produces assembly code
+- jcshll.pl read HLL code DSL (a Perl file) and produces machine code
