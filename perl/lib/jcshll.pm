@@ -33,7 +33,7 @@ use Carp ;
 use jcsasm ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
-our @EXPORT = qw(VAR PLUS SET PRINT REM IF HALT HLL) ;
+our @EXPORT = qw(VAR PLUS SET PRINT REM IF HALT DEBUG HLL) ;
 
 
 sub HLL (&){

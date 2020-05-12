@@ -28,7 +28,6 @@ $BB->initRAMl(ASM {
     JMP 7 ;
     DATA R3, 100 ;
     ST R3, R2 ;
-    HALT ;
 }) ;
 
 

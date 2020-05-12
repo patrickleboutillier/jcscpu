@@ -4,10 +4,11 @@ use Carp ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
 our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD ST DATA JMPR JMP CLF JC JA JE JZ 
-    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL GOTO HALT ASM) ;
+    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL GOTO HALT DEBUG ASM) ;
 
 
-my $HALT = "01100001" ;
+my $HALT  = "01100001" ;
+
 my $PRINT = 1 ;
 my @LINES = () ;
 my %LABELS = () ;
@@ -190,14 +191,14 @@ sub HALT(;$) {
 sub JMP($) {
     my ($byte) = _check_proto("A", @_) ;
 
-    my $bin = sprintf("%08b", $byte) ;
-    _JMP($byte, $bin) ;
-}
-
-
-sub _JMP {
-    my $byte = shift ;
-    my $bin = shift ;
+    my $bin = undef ;
+    if ($byte =~ /^\@/){
+        $bin = $byte ;
+        $byte = "\@$bin" ;
+    }
+    else {
+        $bin = sprintf("%08b", $byte) ;
+    }
 
     add_inst("01000000", sprintf("JMP   %s (%s)", $bin, $byte)) ;
     add_inst($bin, sprintf("      %s (%s)", $bin, $byte)) ;
@@ -209,7 +210,7 @@ sub GOTO($) {
 
     croak("JCSASM: Invalid label '$label'") unless $label =~ /^\w+$/ ;
     REM("GOTO  \@$label") ;
-    _JMP("\@\@$label", "\@$label") ;
+    JMP("\@$label") ;
 }
 
 
@@ -231,12 +232,12 @@ sub _JMPXXX {
     my ($byte) = _check_proto("A", @_) ;
 
     my $bin = undef ;
-    if ($byte =~ /^[01]$/){
-        $bin = sprintf("%08b", $byte) ;
-    }
-    else {
+    if ($byte =~ /^\@/){
         $bin = $byte ;
         $byte = "\@$bin" ;
+    }
+    else {
+        $bin = sprintf("%08b", $byte) ;
     }
 
     add_inst("0101$flags", sprintf("J$label %s (%s)", $bin, $byte)) ;
@@ -286,6 +287,15 @@ sub OUTA($) {
     my ($rb) = _check_proto("R", @_) ;
 
     add_inst(sprintf("011111%s", $rb->{v}), sprintf("OUTA  %s", $rb->{n})) ;
+}
+
+
+sub DEBUG($) {
+    my $perl = shift ;
+
+    $perl =~ s/[\r\n]//g ;
+
+    push @LINES, "#DEBUG $perl" ;
 }
 
 

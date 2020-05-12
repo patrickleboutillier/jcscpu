@@ -17,6 +17,7 @@ use Carp ;
 # Using the options hash, you can specify more componnents be added:
 #  instproc: Add IAR, IR and elactic ORs to create the Enables and Sets sides of the board for everything   
 
+@BREADBOARD::DEBUG = () ;
 
 sub new {
     my $class = shift ;
@@ -175,6 +176,22 @@ sub instproc {
         "IAR" => new REGISTER($this->get(qw/DATA.bus IAR.s IAR.e DATA.bus/), "IAR"),
         "IR" => new REGISTER($this->get(qw/DATA.bus IR.s IR.e IR.bus/), "IR"),
     ) ;
+
+    # DEBUG hook
+    $this->get("IAR.s")->prehook(sub {
+        if ($_[0]){
+            my $n = oct('0b' . $this->get("IAR")->power()) ;
+            my $code = $BREADBOARD::DEBUG[$n] ;
+            if ($code){
+                my $BB = $this ;
+                eval $code ;
+                if ($@){
+                    warn "DEBUG code for instruction $n failed to compile:" ;
+                    warn "$@\n" ;
+                }
+            }
+        }
+    }) ;
 
     # ALL ENABLES
     for my $e (qw/IAR RAM ACC/){
@@ -407,11 +424,14 @@ sub readINSTSl {
     my @insts = () ;
     foreach my $line (@{$lines}){
         chomp($line) ;
-        $line =~ s/[^[:print:]]//g ; 
+        $line =~ s/[^[:print:]]//g ;
+        if ($line =~ s/^#DEBUG//){
+            $BREADBOARD::DEBUG[scalar(@insts)] = $line ;
+        }
         next unless $line =~ /^([01]{8})\b/ ;
         my $inst = $1 ;
         push @insts, $inst ;
-    }   
+    } 
 
     return \@insts ;
 }
@@ -459,6 +479,13 @@ sub inst {
     map {
         map { $this->get("CLK")->tick() } (0..5) ;
     } (1..$n) ;
+}
+
+
+sub start {
+    my $this = shift ;
+
+    $this->get("CLK")->start(@_) ;
 }
 
 
