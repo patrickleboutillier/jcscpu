@@ -4,7 +4,7 @@ use Carp ;
 use jcsasm ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
-our @EXPORT = qw(VAR SET COPY PLUS MINUS NEQ SET PRINT REM IF WHILE HALT DEBUG HLL) ;
+our @EXPORT = qw(VAR SET COPY PLUS MINUS NEQ GT SET PRINT REM IF WHILE HALT DEBUG HLL) ;
 
 
 my $DATAADDR = 255 ;
@@ -73,6 +73,31 @@ sub NEQ($$) {
     return $ret ;
 }
 
+
+sub GT($$) {
+    my ($vara, $varb) = _check_proto("VV", @_) ;
+
+    DATA R0, $$vara ;
+    LD R0, R0 ;
+    DATA R1, $$varb ;
+    LD R1, R1 ;
+    CLF ;
+    CMP R0, R1 ;
+    my $end = "END" . jcsasm::nb_lines() ;
+    my $gt = "GT" . jcsasm::nb_lines() ;
+    JA "\@$gt" ;
+    DATA R2, 0 ;
+    GOTO $end ;
+    LABEL $gt ;
+    DATA R2, 1 ;
+    LABEL $end ;
+
+    my $ret = VAR() ;
+    DATA R0, $$ret ;
+    ST R0, R2 ;
+
+    return $ret ;
+}
 
 sub PLUS($$;$) {
     my ($vara, $varb) = _check_proto("VV", @_) ;
