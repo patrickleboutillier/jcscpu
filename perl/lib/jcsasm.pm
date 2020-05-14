@@ -4,24 +4,81 @@ use Carp ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
 our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD ST DATA JMPR JMP CLF JC JA JE JZ 
-    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL HALT) ;
+    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL GOTO HALT DEBUG ASM) ;
 
+
+my $HALT  = "01100001" ;
 
 my $PRINT = 1 ;
 my @LINES = () ;
+my %LABELS = () ;
 my $NB_REM = 0 ;
+
 
 $SIG{__DIE__} = sub {
     $PRINT = 0 ;
 } ;
 
 
-END {
-    if ($PRINT){
-        foreach my $l (@LINES){
-            print "$l\n" ;
-        }    
+sub nb_lines {
+    return scalar(@LINES) - $NB_REM ;
+}
+
+
+sub ASM (&){
+    my $sub = shift ;
+    $sub->() ;
+    return done() ;
+}
+
+
+sub done {
+    return [] unless scalar(@LINES) ;
+
+    my $last = $LINES[-1] ;
+    # Add HALT at the end if not already there.
+    if ($last !~ /^$HALT /){
+        HALT("(automatically inserted by jscasm)") ;
     }
+    
+    # Process GOTOs
+    for (my $i = 0 ; $i < scalar(@LINES) ; $i++){
+        my $l = $LINES[$i] ;
+        if ($l =~ /^\@(\w+)/){
+            my $label = $1 ;
+            my $byte = $LABELS{$label} ;
+
+            if (! defined($byte)){
+                print STDERR "Undefined label '$label'!\n" ;
+                exit(1) ;
+            }
+            my $bin = sprintf("%08b", $byte) ;
+            $LINES[$i] =~ s/^\@$label/$bin/ ;
+            $LINES[$i] =~ s/\@\@$label/$byte/ ;
+        }
+    }
+
+    my @ret = @LINES ;
+    @LINES = () ;
+    %LABELS = () ;
+    $NB_REM = 0 ;
+    
+    return \@ret ;
+}
+
+
+sub add_inst {
+    my $byte = shift ;
+    my $comment = shift ;
+
+    my $no = scalar(@LINES) ;
+    my $pos = $no - $NB_REM ;
+    push @LINES, sprintf("$byte # line %3d, pos %3d - %s", $no, $pos, $comment) ;
+}
+
+
+END {
+    print(join("\n", @{done()})) if $PRINT ;
 }
 
 
@@ -50,7 +107,7 @@ sub R3() {
 
 
 sub REM {
-    push @LINES, "# " . join('', @_) ;
+    add_inst("        ", join('', @_)) ;
     $NB_REM++ ;
 }
 
@@ -113,50 +170,78 @@ sub DATA($$) {
 sub JMPR($) {
     my ($rb) = _check_proto("R", @_) ;
 
-    push @LINES, sprintf("001100%s # JMPR  %s", $rb->{v}, $rb->{n}) ;
+    add_inst(sprintf("001100%s", $rb->{v}), sprintf("JMPR  %s", $rb->{n})) ;
 }
 
 
 sub CLF() {
     _check_proto("", @_) ;
 
-    push @LINES, sprintf("01100000 # CLF  ") ;
+    add_inst("01100000", "CLF   ") ;
 }
 
 
-sub HALT() {
+sub HALT(;$) {
     _check_proto("", @_) ;
 
-    push @LINES, sprintf("01100001 # HALT  ") ;
+    add_inst($HALT, "HALT  " . $_[0]) ;
 }
 
 
 sub JMP($) {
     my ($byte) = _check_proto("A", @_) ;
 
-    my $bin = sprintf("%08b", $byte) ;
-    push @LINES, sprintf("01000000 # JMP   %s (%s)", $bin, $byte) ;
-    push @LINES, sprintf("%s # ...   %s", $bin, $byte) ;
+    my $bin = undef ;
+    if ($byte =~ /^\@/){
+        $bin = $byte ;
+        $byte = "\@$bin" ;
+    }
+    else {
+        $bin = sprintf("%08b", $byte) ;
+    }
+
+    add_inst("01000000", sprintf("JMP   %s (%s)", $bin, $byte)) ;
+    add_inst($bin, sprintf("      %s (%s)", $bin, $byte)) ;
+}
+
+
+sub GOTO($) {
+    my $label = shift ;
+
+    croak("JCSASM: Invalid label '$label'") unless $label =~ /^\w+$/ ;
+    REM("GOTO  \@$label") ;
+    JMP("\@$label") ;
+}
+
+
+sub LABEL($) {
+    my $label = shift ;
+
+    croak("JCSASM: Invalid label '$label'") unless $label =~ /^\w+$/ ;
+    croak("JCSASM: Label '$label' already defined") if $LABELS{$label} ;
+    my $pos = scalar(@LINES) - $NB_REM ;
+    $LABELS{$label} = $pos ;
+    REM("Label '$label' at pos $pos") ;
+    return $pos ;
 }
 
 
 sub _JMPXXX {
     my $flags = shift ;
-    my $desc = shift ;
+    my $label = shift ;
     my ($byte) = _check_proto("A", @_) ;
 
-    my $bin = sprintf("%08b", $byte) ;
-    push @LINES, sprintf("0101$flags # J$desc %s (%s)", $bin, $byte) ;
-    push @LINES, sprintf("%s # ...   %s", $bin, $byte) ;
-}
+    my $bin = undef ;
+    if ($byte =~ /^\@/){
+        $bin = $byte ;
+        $byte = "\@$bin" ;
+    }
+    else {
+        $bin = sprintf("%08b", $byte) ;
+    }
 
-
-sub LABEL($) {
-    my $desc = shift ;  
-
-    my $pos = scalar(@LINES) - $NB_REM ;
-    REM("Label '$desc' at position $pos") ;
-    return $pos ;
+    add_inst("0101$flags", sprintf("J$label %s (%s)", $bin, $byte)) ;
+    add_inst($bin, sprintf("      %s (%s)", $bin, $byte)) ;
 }
 
 
@@ -180,28 +265,38 @@ sub JCAEZ { return _JMPXXX("1111", "CAEZ", @_) ;}
 sub IND($){
     my ($rb) = _check_proto("R", @_) ;
 
-    push @LINES, sprintf("011100%s # IND   %s", $rb->{v}, $rb->{n}) ;
+    add_inst(sprintf("011100%s", $rb->{v}), sprintf("IND   %s", $rb->{n})) ;
 }
 
 
 sub INA($) {
     my ($rb) = _check_proto("R", @_) ;
 
-    push @LINES, sprintf("011101%s # INA   %s", $rb->{v}, $rb->{n}) ;
+    add_inst(sprintf("011101%s", $rb->{v}), sprintf("INA   %s", $rb->{n})) ;
 }
 
 
 sub OUTD($) {
     my ($rb) = _check_proto("R", @_) ;
 
-    push @LINES, sprintf("011110%s # OUTD  %s", $rb->{v}, $rb->{n}) ;
+    add_inst(sprintf("011110%s", $rb->{v}), sprintf("OUTD  %s", $rb->{n})) ;
 }
 
 
 sub OUTA($) {
     my ($rb) = _check_proto("R", @_) ;
 
-    push @LINES, sprintf("011111%s # OUTA  %s", $rb->{v}, $rb->{n}) ;
+    add_inst(sprintf("011111%s", $rb->{v}), sprintf("OUTA  %s", $rb->{n})) ;
+}
+
+
+sub DEBUG($) {
+    my $perl = shift ;
+
+    $perl =~ s/[\r\n]//g ;
+
+    push @LINES, "#DEBUG $perl" ;
+    $NB_REM++ ;
 }
 
 
@@ -218,11 +313,13 @@ sub _check_proto {
             $ok = 0 ;
         }
         if ($ps[$j] eq "A"){
-            my $argn = _valid_num($arg) ;
-            if ((! defined($arg))||($argn == -1)){
-                $ok = 0 ;
-            }          
-            $arg = $argn ;
+            if ($arg !~ /^\@\w+$/){
+                my $argn = _valid_num($arg) ;
+                if ((! defined($arg))||($argn == -1)){
+                    $ok = 0 ;
+                }          
+                $arg = $argn ;
+            }
         }     
 
         croak("JCSASM: Invalid syntax") unless $ok ;
@@ -271,21 +368,21 @@ sub _valid_num {
 
 sub _reg_reg {
     my $inst = shift ;
-    my $desc = shift ;
+    my $label = shift ;
     my ($ra, $rb) = _check_proto("RR", @_) ;
 
-    push @LINES, sprintf("$inst%s%s # %-5s %s, %s", $ra->{v}, $rb->{v}, $desc, $ra->{n}, $rb->{n}) ;
+    add_inst(sprintf("$inst%s%s", $ra->{v}, $rb->{v}), sprintf("%-5s %s, %s", $label, $ra->{n}, $rb->{n})) ;
 }
 
 
 sub _reg_byte {
     my $inst = shift ;
-    my $desc = shift ;
+    my $label = shift ;
     my ($rb, $byte) = _check_proto("RA", @_) ;
 
     my $bin = sprintf("%08b", $byte) ;
-    push @LINES, sprintf("${inst}00%s # %-5s %s, %s (%s)", $rb->{v}, $desc, $rb->{n}, $bin, $byte) ;
-    push @LINES, sprintf("%s # ...   %s", $bin, $byte) ;
+    add_inst(sprintf("${inst}00%s", $rb->{v}), sprintf("%-5s %s, %s (%s)", $label, $rb->{n}, $bin, $byte)) ;
+    add_inst($bin, sprintf("      %s (%s)", $bin, $byte)) ;
 }
 
 

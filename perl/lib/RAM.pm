@@ -121,6 +121,14 @@ sub show {
 }
 
 
+sub peek {
+    my $this = shift ;
+    my $addr = shift ;
+
+    return $this->{GRID}->{$addr}->power() ;
+}
+
+
 sub dump {
     my $this = shift ;
     my $max = shift ;

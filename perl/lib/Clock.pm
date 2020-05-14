@@ -7,6 +7,9 @@ use Carp ;
 
 
 $CLOCK::DEBUG = 0 ;
+
+# The "pure" 'gates' implementation of Clock os very slow since it edns up using endless recursions.
+# The default mode is a 'loop' that is much faster. 
 $CLOCK::MODE = 'loop' ;
 
 

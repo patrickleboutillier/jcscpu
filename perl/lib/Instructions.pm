@@ -141,6 +141,7 @@ $INSTRUCTIONS::INSTS{'CLF'} = sub {
     my $h1 = new WIRE() ;
     $h1->prehook(sub {
         if ($_[0]){ 
+            $BB->on_halt()->() if $BB->on_halt() ;
             # warn "HALTING!" ;
             exit(0) ;
         }

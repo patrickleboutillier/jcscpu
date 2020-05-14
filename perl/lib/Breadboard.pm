@@ -17,6 +17,7 @@ use Carp ;
 # Using the options hash, you can specify more componnents be added:
 #  instproc: Add IAR, IR and elactic ORs to create the Enables and Sets sides of the board for everything   
 
+@BREADBOARD::DEBUG = () ;
 
 sub new {
     my $class = shift ;
@@ -24,6 +25,7 @@ sub new {
 
     my $this = {
         opts => \%opts,
+        halt => undef,
     } ;
     bless $this, $class ;
 
@@ -174,6 +176,22 @@ sub instproc {
         "IAR" => new REGISTER($this->get(qw/DATA.bus IAR.s IAR.e DATA.bus/), "IAR"),
         "IR" => new REGISTER($this->get(qw/DATA.bus IR.s IR.e IR.bus/), "IR"),
     ) ;
+
+    # DEBUG hook
+    $this->get("IAR.s")->prehook(sub {
+        if ($_[0]){
+            my $n = oct('0b' . $this->get("IAR")->power()) ;
+            my $code = $BREADBOARD::DEBUG[$n] ;
+            if ($code){
+                my $BB = $this ;
+                eval $code ;
+                if ($@){
+                    warn "DEBUG code for instruction $n failed to compile:" ;
+                    warn "$@\n" ;
+                }
+            }
+        }
+    }) ;
 
     # ALL ENABLES
     for my $e (qw/IAR RAM ACC/){
@@ -370,8 +388,16 @@ sub initRAMh {
     my $this = shift ;
     my $handle = shift ;
 
+    return $this->initRAMl($this->readINSTS($handle)) ;
+}
+
+
+sub initRAMl {
+    my $this = shift ;
+    my $lines = shift ;
+
     my $addr = 0 ;
-    foreach my $inst (@{$this->readINSTS($handle)}){
+    foreach my $inst (@{$this->readINSTSl($lines)}){
         $this->setRAM(sprintf("%08b", $addr++), $inst) ;
     }
 
@@ -386,15 +412,26 @@ sub readINSTS {
     my $this = shift ;
     my $handle = shift ;
 
+    my @lines = (<$handle>) ;
+    return $this->readINSTSl(\@lines) ;
+}
+
+
+sub readINSTSl {
+    my $this = shift ;
+    my $lines = shift ;
+
     my @insts = () ;
-    while (<$handle>){
-        my $line = $_ ;
+    foreach my $line (@{$lines}){
         chomp($line) ;
-        $line =~ s/[^[:print:]]//g ; 
+        $line =~ s/[^[:print:]]//g ;
+        if ($line =~ s/^#DEBUG//){
+            $BREADBOARD::DEBUG[scalar(@insts) + 1] = $line ;
+        }
         next unless $line =~ /^([01]{8})\b/ ;
         my $inst = $1 ;
         push @insts, $inst ;
-    }   
+    } 
 
     return \@insts ;
 }
@@ -404,6 +441,18 @@ sub qtick {
     my $this = shift ;
 
     return $this->get("CLK")->qtick() ;
+}
+
+
+sub on_halt {
+    my $this = shift ;
+    my $sub = shift ;
+
+    if (defined($sub)){
+        $this->{halt} = $sub ;
+    }
+
+    return $this->{halt} ;
 }
 
 
@@ -430,6 +479,13 @@ sub inst {
     map {
         map { $this->get("CLK")->tick() } (0..5) ;
     } (1..$n) ;
+}
+
+
+sub start {
+    my $this = shift ;
+
+    $this->get("CLK")->start(@_) ;
 }
 
 

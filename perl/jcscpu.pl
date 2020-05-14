@@ -2,7 +2,6 @@ use strict ;
 
 use Breadboard ;
 
-
 my $BB = new BREADBOARD(
     'instproc' => 1,
     'instimpl' => 1,
@@ -10,7 +9,7 @@ my $BB = new BREADBOARD(
     'devs' => 'all',
 ) ;
 
-$BB->initRAM("BOOT.txt") ;
-# $BB->get("RAM")->dump() ;
-
+my $insts = $BB->readINSTSl([(scalar(@ARGV) ? <> : <STDIN>)]) ;
+die("No valid instructions provided!\n") unless scalar(@{$insts}) ;
+$BB->initRAMl($insts) ;
 $BB->get("CLK")->start() ;

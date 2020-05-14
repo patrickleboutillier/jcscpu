@@ -3,6 +3,7 @@ use Test::More ;
 use Breadboard ;
 use Data::Dumper ;
 use IO::Handle ;
+use jcsasm ;
 
 plan(tests => 7) ;
 
@@ -10,14 +11,22 @@ my $BB = new BREADBOARD(
     'instproc' => 1,
     'instimpl' => 1,
     'insts' => 'all',
-    'devs' => 'all',
+    'devs' => ['TTY'],
 ) ;
 
 pipe(READ, WRITE) ;
 $DEVICES::TTY_OUTPUT = \*WRITE ;
 
 # Load our program into RAM
-$BB->initRAMh(\*DATA) ;
+$BB->initRAMl(ASM {
+    DATA R0, 20 ;
+    DATA R1, 22 ;
+    ADD R0, R1 ;
+    DATA R0, DEVICES::TTY() ;
+    OUTA R0 ;
+    OUTD R1 ;
+    HALT ;
+}) ;
 
 $BB->inst() ;
 is($BB->get("R0")->power(), "00010100") ;
@@ -37,16 +46,3 @@ is($char, "*", "*") ;
 
 # HALT instruction will stop the computer
 $BB->get("CLK")->start() ;
-
-__DATA__
-# Place to values in R0 and R1, add them and send the code as ASCII to the TTY.
-00100000 # DATA  R0, 00010100 (20)
-00010100 # ...   20
-00100001 # DATA  R1, 00010110 (22)
-00010110 # ...   22
-10000001 # ADD   R0, R1
-00100000 # DATA  R0, 00000001 (1)
-00000001 # ...   1
-01111100 # OUTA  R0
-01111001 # OUTD  R1
-01100001 # HALT
