@@ -4,7 +4,7 @@ use Carp ;
 use jcsasm ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
-our @EXPORT = qw(VAR SET COPY PLUS MINUS SET PRINT REM IF WHILE HALT DEBUG HLL) ;
+our @EXPORT = qw(VAR SET COPY PLUS MINUS NEQ SET PRINT REM IF WHILE HALT DEBUG HLL) ;
 
 
 my $DATAADDR = 255 ;
@@ -58,9 +58,19 @@ sub COPY($$){
 }
 
 
-sub EQUALS($$) {
+sub NEQ($$) {
     my ($vara, $varb) = _check_proto("VV", @_) ;
 
+    DATA R0, $$vara ;
+    LD R0, R0 ;
+    DATA R1, $$varb ;
+    LD R1, R1 ;
+    XOR R0, R1 ;
+    my $ret = VAR() ;
+    DATA R0, $$ret ;
+    ST R0, R1 ;
+
+    return $ret ;
 }
 
 
@@ -131,7 +141,6 @@ sub IF($&;&){
     DATA R0, $$var ;
     LD R0, R0 ; 
     XOR R1, R1 ;  # Put 0 in R1
-    CLF ;
     # eqo flag will be set if R0 == 0
     CMP R0, R1 ;
 
