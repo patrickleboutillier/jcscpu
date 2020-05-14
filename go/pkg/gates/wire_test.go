@@ -1,4 +1,4 @@
-package gate
+package gates
 
 import (
 	"testing"
@@ -26,6 +26,15 @@ func TestPrehooks(t *testing.T) {
 	w.SetPower(false)
 	if n != 1 {
 		t.Errorf("prehook not called")
+	}
+}
+
+func TestTerminal(t *testing.T) {
+	w := NewWire()
+	w.SetTerminal()
+	w.SetPower(true)
+	if w.GetPower() {
+		t.Errorf("terminal didn't freeze the wire")
 	}
 }
 

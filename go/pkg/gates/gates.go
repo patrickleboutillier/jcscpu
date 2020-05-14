@@ -1,14 +1,14 @@
-package gate
+package gates
 
 /*
 NAND
 */
-type nand struct {
-	a, b, c *wire
+type NAND struct {
+	a, b, c *Wire
 }
 
-func NewNAND(wa *wire, wb *wire, wc *wire) *nand {
-	this := &nand{wa, wb, wc}
+func NewNAND(wa *Wire, wb *Wire, wc *Wire) *NAND {
+	this := &NAND{wa, wb, wc}
 	wa.Connect(this)
 	wb.Connect(this)
 	wc.Connect(this)
@@ -17,7 +17,7 @@ func NewNAND(wa *wire, wb *wire, wc *wire) *nand {
 }
 
 // No getters/setters here, this will be called a lot!
-func (this *nand) Signal() {
+func (this *NAND) Signal() {
 	c := (!(this.a.power && this.b.power))
 
 	if (this.c.power != c) || this.c.soft {
@@ -28,12 +28,12 @@ func (this *nand) Signal() {
 /*
 NOT
 */
-type not struct {
-	a, b *wire
+type NOT struct {
+	a, b *Wire
 }
 
-func NewNOT(wa *wire, wb *wire) *not {
-	this := &not{wa, wb}
+func NewNOT(wa *Wire, wb *Wire) *NOT {
+	this := &NOT{wa, wb}
 	NewNAND(wa, wa, wb)
 	return this
 }
@@ -41,12 +41,12 @@ func NewNOT(wa *wire, wb *wire) *not {
 /*
 CONN
 */
-type conn struct {
-	a, b *wire
+type CONN struct {
+	a, b *Wire
 }
 
-func NewCONN(wa *wire, wb *wire) *conn {
-	this := &conn{wa, wb}
+func NewCONN(wa *Wire, wb *Wire) *CONN {
+	this := &CONN{wa, wb}
 	NewAND(wa, wa, wb)
 	return this
 }
@@ -54,12 +54,12 @@ func NewCONN(wa *wire, wb *wire) *conn {
 /*
 AND
 */
-type and struct {
-	a, b, c *wire
+type AND struct {
+	a, b, c *Wire
 }
 
-func NewAND(wa *wire, wb *wire, wc *wire) *and {
-	this := &and{wa, wb, wc}
+func NewAND(wa *Wire, wb *Wire, wc *Wire) *AND {
+	this := &AND{wa, wb, wc}
 	w := NewWire()
 	NewNAND(wa, wb, w)
 	NewNOT(w, wc)
@@ -69,12 +69,12 @@ func NewAND(wa *wire, wb *wire, wc *wire) *and {
 /*
 OR
 */
-type or struct {
-	a, b, c *wire
+type OR struct {
+	a, b, c *Wire
 }
 
-func NewOR(wa *wire, wb *wire, wc *wire) *or {
-	this := &or{wa, wb, wc}
+func NewOR(wa *Wire, wb *Wire, wc *Wire) *OR {
+	this := &OR{wa, wb, wc}
 	wic := NewWire()
 	wid := NewWire()
 	NewNOT(wa, wic)
@@ -86,12 +86,12 @@ func NewOR(wa *wire, wb *wire, wc *wire) *or {
 /*
 XOR
 */
-type xor struct {
-	a, b, c *wire
+type XOR struct {
+	a, b, c *Wire
 }
 
-func NewXOR(wa *wire, wb *wire, wc *wire) *xor {
-	this := &xor{wa, wb, wc}
+func NewXOR(wa *Wire, wb *Wire, wc *Wire) *XOR {
+	this := &XOR{wa, wb, wc}
 	wic := NewWire()
 	wid := NewWire()
 	wie := NewWire()
@@ -158,9 +158,9 @@ sub new {
 
     die ("Invalid ANDn number of inputs $n") unless ($n >= 2) ;
     # Todo: make sure bis->n() == $n
-    my $last = new AND($bis->wire(0), $bis->wire(1), (($n == 2) ? $wo : new WIRE()), "$name/AND[0]") ;
-    for (my $j = 0 ; $j < ($n-2) ; $j++){
-            my $next = new AND($last->{c}, $bis->wire($j+2), (($n == ($j+3)) ? $wo : new WIRE()), "$name/AND[" . ($j+1) . "]") ;
+    my $last = new AND($bis->Wire(0), $bis->Wire(1), (($n == 2) ? $wo : new WIRE()), "$name/AND[0]") ;
+    fOR (my $j = 0 ; $j < ($n-2) ; $j++){
+            my $next = new AND($last->{c}, $bis->Wire($j+2), (($n == ($j+3)) ? $wo : new WIRE()), "$name/AND[" . ($j+1) . "]") ;
             $last = $next ;
     }
 
@@ -179,7 +179,7 @@ sub i {
     my $this = shift ;
     my $n = shift ;
     die ("Invalid input index $n") unless (($n >= 0)&&($n < $this->{n})) ;
-    return $this->{is}->wire($n) ;
+    return $this->{is}->Wire($n) ;
 }
 
 
@@ -201,9 +201,9 @@ sub new {
     my $name = shift ;
 
     die ("Invalid ORn number of inputs $n") unless ($n >= 2) ;
-    my $last = new OR($bis->wire(0), $bis->wire(1), (($n == 2) ? $wo : new WIRE()), "$name/OR[0]") ;
-    for (my $j = 0 ; $j < ($n-2) ; $j++){
-            my $next = new OR($last->c(), $bis->wire($j+2), (($n == ($j+3)) ? $wo : new WIRE()), "$name/OR[" . ($j+1) . "]") ;
+    my $last = new OR($bis->Wire(0), $bis->Wire(1), (($n == 2) ? $wo : new WIRE()), "$name/OR[0]") ;
+    fOR (my $j = 0 ; $j < ($n-2) ; $j++){
+            my $next = new OR($last->c(), $bis->Wire($j+2), (($n == ($j+3)) ? $wo : new WIRE()), "$name/OR[" . ($j+1) . "]") ;
             $last = $next ;
     }
 
@@ -222,7 +222,7 @@ sub i {
     my $this = shift ;
     my $n = shift ;
     die ("Invalid input index $n") unless (($n >= 0)&&($n < $this->{n})) ;
-    return $this->{is}->wire($n) ;
+    return $this->{is}->Wire($n) ;
 }
 
 
@@ -243,7 +243,7 @@ sub new {
     my $name = shift ;
 
     my $this = {
-        orn => new ORn(6, BUS->wrap(map { new WIRE(0) } (0..5)), $wo),
+        ORn => new ORn(6, BUS->wrap(map { new WIRE(0) } (0..5)), $wo),
         n => 0,
     } ;
     bless $this, $class ;
@@ -257,7 +257,7 @@ sub add {
     my $wi = shift ;
 
     croak("Elastic OR has reached maximum capacity of 6") if $this->{n} >= 6 ;
-    new CONN($wi, $this->{orn}->i($this->{n})) ;
+    new CONN($wi, $this->{ORn}->i($this->{n})) ;
     $this->{n}++ ;
 }
 
@@ -312,7 +312,7 @@ sub new {
     my $name = shift ;
 
     my $this = {
-        orn => new ANDn(6, BUS->wrap(map { new WIRE(1) } (0..5)), $wo),
+        ORn => new ANDn(6, BUS->wrap(map { new WIRE(1) } (0..5)), $wo),
         n => 0,
     } ;
     bless $this, $class ;
@@ -326,7 +326,7 @@ sub add {
     my $wi = shift ;
 
     croak("Elastic AND has reached maximum capacity of 6") if $this->{n} >= 6 ;
-    new CONN($wi, $this->{orn}->i($this->{n})) ;
+    new CONN($wi, $this->{ORn}->i($this->{n})) ;
     $this->{n}++ ;
 }
 
