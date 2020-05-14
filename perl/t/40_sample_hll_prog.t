@@ -30,7 +30,7 @@ $BB->inst(3) ;
 is($BB->get("RAM")->peek("11111111"), sprintf("%08b", 20)) ;
 $BB->inst(3) ;
 is($BB->get("RAM")->peek("11111110"), sprintf("%08b", 22)) ;
-$BB->inst(7) ;
+$BB->inst(8) ;
 is($BB->get("RAM")->peek("11111101"), sprintf("%08b", 42)) ;
 $BB->inst(5) ;
 my $char = undef ;

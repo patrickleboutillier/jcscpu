@@ -426,7 +426,7 @@ sub readINSTSl {
         chomp($line) ;
         $line =~ s/[^[:print:]]//g ;
         if ($line =~ s/^#DEBUG//){
-            $BREADBOARD::DEBUG[scalar(@insts)] = $line ;
+            $BREADBOARD::DEBUG[scalar(@insts) + 1] = $line ;
         }
         next unless $line =~ /^([01]{8})\b/ ;
         my $inst = $1 ;

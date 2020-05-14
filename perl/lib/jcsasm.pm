@@ -296,6 +296,7 @@ sub DEBUG($) {
     $perl =~ s/[\r\n]//g ;
 
     push @LINES, "#DEBUG $perl" ;
+    $NB_REM++ ;
 }
 
 
