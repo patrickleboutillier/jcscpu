@@ -6,16 +6,26 @@ import (
 
 func TestPower(t *testing.T) {
 	w := NewWire()
-	if GetPower(w) {
+	if w.GetPower() {
 		t.Errorf("power should be initialized at false")
 	}
-	SetPower(w, true)
-	if !GetPower(w) {
+	w.SetPower(true)
+	if !w.GetPower() {
 		t.Errorf("power should have been set to true")
 	}
-	SetPower(w, false)
-	if GetPower(w) {
+	w.SetPower(false)
+	if w.GetPower() {
 		t.Errorf("power should have been set to false")
+	}
+}
+
+func TestPrehooks(t *testing.T) {
+	n := 0
+	w := NewWire()
+	w.AddPrehook(func(v bool) { n++ })
+	w.SetPower(false)
+	if n != 1 {
+		t.Errorf("prehook not called")
 	}
 }
 

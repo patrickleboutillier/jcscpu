@@ -1,48 +1,48 @@
 package gate
 
+type prehook func(bool)
+
 type wire struct {
 	power, soft bool
 	gates       []*nand
+	prehooks    []prehook
 }
 
 func NewWire() *wire {
-	return &wire{false, false, make([]*nand, 0, 1024)}
+	return &wire{false, false, make([]*nand, 0, 8), make([]prehook, 0, 2)}
 }
 
-func GetPower(this *wire) bool {
+func (this *wire) GetPower() bool {
 	return this.power
 }
 
-func SetPowerSoft(this *wire, v bool) {
+func (this *wire) SetPowerSoft(v bool) {
 	this.power = v
 	this.soft = true
 }
 
-func SetPower(this *wire, v bool) {
+func (this *wire) SetPower(v bool) {
 	this.power = v
 	this.soft = false
 
 	for _, g := range this.gates {
-		if this != GetC(g) {
-			Signal(g)
+		if this != g.c {
+			g.Signal()
 		}
 	}
 
-	/*
-	   # Do prehooks
-	   foreach my $hook (@{$this->{prehooks}}){
-	       $hook->($v)  ;
-	   }
-	*/
+	for _, f := range this.prehooks {
+		f(v)
+	}
 }
 
-func GetSoft(this *wire) bool {
-	return this.soft
+func (this *wire) AddPrehook(f prehook) {
+	this.prehooks = append(this.prehooks, f)
 }
 
 // Connect the gates to the current wire.
-func Connect(this *wire, n *nand) {
-	this.gates = append(this.gates, n)
+func (this *wire) Connect(g *nand) {
+	this.gates = append(this.gates, g)
 }
 
 /*
