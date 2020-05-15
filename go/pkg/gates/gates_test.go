@@ -210,6 +210,10 @@ func TestORn(t *testing.T) {
 	}
 }
 
+func TestORe(t *testing.T) {
+
+}
+
 /*
 # Basic tests for CMP gate.
 my $wa = new WIRE() ;
