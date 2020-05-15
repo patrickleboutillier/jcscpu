@@ -65,10 +65,7 @@ func (this *Bus) GetPower() string {
 
 func (this *Bus) GetPowerInt() int {
 	s := this.GetPower()
-	i, e := strconv.ParseInt(s, 2, 32)
-	if e != nil {
-		panic(fmt.Errorf("Can't convert Bus power string '%s' to integer: %s", s, e.Error()))
-	}
+	i, _ := strconv.ParseInt(s, 2, 32)
 	return int(i)
 }
 

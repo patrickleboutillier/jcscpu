@@ -9,6 +9,9 @@ func TestBusPower(t *testing.T) {
 	if b.GetPower() != "00000000" {
 		t.Errorf("GetPower failed")
 	}
+	if b.GetPowerInt() != 0 {
+		t.Errorf("GetPower failed")
+	}
 	b.SetPower("10101010")
 	if b.GetPower() != "10101010" {
 		t.Errorf("SetPower failed")
@@ -47,16 +50,7 @@ func TestBusPower(t *testing.T) {
 	}
 }
 
-func tpanic(t *testing.T, f func()) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("Not panicking!")
-		}
-	}()
-	f()
-}
-
-func TestErrors(t *testing.T) {
+func TestBusErrors(t *testing.T) {
 	f := func() {
 		b := NewBus8()
 		b.GetWire(-1)
