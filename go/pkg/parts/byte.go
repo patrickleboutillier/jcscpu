@@ -1,5 +1,17 @@
 package parts
 
+import (
+	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
+)
+
+/*
+BYTE
+*/
+type Byte struct {
+	is, os *g.Bus
+	s      *g.Wire
+}
+
 /*
 package BYTE ;
 
@@ -16,9 +28,9 @@ sub new {
 
     # Foreach memory circuit, connect to the wires.
     for (my $j = 0 ; $j < 8 ; $j++){
-        new MEMORY($bis->wire($j), $ws, $bos->wire($j), $j)  
+        new MEMORY($bis->wire($j), $ws, $bos->wire($j), $j)
     }
-    
+
     my $this = {
         is => $bis,
         s => $ws,
