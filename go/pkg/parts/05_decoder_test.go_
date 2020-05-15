@@ -1,0 +1,69 @@
+package parts
+
+/*
+use strict
+use Test::More
+use Decoder
+
+
+max_decoder_tests = 4
+plan(tests => nb_decoder_tests() + 9)
+
+
+map { make_decoder_test(_, 0) } (2..max_decoder_tests)
+map { make_decoder_test(_, 1) } (2..max_decoder_tests)
+
+
+eval { D = NewDECODER(0, NewBUS(0), NewBUS(0)) }
+like(@, qr/Invalid DECODER number of inputs/, "Invalid DECODER number of inputs <2")
+eval { D = NewDECODER(2, NewBUS(1), NewBUS(4)) }
+like(@, qr/Invalid number of wires in DECODER input bus/, "Invalid DECODER number of wires on input bus")
+eval { D = NewDECODER(2, NewBUS(2), NewBUS(3)) }
+like(@, qr/Invalid number of wires in DECODER output bus/, "Invalid DECODER number of wires on output bus")
+D = NewDECODER(2, NewBUS(2), NewBUS(4))
+if D.i(0) != D.is().GetWire(0) {
+	t.Errorf("i(n) works")
+}
+if D.o(0) != D.os().GetWire(0) {
+	t.Errorf("o(n) works")
+}
+eval { D.i(-1) }
+like(@, qr/Invalid input index/, "Invalid input index <0")
+eval { D.i(5) }
+like(@, qr/Invalid input index/, "Invalid input index >2")
+eval { D.o(-1) }
+like(@, qr/Invalid output index/, "Invalid output index <0")
+eval { D.o(5) }
+like(@, qr/Invalid output index/, "Invalid output index >2")
+
+
+sub nb_decoder_tests {
+    sum = 0
+    for (j = 2 j <= max_decoder_tests j++){
+        sum += 2 ** j    
+    }    
+    return sum * 2
+}
+
+
+sub make_decoder_test {
+    n = shift
+    random = shift
+
+    bis = NewBUS(n)
+    bos = NewBUS(2**n)
+    D = NewDECODER(n, bis, bos, n . 'x' . 2**n)
+
+    @ts = map { (random ? int rand(2**n) : _) } (0 .. ((2**n)-1))
+    foreach t (@ts){
+        bin = sprintf("%0{n}b", t)
+        bis.GetPower(bin)
+
+        @res = ('0') x 2**n
+        # Converting this binary string to decimal number will give us the bit to turn on.
+        res[oct("0b" . bin)] = 1
+        res = join('', @res)
+        is(bos.GetPower(), res, "DECODERn(bin)=res")
+    }
+}
+*/
