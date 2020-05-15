@@ -1,5 +1,7 @@
 package gates
 
+import "fmt"
+
 /*
 NAND
 */
@@ -105,6 +107,97 @@ func NewXOR(wa *Wire, wb *Wire, wc *Wire) *XOR {
 }
 
 /*
+ANDn
+*/
+type ANDn struct {
+	n  int
+	is *Bus
+	o  *Wire
+}
+
+func NewANDn(n int, bis *Bus, wo *Wire) *ANDn {
+	this := &ANDn{n, bis, wo}
+
+	if n < 2 {
+		panic(fmt.Errorf("Invalid ANDn number of inputs %d", n))
+	}
+	if len(bis.GetWires()) != n {
+		panic(fmt.Errorf("Number of wires in bus (%d) doesn't match n (%d) for ANDn", len(bis.GetWires()), n))
+	}
+
+	var o *Wire = nil
+	if n == 2 {
+		o = wo
+	} else {
+		o = NewWire()
+	}
+	last := NewAND(bis.GetWire(0), bis.GetWire(1), o)
+	for j := 0; j < (n - 2); j++ {
+		var o *Wire = nil
+		if n == (j + 3) {
+			o = wo
+		} else {
+			o = NewWire()
+		}
+		next := NewAND(last.c, bis.GetWire(j+2), o)
+		last = next
+	}
+
+	return this
+}
+
+/*
+ORn
+*/
+type ORn struct {
+	n  int
+	is *Bus
+	o  *Wire
+}
+
+func NewORn(n int, bis *Bus, wo *Wire) *ORn {
+	this := &ORn{n, bis, wo}
+
+	if n < 2 {
+		panic(fmt.Errorf("Invalid ORn number of inputs %d", n))
+	}
+	if len(bis.GetWires()) != n {
+		panic(fmt.Errorf("Number of wires in bus (%d) doesn't match n (%d) for ORn", len(bis.GetWires()), n))
+	}
+
+	var o *Wire = nil
+	if n == 2 {
+		o = wo
+	} else {
+		o = NewWire()
+	}
+	last := NewOR(bis.GetWire(0), bis.GetWire(1), o)
+	for j := 0; j < (n - 2); j++ {
+		if n == (j + 3) {
+			o = wo
+		} else {
+			o = NewWire()
+		}
+		next := NewOR(last.c, bis.GetWire(j+2), o)
+		last = next
+	}
+
+	return this
+}
+
+/*
+ORe
+*/
+type ORe struct {
+	orn *ORn
+	o   *Wire
+}
+
+func NewORe(wo *Wire) *ORe {
+	return &ORe{NewORn(6, NewBus(6), wo), wo}
+}
+
+/*
 
 package CMP ;
 use strict ;
@@ -142,93 +235,6 @@ sub new {
     bless $this, $class ;
 
     return $this ;
-}
-
-
-package ANDn ;
-use strict ;
-
-
-sub new {
-    my $class = shift ;
-    my $n = shift ;
-    my $bis = shift ;
-    my $wo = shift ;
-    my $name = shift ;
-
-    die ("Invalid ANDn number of inputs $n") unless ($n >= 2) ;
-    # Todo: make sure bis->n() == $n
-    my $last = new AND($bis->Wire(0), $bis->Wire(1), (($n == 2) ? $wo : new WIRE()), "$name/AND[0]") ;
-    fOR (my $j = 0 ; $j < ($n-2) ; $j++){
-            my $next = new AND($last->{c}, $bis->Wire($j+2), (($n == ($j+3)) ? $wo : new WIRE()), "$name/AND[" . ($j+1) . "]") ;
-            $last = $next ;
-    }
-
-    my $this = {
-        is => $bis,
-        o => $wo,
-        n => $n,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-sub i {
-    my $this = shift ;
-    my $n = shift ;
-    die ("Invalid input index $n") unless (($n >= 0)&&($n < $this->{n})) ;
-    return $this->{is}->Wire($n) ;
-}
-
-
-sub n {
-    my $this = shift ;
-    return $this->{n} ;
-}
-
-
-package ORn ;
-use strict ;
-
-
-sub new {
-    my $class = shift ;
-    my $n = shift ;
-    my $bis = shift ;
-    my $wo = shift ;
-    my $name = shift ;
-
-    die ("Invalid ORn number of inputs $n") unless ($n >= 2) ;
-    my $last = new OR($bis->Wire(0), $bis->Wire(1), (($n == 2) ? $wo : new WIRE()), "$name/OR[0]") ;
-    fOR (my $j = 0 ; $j < ($n-2) ; $j++){
-            my $next = new OR($last->c(), $bis->Wire($j+2), (($n == ($j+3)) ? $wo : new WIRE()), "$name/OR[" . ($j+1) . "]") ;
-            $last = $next ;
-    }
-
-    my $this = {
-        is => $bis,
-        o => $wo,
-        n => $n,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-sub i {
-    my $this = shift ;
-    my $n = shift ;
-    die ("Invalid input index $n") unless (($n >= 0)&&($n < $this->{n})) ;
-    return $this->{is}->Wire($n) ;
-}
-
-
-sub n {
-    my $this = shift ;
-    return $this->{n} ;
 }
 
 
@@ -297,37 +303,5 @@ sub new {
     return $this ;
 }
 
-
- 1 ;
-
-
-__DATA__
-package ANDe ;
-use strict ;
-
-
-sub new {
-    my $class = shift ;
-    my $wo = shift ;
-    my $name = shift ;
-
-    my $this = {
-        ORn => new ANDn(6, BUS->wrap(map { new WIRE(1) } (0..5)), $wo),
-        n => 0,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-sub add {
-    my $this = shift ;
-    my $wi = shift ;
-
-    croak("Elastic AND has reached maximum capacity of 6") if $this->{n} >= 6 ;
-    new CONN($wi, $this->{ORn}->i($this->{n})) ;
-    $this->{n}++ ;
-}
 
 */

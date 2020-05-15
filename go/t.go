@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 )
 
 var n int = 0
@@ -12,13 +11,18 @@ func f() {
 }
 
 func main() {
-	start := time.Now()
-
-	for n < 10000000 {
-		f()
+	for j := 0; j < 256; j++ {
+		n := int8(j)
+		//if random {
+		//	n = int8(rand.Intn(256))
+		//}
+		//we.SetPower(false)
+		//bis.SetPowerInt(n)
+		fmt.Printf("%08b\n", n)
+		//we.SetPower(true)
+		//if bos.GetPowerInt() != n {
+		//	t.Errorf("ENABLER(%d, 1)=%d", n, n)
+		//}
 	}
-
-	end := time.Now()
-	elapsed := end.Sub(start)
-	fmt.Printf("Elapsed: %d %d ms", n, elapsed/1000000)
+	fmt.Printf("%08b\n", 256)
 }

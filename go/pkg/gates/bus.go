@@ -3,6 +3,7 @@ package gates
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 )
 
 type Bus struct {
@@ -62,6 +63,15 @@ func (this *Bus) GetPower() string {
 	return ret
 }
 
+func (this *Bus) GetPowerInt() int {
+	s := this.GetPower()
+	i, e := strconv.ParseInt(s, 2, 32)
+	if e != nil {
+		panic(fmt.Errorf("Can't convert Bus power string '%s' to integer: %s", s, e.Error()))
+	}
+	return int(i)
+}
+
 // Assign the given power values (as a string) to the given wires.
 // This is used mostly in the test suite.
 func (this *Bus) SetPower(vs string) {
@@ -75,4 +85,9 @@ func (this *Bus) SetPower(vs string) {
 		}
 		this.wires[j].SetPower(v)
 	}
+}
+
+func (this *Bus) SetPowerInt(n int) {
+	s := fmt.Sprintf(fmt.Sprintf("%%0%db", this.n), n)
+	this.SetPower(s)
 }
