@@ -83,9 +83,22 @@ func (this *Bus) GetPowerInt() int {
 	return int(i)
 }
 
+// Used for testing. If string is too short, it will be left padded with 0s.
+func (this *Bus) IsPower(vs string) bool {
+	if m, _ := regexp.MatchString(fmt.Sprintf("^[01]+$"), vs); !m {
+		panic(fmt.Errorf("Invalid bus power string '%s' (n is %d)", vs, this.n))
+	}
+
+	i, _ := strconv.ParseInt(vs, 2, 32)
+	return int(i) == this.GetPowerInt()
+}
+
 // Assign the given power values (as a string) to the given wires.
 // This is used mostly in the test suite.
 func (this *Bus) SetPower(vs string) {
+	// Pad vs if it is to short.
+	f := fmt.Sprintf("%%0%ds", this.n)
+	vs = fmt.Sprintf(f, vs)
 	if m, _ := regexp.MatchString(fmt.Sprintf("^[01]{%d}$", this.n), vs); !m {
 		panic(fmt.Errorf("Invalid bus power string '%s' (n is %d)", vs, this.n))
 	}

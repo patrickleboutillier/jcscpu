@@ -11,5 +11,5 @@ func f() {
 }
 
 func main() {
-	fmt.Printf("%b\n", 8)
+	fmt.Printf("%08s\n", "a")
 }

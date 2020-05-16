@@ -1,12 +1,15 @@
 package parts
 
 import (
+	"fmt"
 	"math/rand"
 	"testing"
 
 	a "github.com/patrickleboutillier/jcscpu/go/pkg/arch"
 	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
 )
+
+var max_nb_tests int = a.GetMaxByteValue()
 
 func TestEnablerBasic(t *testing.T) {
 	bis := g.NewBus()
@@ -50,21 +53,22 @@ func TestEnablerMaker(t *testing.T) {
 	bos := g.NewBus()
 	NewEnabler(bis, we, bos)
 
-	make_enabler_test := func(t *testing.T, random bool) {
-		for j := 0; j < a.GetMaxByteValue(); j++ {
-			x := j
-			if random {
+	for j := 0; j < max_nb_tests; j++ {
+		x := j
+		for _, r := range [2]bool{false, true} {
+			if r {
 				x = rand.Intn(a.GetMaxByteValue())
 			}
-			we.SetPower(false)
-			bis.SetPowerInt(x)
-			we.SetPower(true)
-			if bos.GetPowerInt() != x {
-				t.Errorf("ENABLER(%d, 1)=%d", x, x)
-			}
+
+			testname := fmt.Sprintf("%t,%d", r, x)
+			t.Run(testname, func(t *testing.T) {
+				we.SetPower(false)
+				bis.SetPowerInt(x)
+				we.SetPower(true)
+				if bos.GetPowerInt() != x {
+					t.Errorf("ENABLER(%d, 1)=%d", x, x)
+				}
+			})
 		}
 	}
-
-	make_enabler_test(t, false)
-	make_enabler_test(t, true)
 }

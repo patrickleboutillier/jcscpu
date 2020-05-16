@@ -6,21 +6,21 @@ import (
 
 func TestBusPower(t *testing.T) {
 	b := NewBus()
-	if b.GetPower() != "00000000" {
+	if !b.IsPower("00000000") {
 		t.Errorf("GetPower failed")
 	}
 	if b.GetPowerInt() != 0 {
 		t.Errorf("GetPower failed")
 	}
 	b.SetPower("10101010")
-	if b.GetPower() != "10101010" {
+	if !b.IsPower("010101010") {
 		t.Errorf("SetPower failed")
 	}
-	w := b.GetWire(0)
+	w := b.GetWire(b.GetSize() - 2)
 	if !w.GetPower() {
 		t.Errorf("GetPower failed")
 	}
-	w = b.GetWire(1)
+	w = b.GetWire(b.GetSize() - 1)
 	if w.GetPower() {
 		t.Errorf("GetPower failed")
 	}
@@ -58,7 +58,7 @@ func TestBusErrors(t *testing.T) {
 	tpanic(t, f)
 	f = func() {
 		b := NewBus()
-		b.GetWire(10)
+		b.GetWire(b.GetSize() + 10)
 	}
 	tpanic(t, f)
 	f = func() {

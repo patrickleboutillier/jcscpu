@@ -1,6 +1,7 @@
 package arch
 
-var arch_bits int = 8
+// Maybe set from env var?
+var arch_bits int = 16
 
 func GetArchBits() int {
 	return arch_bits
