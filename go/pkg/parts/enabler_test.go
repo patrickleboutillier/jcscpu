@@ -17,32 +17,32 @@ func TestEnablerBasic(t *testing.T) {
 	bos := g.NewBus()
 	NewEnabler(bis, we, bos)
 
-	bis.GetWire(0).SetPower(true)
-	if bos.GetPower() != "00000000" {
+	bis.GetBit(7).SetPower(true)
+	if !bos.IsPower("00000000") {
 		t.Errorf("B(i:10000000,e:0)=o:00000000, e=off, no output")
 	}
-	bis.GetWire(4).SetPower(true)
-	if bos.GetPower() != "00000000" {
+	bis.GetBit(3).SetPower(true)
+	if !bos.IsPower("00000000") {
 		t.Errorf("B(i:10001000,e:0)=o:00000000, e=off, no output")
 	}
 	we.SetPower(true)
-	if bos.GetPower() != "10001000" {
+	if !bos.IsPower("10001000") {
 		t.Errorf("B(i:10001000,e:1)=o:10001000, e=on, i goes through")
 	}
-	bis.GetWire(4).SetPower(false)
-	if bos.GetPower() != "10000000" {
+	bis.GetBit(3).SetPower(false)
+	if !bos.IsPower("10000000") {
 		t.Errorf("B(i:10000000,e:1)=o:10000000, e=on, i goes through")
 	}
-	bis.GetWire(0).SetPower(false)
-	if bos.GetPower() != "00000000" {
+	bis.GetBit(7).SetPower(false)
+	if !bos.IsPower("00000000") {
 		t.Errorf("B(i:00000000,e:1)=o:00000000, e=on, i goes through")
 	}
-	bis.GetWire(7).SetPower(true)
-	if bos.GetPower() != "00000001" {
+	bis.GetBit(0).SetPower(true)
+	if !bos.IsPower("00000001") {
 		t.Errorf("B(i:00000001,e:1)=o:00000001, e=on, i goes through")
 	}
 	we.SetPower(false)
-	if bos.GetPower() != "00000000" {
+	if !bos.IsPower("00000000") {
 		t.Errorf("B(i:00000001,e:0)=o:00000000, e=off, no output")
 	}
 }

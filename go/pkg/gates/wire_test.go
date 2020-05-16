@@ -2,21 +2,17 @@ package gates
 
 import (
 	"testing"
+
+	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
 )
 
 func TestWirePower(t *testing.T) {
 	w := NewWire()
-	if w.GetPower() {
-		t.Errorf("power should be initialized at false")
-	}
+	tm.IsBool(t, w.GetPower(), false, "power initialized at false")
 	w.SetPower(true)
-	if !w.GetPower() {
-		t.Errorf("power should have been set to true")
-	}
+	tm.IsBool(t, w.GetPower(), true, "power set to true")
 	w.SetPower(false)
-	if w.GetPower() {
-		t.Errorf("power should have been set to false")
-	}
+	tm.IsBool(t, w.GetPower(), false, "power set to false")
 }
 
 func TestWirePrehooks(t *testing.T) {
@@ -24,34 +20,24 @@ func TestWirePrehooks(t *testing.T) {
 	w := NewWire()
 	w.AddPrehook(func(v bool) { n++ })
 	w.SetPower(false)
-	if n != 1 {
-		t.Errorf("prehook not called")
-	}
+	tm.IsInt(t, n, 1, "prehook called")
 }
 
 func TestWireTerminal(t *testing.T) {
 	w := NewWire()
 	w.SetTerminal()
 	w.SetPower(true)
-	if w.GetPower() {
-		t.Errorf("terminal didn't freeze the wire")
-	}
+	tm.IsBool(t, w.GetPower(), false, "terminal froze the wire")
 	w = On()
 	w.SetPower(false)
-	if !w.GetPower() {
-		t.Errorf("terminal didn't freeze the wire")
-	}
+	tm.IsBool(t, w.GetPower(), true, "terminal froze the wire")
 	w = Off()
 	w.SetPower(true)
-	if w.GetPower() {
-		t.Errorf("terminal didn't freeze the wire")
-	}
+	tm.IsBool(t, w.GetPower(), false, "terminal froze the wire")
 }
 
 func TestWireSoft(t *testing.T) {
 	w := NewWire()
 	w.SetPowerSoft(true)
-	if !w.GetPower() {
-		t.Errorf("SetPowerSoft failed")
-	}
+	tm.IsBool(t, w.GetPower(), true, "SetPowerSoft")
 }

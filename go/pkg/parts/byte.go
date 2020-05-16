@@ -13,8 +13,10 @@ type Byte struct {
 }
 
 func NewByte(bis *g.Bus, ws *g.Wire, bos *g.Bus) *Byte {
+	g.CheckBusSizes(bis, bos, "Byte input and output buses")
+	n := bis.GetSize()
 	this := &Byte{bis, bos, ws}
-	for j := 0; j < 8; j++ {
+	for j := 0; j < n; j++ {
 		NewMemory(bis.GetWire(j), ws, bos.GetWire(j))
 	}
 	return this

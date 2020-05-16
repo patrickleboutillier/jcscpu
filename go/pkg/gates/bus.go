@@ -63,6 +63,14 @@ func (this *Bus) GetWire(n int) *Wire {
 	return this.wires[n]
 }
 
+func (this *Bus) GetBit(n int) *Wire {
+	if (n < 0) || (n >= this.n) {
+		panic(fmt.Errorf("Invalid bit index %d (n is %d)", n, this.n))
+	}
+
+	return this.wires[(this.n-1)-n]
+}
+
 // Retrieves the given power values (as a string).
 // This is used mostly in the test suite.
 func (this *Bus) GetPower() string {

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"testing"
+
+	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
 )
 
 var max_n_tests int = 8
@@ -19,7 +21,7 @@ func TestNAND(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		testname := fmt.Sprintf("%t,%t", tt.a, tt.b)
+		testname := fmt.Sprintf("NAND(%t,%t)=%t", tt.a, tt.b, tt.c)
 		t.Run(testname, func(t *testing.T) {
 			wa := NewWire()
 			wb := NewWire()
@@ -27,9 +29,7 @@ func TestNAND(t *testing.T) {
 			NewNAND(wa, wb, wc)
 			wa.SetPower(tt.a)
 			wb.SetPower(tt.b)
-			if wc.GetPower() != tt.c {
-				t.Errorf("got %t, expected %t", wc.GetPower(), tt.c)
-			}
+			tm.IsBool(t, wc.GetPower(), tt.c, testname)
 		})
 	}
 }
@@ -43,15 +43,13 @@ func TestNOT(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		testname := fmt.Sprintf("%t,%t", tt.a, tt.b)
+		testname := fmt.Sprintf("NOT(%t)=%t", tt.a, tt.b)
 		t.Run(testname, func(t *testing.T) {
 			wa := NewWire()
 			wb := NewWire()
 			NewNOT(wa, wb)
 			wa.SetPower(tt.a)
-			if wb.GetPower() != tt.b {
-				t.Errorf("got %t, expected %t", wb.GetPower(), tt.b)
-			}
+			tm.IsBool(t, wb.GetPower(), tt.b, testname)
 		})
 	}
 }
@@ -65,15 +63,13 @@ func TestCONN(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		testname := fmt.Sprintf("%t,%t", tt.a, tt.b)
+		testname := fmt.Sprintf("CONN(%t)=%t", tt.a, tt.b)
 		t.Run(testname, func(t *testing.T) {
 			wa := NewWire()
 			wb := NewWire()
 			NewCONN(wa, wb)
 			wa.SetPower(tt.a)
-			if wb.GetPower() != tt.b {
-				t.Errorf("got %t, expected %t", wb.GetPower(), tt.b)
-			}
+			tm.IsBool(t, wb.GetPower(), tt.b, testname)
 		})
 	}
 }
@@ -89,7 +85,7 @@ func TestAND(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		testname := fmt.Sprintf("%t,%t", tt.a, tt.b)
+		testname := fmt.Sprintf("AND(%t,%t)=%t", tt.a, tt.b, tt.c)
 		t.Run(testname, func(t *testing.T) {
 			wa := NewWire()
 			wb := NewWire()
@@ -97,9 +93,7 @@ func TestAND(t *testing.T) {
 			NewAND(wa, wb, wc)
 			wa.SetPower(tt.a)
 			wb.SetPower(tt.b)
-			if wc.GetPower() != tt.c {
-				t.Errorf("got %t, expected %t", wc.GetPower(), tt.c)
-			}
+			tm.IsBool(t, wc.GetPower(), tt.c, testname)
 		})
 	}
 }
@@ -115,7 +109,7 @@ func TestOR(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		testname := fmt.Sprintf("%t,%t", tt.a, tt.b)
+		testname := fmt.Sprintf("OR(%t,%t)=%t", tt.a, tt.b, tt.c)
 		t.Run(testname, func(t *testing.T) {
 			wa := NewWire()
 			wb := NewWire()
@@ -123,9 +117,7 @@ func TestOR(t *testing.T) {
 			NewOR(wa, wb, wc)
 			wa.SetPower(tt.a)
 			wb.SetPower(tt.b)
-			if wc.GetPower() != tt.c {
-				t.Errorf("got %t, expected %t", wc.GetPower(), tt.c)
-			}
+			tm.IsBool(t, wc.GetPower(), tt.c, testname)
 		})
 	}
 }
@@ -141,7 +133,7 @@ func TestXOR(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		testname := fmt.Sprintf("%t,%t", tt.a, tt.b)
+		testname := fmt.Sprintf("XOR(%t,%t)=%t", tt.a, tt.b, tt.c)
 		t.Run(testname, func(t *testing.T) {
 			wa := NewWire()
 			wb := NewWire()
@@ -149,9 +141,7 @@ func TestXOR(t *testing.T) {
 			NewXOR(wa, wb, wc)
 			wa.SetPower(tt.a)
 			wb.SetPower(tt.b)
-			if wc.GetPower() != tt.c {
-				t.Errorf("got %t, expected %t", wc.GetPower(), tt.c)
-			}
+			tm.IsBool(t, wc.GetPower(), tt.c, testname)
 		})
 	}
 }
@@ -170,13 +160,11 @@ func TestANDn(t *testing.T) {
 					x = rand.Intn(max)
 				}
 
-				testname := fmt.Sprintf("%d,%t,%d", n, r, x)
+				res := (x == (max - 1))
+				testname := fmt.Sprintf("AND%d(%d)=%t", n, x, res)
 				t.Run(testname, func(t *testing.T) {
 					bis.SetPowerInt(x)
-					res := (x == (max - 1))
-					if wo.GetPower() != res {
-						t.Errorf("AND%d(%d)=%t", n, x, res)
-					}
+					tm.IsBool(t, wo.GetPower(), res, testname)
 				})
 			}
 		}
@@ -197,13 +185,11 @@ func TestORn(t *testing.T) {
 					x = rand.Intn(max)
 				}
 
-				testname := fmt.Sprintf("%d,%t,%d", n, r, x)
+				res := (x != 0)
+				testname := fmt.Sprintf("OR%d(%d)=%t", n, x, res)
 				t.Run(testname, func(t *testing.T) {
 					bis.SetPowerInt(x)
-					res := (x != 0)
-					if wo.GetPower() != res {
-						t.Errorf("OR%d(%d)=%t", n, x, res)
-					}
+					tm.IsBool(t, wo.GetPower(), res, testname)
 				})
 			}
 		}
