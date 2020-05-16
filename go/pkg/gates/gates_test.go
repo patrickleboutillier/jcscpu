@@ -158,7 +158,7 @@ func TestXOR(t *testing.T) {
 
 func TestANDn(t *testing.T) {
 	for n := 2; n <= max_n_tests; n++ {
-		bis := NewBus(n)
+		bis := NewBusN(n)
 		wo := NewWire()
 		NewANDn(n, bis, wo)
 
@@ -185,7 +185,7 @@ func TestANDn(t *testing.T) {
 
 func TestORn(t *testing.T) {
 	for n := 2; n <= max_n_tests; n++ {
-		bis := NewBus(n)
+		bis := NewBusN(n)
 		wo := NewWire()
 		NewORn(n, bis, wo)
 
@@ -257,6 +257,57 @@ func TestGateErrors(t *testing.T) {
 }
 
 /*
+# ADD
+my $wa = new WIRE() ;
+my $wb = new WIRE() ;
+my $wci = new WIRE() ;
+my $wsum = new WIRE() ;
+my $wco = new WIRE() ;
+my $a = new ADD($wa, $wb, $wci, $wsum, $wco) ;
+
+$wa->power(0) ;
+$wb->power(0) ;
+$wci->power(0) ;
+is($wsum->power(), 0, "ADD(0,0,0)=(0,0)") ;
+is($wco->power(),  0, "ADD(0,0,0)=(0,0)") ;
+$wa->power(1) ;
+$wb->power(0) ;
+$wci->power(0) ;
+is($wsum->power(), 1, "ADD(1,0,0)=(1,0)") ;
+is($wco->power(),  0, "ADD(1,0,0)=(1,0)") ;
+$wa->power(0) ;
+$wb->power(1) ;
+$wci->power(0) ;
+is($wsum->power(), 1, "ADD(0,1,0)=(1,0)") ;
+is($wco->power(),  0, "ADD(0,1,0)=(1,0)") ;
+$wa->power(1) ;
+$wb->power(1) ;
+$wci->power(0) ;
+is($wsum->power(), 0, "ADD(1,1,0)=(0,1)") ;
+is($wco->power(),  1, "ADD(1,1,0)=(0,1)") ;
+
+$wa->power(0) ;
+$wb->power(0) ;
+$wci->power(1) ;
+is($wsum->power(), 1, "ADD(0,0,1)=(1,0)") ;
+is($wco->power(),  0, "ADD(0,0,1)=(1,0)") ;
+$wa->power(1) ;
+$wb->power(0) ;
+$wci->power(1) ;
+is($wsum->power(), 0, "ADD(1,0,1)=(0,1)") ;
+is($wco->power(),  1, "ADD(1,0,1)=(0,1)") ;
+$wa->power(0) ;
+$wb->power(1) ;
+$wci->power(1) ;
+is($wsum->power(), 0, "ADD(0,1,1)=(0,1)") ;
+is($wco->power(),  1, "ADD(0,1,1)=(0,1)") ;
+$wa->power(1) ;
+$wb->power(1) ;
+$wci->power(1) ;
+is($wsum->power(), 1, "ADD(1,1,1)=(1,1)") ;
+is($wco->power(),  1, "ADD(1,1,1)=(1,1)") ;
+
+
 # Basic tests for CMP gate.
 my $wa = new WIRE() ;
 my $wb = new WIRE() ;

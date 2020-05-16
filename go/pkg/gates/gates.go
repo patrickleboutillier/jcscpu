@@ -195,7 +195,7 @@ type ORe struct {
 }
 
 func NewORe(wo *Wire) *ORe {
-	return &ORe{NewORn(6, NewBus(6), wo), wo, 0}
+	return &ORe{NewORn(6, NewBusN(6), wo), wo, 0}
 }
 
 func (this *ORe) AddWire(w *Wire) {

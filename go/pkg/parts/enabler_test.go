@@ -4,13 +4,14 @@ import (
 	"math/rand"
 	"testing"
 
+	a "github.com/patrickleboutillier/jcscpu/go/pkg/arch"
 	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
 )
 
 func TestEnablerBasic(t *testing.T) {
-	bis := g.NewBus8()
+	bis := g.NewBus()
 	we := g.NewWire()
-	bos := g.NewBus8()
+	bos := g.NewBus()
 	NewEnabler(bis, we, bos)
 
 	bis.GetWire(0).SetPower(true)
@@ -44,16 +45,16 @@ func TestEnablerBasic(t *testing.T) {
 }
 
 func TestEnablerMaker(t *testing.T) {
-	bis := g.NewBus8()
+	bis := g.NewBus()
 	we := g.NewWire()
-	bos := g.NewBus8()
+	bos := g.NewBus()
 	NewEnabler(bis, we, bos)
 
 	make_enabler_test := func(t *testing.T, random bool) {
-		for j := 0; j < 256; j++ {
+		for j := 0; j < a.GetMaxByteValue(); j++ {
 			x := j
 			if random {
-				x = rand.Intn(256)
+				x = rand.Intn(a.GetMaxByteValue())
 			}
 			we.SetPower(false)
 			bis.SetPowerInt(x)

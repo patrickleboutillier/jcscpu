@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+
+	a "github.com/patrickleboutillier/jcscpu/go/pkg/arch"
 )
 
 type Bus struct {
@@ -11,11 +13,11 @@ type Bus struct {
 	wires []*Wire
 }
 
-func NewBus8() *Bus {
-	return NewBus(8)
+func NewBus() *Bus {
+	return NewBusN(a.GetArchBits())
 }
 
-func NewBus(n int) *Bus {
+func NewBusN(n int) *Bus {
 	ws := make([]*Wire, n, n)
 	for j := 0; j < n; j++ {
 		ws[j] = NewWire()
@@ -35,6 +37,18 @@ func WrapBusV(wires ...*Wire) *Bus {
 	dst := make([]*Wire, n, n)
 	copy(dst, wires)
 	return &Bus{n, dst}
+}
+
+func (this *Bus) GetSize() int {
+	return this.n
+}
+
+func CheckBusSizes(b1, b2 *Bus, msg string) {
+	n1 := b1.GetSize()
+	n2 := b2.GetSize()
+	if n1 != n2 {
+		panic(fmt.Errorf("Bus sizes (%d, %d) different for %s", n1, n2, msg))
+	}
 }
 
 func (this *Bus) GetWires() []*Wire {

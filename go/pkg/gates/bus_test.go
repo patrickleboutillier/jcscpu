@@ -5,7 +5,7 @@ import (
 )
 
 func TestBusPower(t *testing.T) {
-	b := NewBus8()
+	b := NewBus()
 	if b.GetPower() != "00000000" {
 		t.Errorf("GetPower failed")
 	}
@@ -52,17 +52,17 @@ func TestBusPower(t *testing.T) {
 
 func TestBusErrors(t *testing.T) {
 	f := func() {
-		b := NewBus8()
+		b := NewBus()
 		b.GetWire(-1)
 	}
 	tpanic(t, f)
 	f = func() {
-		b := NewBus8()
+		b := NewBus()
 		b.GetWire(10)
 	}
 	tpanic(t, f)
 	f = func() {
-		b := NewBus8()
+		b := NewBus()
 		b.SetPower("123")
 	}
 	tpanic(t, f)

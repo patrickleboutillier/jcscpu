@@ -7,9 +7,9 @@ import (
 )
 
 func TestByte(t *testing.T) {
-	bis := g.NewBus8()
+	bis := g.NewBus()
 	ws := g.NewWire()
-	bos := g.NewBus8()
+	bos := g.NewBus()
 	NewByte(bis, ws, bos)
 
 	ws.SetPower(true)
