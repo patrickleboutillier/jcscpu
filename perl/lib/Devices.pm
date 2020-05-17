@@ -70,3 +70,21 @@ $DEVICES::DEVS{'ROM'} = sub {
         "ROM",
     ) ;
 } ;
+
+
+# A Random Number Generator. Places a random byte on the data bus. 
+sub RNG { return 2 } ;
+$DEVICES::DEVS{'RNG'} = sub {
+    my $BB = shift ;
+
+    my $indata = new WIRE() ;
+    $indata->prehook(sub {
+        return unless $_[0] ;
+        $BB->get("DATA.bus")->power(sprintf("%08b", int(rand(256)))) ;
+    }) ;
+    $BB->get("IO.adapter")->register(RNG(),
+        undef,
+        $indata,
+        "RNG",
+    ) ;
+} ;
