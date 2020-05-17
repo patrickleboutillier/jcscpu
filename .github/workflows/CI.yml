@@ -41,4 +41,8 @@ jobs:
       run: |
         cd go
         go build ./...
-        for b in 8 16 ; do ARCH_BITS=$b go test ./... ; done
+        for b in 8 16 ; do 
+          echo ARCH_BITS=$b ; 
+          go clean -testcache
+          ARCH_BITS=$b go test ./...
+        done
