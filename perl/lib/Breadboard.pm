@@ -426,7 +426,7 @@ sub readINSTSl {
         chomp($line) ;
         $line =~ s/[^[:print:]]//g ;
         if ($line =~ s/^#DEBUG//){
-            $BREADBOARD::DEBUG[scalar(@insts) + 1] = $line ;
+            $BREADBOARD::DEBUG[scalar(@insts)] = $line ;
         }
         next unless $line =~ /^([01]{8})\b/ ;
         my $inst = $1 ;
@@ -439,8 +439,9 @@ sub readINSTSl {
 
 sub qtick {
     my $this = shift ;
+    my $nb = shift || 1 ;
 
-    return $this->get("CLK")->qtick() ;
+    map { $this->get("CLK")->qtick() } (1..$nb) ;
 }
 
 

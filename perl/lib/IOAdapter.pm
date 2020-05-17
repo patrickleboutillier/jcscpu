@@ -72,6 +72,14 @@ sub register {
         $this->{inaddr} = $opdec->o(oct("0b0110")) ;
         $this->{outdata} = $opdec->o(oct("0b1001")) ;
         $this->{outaddr} = $opdec->o(oct("0b1011")) ;
+
+        my $e = $this->{bio}->wire(1) ;
+        $e->prehook(sub {
+            # This wire acts like an enabler, and when it looses power it must reset the bus.
+            return if $_[0] ;
+            # warn "BUS RESET!" ;
+            $this->{bcpu}->power("00000000") ;
+        }) ;
     }
 
     my $wmem = new WIRE() ;

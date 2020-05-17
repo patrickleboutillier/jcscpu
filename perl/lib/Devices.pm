@@ -60,6 +60,7 @@ $DEVICES::DEVS{'ROM'} = sub {
     my $indata = new WIRE() ;
     $indata->prehook(sub {
         return unless $_[0] ;
+        return unless (($BB->get("CLK")->ticks() % 6) == 4) ;
         $BB->get("DATA.bus")->power($ROM[$ROM_ADDR]) ;
         # warn "in (read addr) addr:$ROM_ADDR data:$ROM[$ROM_ADDR]" ;
     }) ;
@@ -72,7 +73,8 @@ $DEVICES::DEVS{'ROM'} = sub {
 } ;
 
 
-# A Random Number Generator. Places a random byte on the data bus. 
+# A Random Number Generator. Places a random byte on the data bus.
+$DEVICES::RNG_LAST = undef ;
 sub RNG { return 2 } ;
 $DEVICES::DEVS{'RNG'} = sub {
     my $BB = shift ;
@@ -80,7 +82,10 @@ $DEVICES::DEVS{'RNG'} = sub {
     my $indata = new WIRE() ;
     $indata->prehook(sub {
         return unless $_[0] ;
-        $BB->get("DATA.bus")->power(sprintf("%08b", int(rand(256)))) ;
+        return unless (($BB->get("CLK")->ticks() % 6) == 4) ;
+        $DEVICES::RNG_LAST = sprintf("%08b", int(rand(256))) ;
+        # warn "RNG spewed $DEVICES::RNG_LAST" ;
+        $BB->get("DATA.bus")->power($DEVICES::RNG_LAST) ;
     }) ;
     $BB->get("IO.adapter")->register(RNG(),
         undef,
