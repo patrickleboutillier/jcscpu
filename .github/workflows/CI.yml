@@ -39,5 +39,6 @@ jobs:
       uses: actions/setup-go@v2.0.3
     - name: Run test suite
       run: |
-        cd go
+        pwd
+        ls -l
         go --version
