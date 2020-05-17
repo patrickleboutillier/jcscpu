@@ -7,95 +7,56 @@ import (
 	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
 )
 
-/*
-use strict
-use Test::More
-use Register
-use Data::Dumper
+func TestRegisterBasic(t *testing.T) {
+	// Basic test for Register circuit.
+	bin := g.NewBus()
+	bout := g.NewBus()
+	ws := g.NewWire()
+	we := g.NewWire()
+	NewRegister(bin, ws, we, bout, "R")
 
-
-// Basic test for Register circuit.
-bin = NewBUS()
-bout = NewBUS()
-ws = NewWire()
-we = NewWire()
-R = NewRegister(bin, ws, we, bout)
-R.show()
-
-// Let input from the input bus into the register and turn on the enabler
-ws.GetPower(1)
-we.GetPower(1)
-if bout.GetPower() != "00000000" {
-	t.Errorf("R(i:00000000,s:1,e:1)=o:00000000, s=on, e=on, initial state, output should be 0")
-}
-ws.GetPower(0)
-bin.GetWire(0).GetPower(1)
-if bout.GetPower() != "00000000" {
-	t.Errorf("R(i:10000000,s:0,e:1)=o:00000000, s=off, e=on, since s=off, output should be 0")
-}
-ws.GetPower(1)
-if bout.GetPower() != "10000000" {
-	t.Errorf("R(i:10000000,s:1,e:1)=o:10000000, s=on, e=on, both s and e on, i should flow to o")
-}
-ws.GetPower(0)
-we.GetPower(0)
-if bout.GetPower() != "00000000" {
-	t.Errorf("R(i:10000000,s:0,e:0)=o:00000000, s=on, e=off, no output since e=off")
-}
-bin.GetWire(0).GetPower(0)
-ws.GetPower(1)
-we.GetPower(1)
-if bout.GetPower() != "00000000" {
-	t.Errorf("R(i:00000000,s:1,e:1)=o:00000000, s=on, e=on, i flows, so 0")
+	// Let input from the input bus into the register and turn on the enabler
+	ws.SetPower(true)
+	we.SetPower(true)
+	tm.Ok(t, bout.IsPower("00000000"), "R(i:00000000,s:1,e:1)=o:00000000, s=on, e=on, initial state, output should be 0")
+	ws.SetPower(false)
+	bin.GetBit(7).SetPower(true)
+	tm.Ok(t, bout.IsPower("00000000"), "R(i:10000000,s:0,e:1)=o:00000000, s=off, e=on, since s=off, output should be 0")
+	ws.SetPower(true)
+	tm.Ok(t, bout.IsPower("10000000"), "R(i:10000000,s:1,e:1)=o:10000000, s=on, e=on, both s and e on, i should flow to o")
+	ws.SetPower(false)
+	we.SetPower(false)
+	tm.Ok(t, bout.IsPower("00000000"), "R(i:10000000,s:0,e:0)=o:00000000, s=on, e=off, no output since e=off")
+	bin.GetBit(7).SetPower(false)
+	ws.SetPower(true)
+	we.SetPower(true)
+	tm.Ok(t, bout.IsPower("00000000"), "R(i:00000000,s:1,e:1)=o:00000000, s=on, e=on, i flows, so 0")
 }
 
+func TestRegisterIO(t *testing.T) {
+	// Tests using a REGISTRY with input and output on the same BUS.
+	bio := g.NewBus()
+	ws := g.NewWire()
+	we := g.NewWire()
+	NewRegister(bio, ws, we, bio, "R")
 
-// Some BUS coverage tests
-eval {
-    bin.GetWire(-1)
+	// Let input from the input bus into the register and turn on the enabler
+	ws.SetPower(true)
+	we.SetPower(true)
+	tm.Ok(t, bio.IsPower("00000000"), "R(i:00000000,s:1,e:1)=o:00000000, s=on, e=on, initial state, output should be 0")
+	ws.SetPower(false)
+	we.SetPower(false)
+	// Setup up the bus with our desired data, and let in into the registry.
+	bio.SetPower("10101010")
+	tm.Ok(t, bio.IsPower("10101010"), "Data setup")
+	ws.SetPower(true)
+	ws.SetPower(false)
+	// Reset bus
+	bio.SetPower("00000000")
+	tm.Ok(t, bio.IsPower("00000000"), "Bus reset")
+	we.SetPower(true)
+	tm.Ok(t, bio.IsPower("10101010"), "Data restored")
 }
-like(@, qr/Invalid wire index/, "Invalid wire index <0")
-eval {
-    bin.GetWire(10)
-}
-like(@, qr/Invalid wire index/, "Invalid wire index >7")
-eval {
-    bin.GetPower("1100")
-}
-like(@, qr/Invalid bus GetPower string/, "Invalid bus GetPower string <8")
-
-
-// Tests using a REGISTRY with input and output on the same BUS.
-bio = NewBUS()
-ws = NewWire()
-we = NewWire()
-R = NewRegister(bio, ws, we, bio)
-
-// Let input from the input bus into the register and turn on the enabler
-ws.GetPower(1)
-we.GetPower(1)
-if bio.GetPower() != "00000000" {
-	t.Errorf("R(i:00000000,s:1,e:1)=o:00000000, s=on, e=on, initial state, output should be 0")
-}
-ws.GetPower(0)
-we.GetPower(0)
-// Setup up the bus with our desired data, and let in into the registry.
-bio.GetPower("10101010")
-if bio.GetPower() != "10101010" {
-	t.Errorf("Data setup")
-}
-ws.GetPower(1)
-ws.GetPower(0)
-// Reset bus
-bio.GetPower("00000000")
-if bio.GetPower() != "00000000" {
-	t.Errorf("Bus reset")
-}
-we.GetPower(1)
-if bio.GetPower() != "10101010" {
-	t.Errorf("Data restored")
-}
-*/
 
 func TestRegisterMultiple(t *testing.T) {
 	// Multiple registers.
@@ -112,13 +73,13 @@ func TestRegisterMultiple(t *testing.T) {
 
 	// Put something on the bus.
 	bio.SetPower("00001111")
-	tm.IsString(t, bio.GetPower(), "00001111", "Data setup")
+	tm.Ok(t, bio.IsPower("00001111"), "Data setup")
 	// Let it go into R1
 	ws1.SetPower(true)
 	ws1.SetPower(false)
 	// Check it is into R1
 	we1.SetPower(true)
-	tm.IsString(t, bio.GetPower(), "00001111", "From R1")
+	tm.Ok(t, bio.IsPower("00001111"), "From R1")
 	we1.SetPower(false)
 	// Copy into R3
 	we1.SetPower(true)
@@ -126,9 +87,9 @@ func TestRegisterMultiple(t *testing.T) {
 	ws3.SetPower(false)
 	// Reset bus
 	bio.SetPower("00000000")
-	tm.IsString(t, bio.GetPower(), "00000000", "Reset")
+	tm.Ok(t, bio.IsPower("00000000"), "Reset")
 	we3.SetPower(true)
-	tm.IsString(t, bio.GetPower(), "00001111", "From R3")
+	tm.Ok(t, bio.IsPower("00001111"), "From R3")
 	we3.SetPower(false)
 	// Copy to R2
 	we3.SetPower(true)
@@ -136,8 +97,8 @@ func TestRegisterMultiple(t *testing.T) {
 	ws2.SetPower(false)
 	// Reset bus
 	bio.SetPower("00000000")
-	tm.IsString(t, bio.GetPower(), "00000000", "Reset")
+	tm.Ok(t, bio.IsPower("00000000"), "Reset")
 	we2.SetPower(true)
-	tm.IsString(t, bio.GetPower(), "00001111", "From R2")
+	tm.Ok(t, bio.IsPower("00001111"), "From R2")
 	we3.SetPower(false)
 }
