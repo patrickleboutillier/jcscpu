@@ -13,7 +13,7 @@ type Enabler struct {
 }
 
 func NewEnabler(bis *g.Bus, we *g.Wire, bos *g.Bus) *Enabler {
-	g.CheckBusSizes(bis, bos, "Enable input and output buses")
+	g.CheckBusSizes(bis, bos, "Enabler input and output buses")
 	n := bis.GetSize()
 	this := &Enabler{bis, bos, we}
 	for j := 0; j < n; j++ {
