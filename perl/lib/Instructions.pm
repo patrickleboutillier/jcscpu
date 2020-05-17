@@ -132,21 +132,27 @@ $INSTRUCTIONS::INSTS{'JUMP'} = sub {
 $INSTRUCTIONS::INSTS{'CLF'} = sub {
     my $BB = shift ;
 
-    # CLF
+    # Use the last 4 bits of the CLF instruction for control instructions.
+    my $breg = BUS->wrap($BB->get("IR.bus")->wire(4), $BB->get("IR.bus")->wire(5), $BB->get("IR.bus")->wire(6), $BB->get("IR.bus")->wire(7)) ;
+    my $binst = new BUS(16) ;
+    my $opdec = new DECODER(4, $breg, $binst) ;
+
+    # CLF, 0110000
     my $cl1 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.bus")->wire(6), $cl1) ;
+    new ANDn(3, BUS->wrap($BB->get("INST.bus")->wire(6), $BB->get("STP.bus")->wire(3), $binst->wire(0)), $cl1) ;
     $BB->get("BUS1.bit1.eor")->add($cl1) ;
     $BB->get("FLAGS.set.eor")->add($cl1) ;
 
-    my $h1 = new WIRE() ;
-    $h1->prehook(sub {
+    # HALT, 01100001
+    my $hlt1 = new WIRE() ;
+    new ANDn(3, BUS->wrap($BB->get("INST.bus")->wire(6), $BB->get("STP.bus")->wire(3), $binst->wire(1)), $hlt1) ;
+    $hlt1->prehook(sub {
         if ($_[0]){ 
             $BB->on_halt()->() if $BB->on_halt() ;
             # warn "HALTING!" ;
             exit(0) ;
         }
     }) ;
-    new ANDn(3, BUS->wrap($BB->get("INST.bus")->wire(6), $BB->get("IR.bus")->wire(7), $BB->get("STP.bus")->wire(3)), $h1) ;
 } ;
 
 
