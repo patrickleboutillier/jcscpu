@@ -3,6 +3,7 @@ package parts
 import (
 	"testing"
 
+	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
 	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
 )
 
@@ -13,9 +14,7 @@ func TestByte(t *testing.T) {
 	NewByte(bis, ws, bos)
 
 	ws.SetPower(true)
-	if !bos.IsPower("00000000") {
-		t.Errorf("B(i:00000000,s:1)=o:00000000, s=on, i should equal o")
-	}
+	tm.Ok(t, bos.IsPower("00000000"), "B(i:00000000,s:1)=o:00000000, s=on, i should equal o")
 	bis.GetBit(7).SetPower(true)
 	if !bos.IsPower("10000000") {
 		t.Errorf("B(i:10000000,s:1)=o:10000000, s=on, i should equal o")

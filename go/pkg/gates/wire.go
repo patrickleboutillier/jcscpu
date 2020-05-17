@@ -36,6 +36,14 @@ func (this *Wire) GetPower() bool {
 	return this.power
 }
 
+func (this *Wire) GetPowerChar() byte {
+	if this.power {
+		return '1'
+	} else {
+		return '0'
+	}
+}
+
 func (this *Wire) SetPowerSoft(v bool) {
 	this.power = v
 	this.soft = true
