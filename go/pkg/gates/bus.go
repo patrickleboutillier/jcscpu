@@ -2,8 +2,6 @@ package gates
 
 import (
 	"fmt"
-	"regexp"
-	"strconv"
 
 	a "github.com/patrickleboutillier/jcscpu/go/pkg/arch"
 )
@@ -71,26 +69,30 @@ func (this *Bus) GetBit(n int) *Wire {
 	return this.wires[(this.n-1)-n]
 }
 
-// Retrieves the given power values (as a string).
+// Retrieves the given power values as an int.
 // This is used mostly in the test suite.
-func (this *Bus) GetPower() string {
-	ret := ""
-	for _, w := range this.wires {
+func (this *Bus) GetPower() int {
+	ret := 0
+	for j, w := range this.wires {
 		if w.GetPower() {
-			ret += "1"
+			ret += 1
 		} else {
-			ret += "0"
+			ret += 0
+		}
+		if j < (this.n - 1) {
+			ret = ret << 1
 		}
 	}
+
 	return ret
 }
 
-func (this *Bus) GetPowerInt() int {
-	s := this.GetPower()
-	i, _ := strconv.ParseInt(s, 2, 32)
-	return int(i)
+func (this *Bus) String() string {
+	f := fmt.Sprintf("%%0%db", this.n)
+	return fmt.Sprintf(f, this.GetPower())
 }
 
+/*
 // Used for testing. If string is too short, it will be left padded with 0s.
 func (this *Bus) IsPower(vs string) bool {
 	if m, _ := regexp.MatchString(fmt.Sprintf("^[01]+$"), vs); !m {
@@ -100,26 +102,31 @@ func (this *Bus) IsPower(vs string) bool {
 	i, _ := strconv.ParseInt(vs, 2, 32)
 	return int(i) == this.GetPowerInt()
 }
+*/
 
-// Assign the given power values (as a string) to the given wires.
+// Assign the given power values (as an int) to the given wires.
 // This is used mostly in the test suite.
-func (this *Bus) SetPower(vs string) {
-	// Pad vs if it is to short.
-	f := fmt.Sprintf("%%0%ds", this.n)
-	vs = fmt.Sprintf(f, vs)
-	if m, _ := regexp.MatchString(fmt.Sprintf("^[01]{%d}$", this.n), vs); !m {
-		panic(fmt.Errorf("Invalid bus power string '%s' (n is %d)", vs, this.n))
+func (this *Bus) SetPower(vs int) {
+	if vs < 0 {
+		panic(fmt.Errorf("Power value for bus must be positive"))
 	}
-	for j, c := range vs {
-		var v bool = false
-		if c == '1' {
+	if vs > ((1 << this.n) - 1) {
+		panic(fmt.Errorf("Power value %d too large for bus (n is %d)", vs, this.n))
+	}
+
+	for j := 0; j < this.n; j++ {
+		v := false
+		if (vs % 2) == 1 {
 			v = true
 		}
-		this.wires[j].SetPower(v)
+		this.GetBit(j).SetPower(v)
+		vs = vs >> 1
 	}
 }
 
+/*
 func (this *Bus) SetPowerInt(n int) {
 	s := fmt.Sprintf(fmt.Sprintf("%%0%db", this.n), n)
 	this.SetPower(s)
 }
+*/

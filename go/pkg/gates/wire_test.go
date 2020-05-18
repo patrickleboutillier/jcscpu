@@ -8,11 +8,11 @@ import (
 
 func TestWirePower(t *testing.T) {
 	w := NewWire()
-	tm.IsBool(t, w.GetPower(), false, "power initialized at false")
+	tm.Is(t, w.GetPower(), false, "power initialized at false")
 	w.SetPower(true)
-	tm.IsBool(t, w.GetPower(), true, "power set to true")
+	tm.Is(t, w.GetPower(), true, "power set to true")
 	w.SetPower(false)
-	tm.IsBool(t, w.GetPower(), false, "power set to false")
+	tm.Is(t, w.GetPower(), false, "power set to false")
 }
 
 func TestWirePrehooks(t *testing.T) {
@@ -20,24 +20,24 @@ func TestWirePrehooks(t *testing.T) {
 	w := NewWire()
 	w.AddPrehook(func(v bool) { n++ })
 	w.SetPower(false)
-	tm.IsInt(t, n, 1, "prehook called")
+	tm.Is(t, n, 1, "prehook called")
 }
 
 func TestWireTerminal(t *testing.T) {
 	w := NewWire()
 	w.SetTerminal()
 	w.SetPower(true)
-	tm.IsBool(t, w.GetPower(), false, "terminal froze the wire")
+	tm.Is(t, w.GetPower(), false, "terminal froze the wire")
 	w = On()
 	w.SetPower(false)
-	tm.IsBool(t, w.GetPower(), true, "terminal froze the wire")
+	tm.Is(t, w.GetPower(), true, "terminal froze the wire")
 	w = Off()
 	w.SetPower(true)
-	tm.IsBool(t, w.GetPower(), false, "terminal froze the wire")
+	tm.Is(t, w.GetPower(), false, "terminal froze the wire")
 }
 
 func TestWireSoft(t *testing.T) {
 	w := NewWire()
 	w.SetPowerSoft(true)
-	tm.IsBool(t, w.GetPower(), true, "SetPowerSoft")
+	tm.Is(t, w.GetPower(), true, "SetPowerSoft")
 }

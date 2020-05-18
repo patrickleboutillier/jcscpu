@@ -1,2 +1,5 @@
 github.com/patrickleboutillier/jcscpu v0.0.0-20200511173056-cb8302cebe2b h1:fchEYEZRBi4PbfX1xXqkVxTid+G5HGPdz0XduLXptnY=
 github.com/patrickleboutillier/jcscpu v0.0.0-20200514215204-646b80d5e8d7 h1:lUEZXb5MVMFzu3gWe4A9NUzfKQ37BVsgLJMPBtuQjBo=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.3.0 h1:clyUAQHOM3G0M3f5vQj7LuJrETvjVot3Z5el9nffUtU=
+gopkg.in/yaml.v2 v2.3.0/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=

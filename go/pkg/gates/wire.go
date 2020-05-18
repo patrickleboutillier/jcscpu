@@ -36,11 +36,11 @@ func (this *Wire) GetPower() bool {
 	return this.power
 }
 
-func (this *Wire) GetPowerChar() byte {
+func (this *Wire) String() string {
 	if this.power {
-		return '1'
+		return "1"
 	} else {
-		return '0'
+		return "0"
 	}
 }
 

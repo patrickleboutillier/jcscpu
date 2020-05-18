@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
+
+	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
 )
 
-var n int = 0
-
-func f() {
-	n++
-}
-
 func main() {
-	fmt.Printf("%08s\n", "a")
+	b := g.NewBus()
+	b.SetPower(0b10101010)
+	fmt.Printf("%08b\n", b.GetPower())
 }

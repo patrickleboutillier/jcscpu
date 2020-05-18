@@ -19,31 +19,19 @@ func TestEnablerBasic(t *testing.T) {
 	NewEnabler(bis, we, bos)
 
 	bis.GetBit(7).SetPower(true)
-	tm.Ok(t, bos.IsPower("00000000"), "E(i:10000000,e:0)=o:00000000, e=off, no output")
+	tm.Is(t, bos.GetPower(), 0b00000000, "E(i:10000000,e:0)=o:00000000, e=off, no output")
 	bis.GetBit(3).SetPower(true)
-	if !bos.IsPower("00000000") {
-		t.Errorf("E(i:10001000,e:0)=o:00000000, e=off, no output")
-	}
+	tm.Is(t, bos.GetPower(), 0b00000000, "E(i:10001000,e:0)=o:00000000, e=off, no output")
 	we.SetPower(true)
-	if !bos.IsPower("10001000") {
-		t.Errorf("E(i:10001000,e:1)=o:10001000, e=on, i goes through")
-	}
+	tm.Is(t, bos.GetPower(), 0b10001000, "E(i:10001000,e:1)=o:10001000, e=on, i goes through")
 	bis.GetBit(3).SetPower(false)
-	if !bos.IsPower("10000000") {
-		t.Errorf("E(i:10000000,e:1)=o:10000000, e=on, i goes through")
-	}
+	tm.Is(t, bos.GetPower(), 0b10000000, "E(i:10000000,e:1)=o:10000000, e=on, i goes through")
 	bis.GetBit(7).SetPower(false)
-	if !bos.IsPower("00000000") {
-		t.Errorf("E(i:00000000,e:1)=o:00000000, e=on, i goes through")
-	}
+	tm.Is(t, bos.GetPower(), 0b00000000, "E(i:00000000,e:1)=o:00000000, e=on, i goes through")
 	bis.GetBit(0).SetPower(true)
-	if !bos.IsPower("00000001") {
-		t.Errorf("E(i:00000001,e:1)=o:00000001, e=on, i goes through")
-	}
+	tm.Is(t, bos.GetPower(), 0b00000001, "E(i:00000001,e:1)=o:00000001, e=on, i goes through")
 	we.SetPower(false)
-	if !bos.IsPower("00000000") {
-		t.Errorf("E(i:00000001,e:0)=o:00000000, e=off, no output")
-	}
+	tm.Is(t, bos.GetPower(), 0b00000000, "E(i:00000001,e:0)=o:00000000, e=off, no output")
 }
 
 func TestEnablerMaker(t *testing.T) {
@@ -62,9 +50,9 @@ func TestEnablerMaker(t *testing.T) {
 			testname := fmt.Sprintf("ENABLER(%d, 1)=%d", x, x)
 			t.Run(testname, func(t *testing.T) {
 				we.SetPower(false)
-				bis.SetPowerInt(x)
+				bis.SetPower(x)
 				we.SetPower(true)
-				tm.IsInt(t, bos.GetPowerInt(), x, testname)
+				tm.Is(t, bos.GetPower(), x, testname)
 			})
 		}
 	}
