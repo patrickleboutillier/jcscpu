@@ -8,14 +8,13 @@ import (
 
 func TestBusPower(t *testing.T) {
 	b := NewBus()
-	tm.Ok(t, b.IsPower("00000000"), "GetPower failed")
-	tm.IsInt(t, b.GetPowerInt(), 0, "GetPower failed")
-	b.SetPower("10101010")
-	tm.Ok(t, b.IsPower("010101010"), "SetPower failed")
+	tm.Is(t, b.GetPower(), 0b00000000, "GetPower failed")
+	b.SetPower(0b10101010)
+	tm.Is(t, b.GetPower(), 0b10101010, "SetPower failed")
 	w := b.GetBit(1)
-	tm.IsBool(t, w.GetPower(), true, "GetPower failed")
+	tm.Is(t, w.GetPower(), true, "GetPower failed")
 	w = b.GetBit(0)
-	tm.IsBool(t, w.GetPower(), false, "GetPower failed")
+	tm.Is(t, w.GetPower(), false, "GetPower failed")
 
 	w1 := NewWire()
 	w1.SetPower(true)
@@ -23,15 +22,15 @@ func TestBusPower(t *testing.T) {
 	w3 := NewWire()
 	b = WrapBusV(w1, w2, w3)
 	w = b.GetWire(0)
-	tm.IsBool(t, w.GetPower(), true, "GetPower failed")
+	tm.Is(t, w.GetPower(), true, "GetPower failed")
 	w = b.GetWire(1)
-	tm.IsBool(t, w.GetPower(), false, "GetPower failed")
+	tm.Is(t, w.GetPower(), false, "GetPower failed")
 
 	wires := b.GetWires()
 	w = wires[0]
-	tm.IsBool(t, w.GetPower(), true, "GetPower failed")
+	tm.Is(t, w.GetPower(), true, "GetPower failed")
 	w = wires[1]
-	tm.IsBool(t, w.GetPower(), false, "GetPower failed")
+	tm.Is(t, w.GetPower(), false, "GetPower failed")
 }
 
 func TestBusErrors(t *testing.T) {
@@ -47,7 +46,7 @@ func TestBusErrors(t *testing.T) {
 	tpanic(t, f)
 	f = func() {
 		b := NewBus()
-		b.SetPower("123")
+		b.SetPower(-123)
 	}
 	tpanic(t, f)
 }

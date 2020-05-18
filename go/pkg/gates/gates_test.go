@@ -29,7 +29,7 @@ func TestNAND(t *testing.T) {
 			NewNAND(wa, wb, wc)
 			wa.SetPower(tt.a)
 			wb.SetPower(tt.b)
-			tm.IsBool(t, wc.GetPower(), tt.c, testname)
+			tm.Is(t, wc.GetPower(), tt.c, testname)
 		})
 	}
 }
@@ -49,7 +49,7 @@ func TestNOT(t *testing.T) {
 			wb := NewWire()
 			NewNOT(wa, wb)
 			wa.SetPower(tt.a)
-			tm.IsBool(t, wb.GetPower(), tt.b, testname)
+			tm.Is(t, wb.GetPower(), tt.b, testname)
 		})
 	}
 }
@@ -69,7 +69,7 @@ func TestCONN(t *testing.T) {
 			wb := NewWire()
 			NewCONN(wa, wb)
 			wa.SetPower(tt.a)
-			tm.IsBool(t, wb.GetPower(), tt.b, testname)
+			tm.Is(t, wb.GetPower(), tt.b, testname)
 		})
 	}
 }
@@ -93,7 +93,7 @@ func TestAND(t *testing.T) {
 			NewAND(wa, wb, wc)
 			wa.SetPower(tt.a)
 			wb.SetPower(tt.b)
-			tm.IsBool(t, wc.GetPower(), tt.c, testname)
+			tm.Is(t, wc.GetPower(), tt.c, testname)
 		})
 	}
 }
@@ -117,7 +117,7 @@ func TestOR(t *testing.T) {
 			NewOR(wa, wb, wc)
 			wa.SetPower(tt.a)
 			wb.SetPower(tt.b)
-			tm.IsBool(t, wc.GetPower(), tt.c, testname)
+			tm.Is(t, wc.GetPower(), tt.c, testname)
 		})
 	}
 }
@@ -141,7 +141,7 @@ func TestXOR(t *testing.T) {
 			NewXOR(wa, wb, wc)
 			wa.SetPower(tt.a)
 			wb.SetPower(tt.b)
-			tm.IsBool(t, wc.GetPower(), tt.c, testname)
+			tm.Is(t, wc.GetPower(), tt.c, testname)
 		})
 	}
 }
@@ -163,8 +163,8 @@ func TestANDn(t *testing.T) {
 				res := (x == (max - 1))
 				testname := fmt.Sprintf("AND%d(%d)=%t", n, x, res)
 				t.Run(testname, func(t *testing.T) {
-					bis.SetPowerInt(x)
-					tm.IsBool(t, wo.GetPower(), res, testname)
+					bis.SetPower(x)
+					tm.Is(t, wo.GetPower(), res, testname)
 				})
 			}
 		}
@@ -188,8 +188,8 @@ func TestORn(t *testing.T) {
 				res := (x != 0)
 				testname := fmt.Sprintf("OR%d(%d)=%t", n, x, res)
 				t.Run(testname, func(t *testing.T) {
-					bis.SetPowerInt(x)
-					tm.IsBool(t, wo.GetPower(), res, testname)
+					bis.SetPower(x)
+					tm.Is(t, wo.GetPower(), res, testname)
 				})
 			}
 		}

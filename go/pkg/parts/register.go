@@ -27,10 +27,10 @@ func NewRegister(bis *g.Bus, ws *g.Wire, we *g.Wire, bos *g.Bus, name string) *R
 	return this
 }
 
-func (this *Register) GetPower() string {
+func (this *Register) GetPower() int {
 	return this.bus.GetPower()
 }
 
 func (this *Register) String() string {
-	return fmt.Sprintf("%s:%c/%s/%c", this.name, this.s.GetPowerChar(), this.bus.GetPower(), this.e.GetPowerChar())
+	return fmt.Sprintf("%s:%s/%s/%s", this.name, this.s.String(), this.bus.String(), this.e.String())
 }
