@@ -150,7 +150,7 @@ func TestANDn(t *testing.T) {
 	for n := 2; n <= max_n_tests; n++ {
 		bis := NewBusN(n)
 		wo := NewWire()
-		NewANDn(n, bis, wo)
+		NewANDn(bis, wo)
 
 		max := 1 << n
 		for j := 0; j < max; j++ {
@@ -175,7 +175,7 @@ func TestORn(t *testing.T) {
 	for n := 2; n <= max_n_tests; n++ {
 		bis := NewBusN(n)
 		wo := NewWire()
-		NewORn(n, bis, wo)
+		NewORn(bis, wo)
 
 		max := 1 << n
 		for j := 0; j < max; j++ {

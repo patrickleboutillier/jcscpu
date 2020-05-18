@@ -115,14 +115,12 @@ type ANDn struct {
 	o  *Wire
 }
 
-func NewANDn(n int, bis *Bus, wo *Wire) *ANDn {
+func NewANDn(bis *Bus, wo *Wire) *ANDn {
+	n := bis.GetSize()
 	this := &ANDn{n, bis, wo}
 
 	if n < 2 {
 		panic(fmt.Errorf("Invalid ANDn number of inputs %d", n))
-	}
-	if len(bis.GetWires()) != n {
-		panic(fmt.Errorf("Number of wires in bus (%d) doesn't match n (%d) for ANDn", len(bis.GetWires()), n))
 	}
 
 	var o *Wire = nil
@@ -155,14 +153,12 @@ type ORn struct {
 	o  *Wire
 }
 
-func NewORn(n int, bis *Bus, wo *Wire) *ORn {
+func NewORn(bis *Bus, wo *Wire) *ORn {
+	n := bis.GetSize()
 	this := &ORn{n, bis, wo}
 
 	if n < 2 {
 		panic(fmt.Errorf("Invalid ORn number of inputs %d", n))
-	}
-	if len(bis.GetWires()) != n {
-		panic(fmt.Errorf("Number of wires in bus (%d) doesn't match n (%d) for ORn", len(bis.GetWires()), n))
 	}
 
 	var o *Wire = nil
@@ -195,7 +191,7 @@ type ORe struct {
 }
 
 func NewORe(wo *Wire) *ORe {
-	return &ORe{NewORn(6, NewBusN(6), wo), wo, 0}
+	return &ORe{NewORn(NewBusN(6), wo), wo, 0}
 }
 
 func (this *ORe) AddWire(w *Wire) {
