@@ -40,3 +40,12 @@ func Is(t *testing.T, result interface{}, expected interface{}, name string) {
 		t.Errorf("Failed test '%s':\ngot:\n%sexpected:\n%s", name, ry, ey)
 	}
 }
+
+func TPanic(t *testing.T, f func()) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Not panicking!")
+		}
+	}()
+	f()
+}

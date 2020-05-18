@@ -1,6 +1,7 @@
 package parts
 
 import (
+	"fmt"
 	"testing"
 
 	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
@@ -13,7 +14,7 @@ func TestRegisterBasic(t *testing.T) {
 	bout := g.NewBus()
 	ws := g.NewWire()
 	we := g.NewWire()
-	NewRegister(bin, ws, we, bout, "R")
+	R := NewRegister(bin, ws, we, bout, "R")
 
 	// Let input from the input bus into the register and turn on the enabler
 	ws.SetPower(true)
@@ -31,6 +32,9 @@ func TestRegisterBasic(t *testing.T) {
 	ws.SetPower(true)
 	we.SetPower(true)
 	tm.Is(t, bout.GetPower(), 0b00000000, "R(i:00000000,s:1,e:1)=o:00000000, s=on, e=on, i flows, so 0")
+
+	tm.Is(t, R.GetPower(), 0b00000000, "R(i:00000000,s:1,e:1)=o:00000000, s=on, e=on, i flows, so 0")
+	tm.Is(t, R.String(), fmt.Sprintf("R:1/%s/1", R.bus.String()), "Show R")
 }
 
 func TestRegisterIO(t *testing.T) {

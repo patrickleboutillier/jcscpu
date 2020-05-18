@@ -16,6 +16,9 @@ func NewBus() *Bus {
 }
 
 func NewBusN(n int) *Bus {
+	if n < 1 {
+		panic(fmt.Errorf("Bus sizes must be >= 1"))
+	}
 	ws := make([]*Wire, n, n)
 	for j := 0; j < n; j++ {
 		ws[j] = NewWire()

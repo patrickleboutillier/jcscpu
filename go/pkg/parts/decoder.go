@@ -21,7 +21,7 @@ func NewDecoder(bis *g.Bus, bos *g.Bus, name string) *Decoder {
 		panic(fmt.Errorf("Invalid DECODER number of inputs %d", ni))
 	}
 	if (1 << ni) != no {
-		panic(fmt.Errorf("Invalid number of wires in DECODER output bus (%d) (2**n is %d)", no, (1 << ni)))
+		panic(fmt.Errorf("Invalid number of wires in Decoder output bus (%d) (2**n is %d)", no, (1 << ni)))
 	}
 
 	this := &Decoder{bis, bos, name}

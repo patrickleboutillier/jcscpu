@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
+	a "github.com/patrickleboutillier/jcscpu/go/pkg/arch"
 )
 
 func TestBusPower(t *testing.T) {
@@ -31,22 +32,48 @@ func TestBusPower(t *testing.T) {
 	tm.Is(t, w.GetPower(), true, "GetPower failed")
 	w = wires[1]
 	tm.Is(t, w.GetPower(), false, "GetPower failed")
+
+	// Other stuff
+	b = NewBusN(8)
+	tm.Is(t, b.String(), "00000000", "String")
+	CheckBusSizes(b, b, "")
 }
 
 func TestBusErrors(t *testing.T) {
-	f := func() {
+	tm.TPanic(t, func() {
 		b := NewBus()
 		b.GetWire(-1)
-	}
-	tpanic(t, f)
-	f = func() {
+	})
+	tm.TPanic(t, func() {
 		b := NewBus()
 		b.GetWire(b.GetSize() + 10)
-	}
-	tpanic(t, f)
-	f = func() {
+	})
+	tm.TPanic(t, func() {
 		b := NewBus()
 		b.SetPower(-123)
-	}
-	tpanic(t, f)
+	})
+	tm.TPanic(t, func() {
+		b := NewBus()
+		b.SetPower(a.GetMaxByteValue() + 1)
+	})
+	tm.TPanic(t, func() {
+		b := NewBus()
+		b.GetBit(-1)
+	})
+	tm.TPanic(t, func() {
+		b := NewBus()
+		b.GetBit(-1)
+	})
+	tm.TPanic(t, func() {
+		b := NewBus()
+		b.GetBit(b.GetSize() + 12)
+	})
+	tm.TPanic(t, func() {
+		b1 := NewBusN(4)
+		b2 := NewBusN(5)
+		CheckBusSizes(b1, b2, "")
+	})
+	tm.TPanic(t, func() {
+		NewBusN(0)
+	})
 }

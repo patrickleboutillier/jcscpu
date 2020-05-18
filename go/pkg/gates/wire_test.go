@@ -9,8 +9,10 @@ import (
 func TestWirePower(t *testing.T) {
 	w := NewWire()
 	tm.Is(t, w.GetPower(), false, "power initialized at false")
+	tm.Is(t, w.String(), "0", "String(false) = 0")
 	w.SetPower(true)
 	tm.Is(t, w.GetPower(), true, "power set to true")
+	tm.Is(t, w.String(), "1", "String(true) = 1")
 	w.SetPower(false)
 	tm.Is(t, w.GetPower(), false, "power set to false")
 }

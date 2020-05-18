@@ -196,15 +196,6 @@ func TestORn(t *testing.T) {
 	}
 }
 
-func tpanic(t *testing.T, f func()) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("Not panicking!")
-		}
-	}()
-	f()
-}
-
 func TestGateErrors(t *testing.T) {
 	/*
 		eval {
@@ -232,14 +223,19 @@ func TestGateErrors(t *testing.T) {
 		like($@, qr/Invalid input index/, "Invalid input index >n") ;
 	*/
 
-	f := func() {
+	tm.TPanic(t, func() {
 		o := NewORe(NewWire())
 		for j := 0; j < 6; j++ {
 			o.AddWire(NewWire())
 		}
 		o.AddWire(NewWire())
-	}
-	tpanic(t, f)
+	})
+	tm.TPanic(t, func() {
+		NewANDn(NewBusN(1), NewWire())
+	})
+	tm.TPanic(t, func() {
+		NewORn(NewBusN(1), NewWire())
+	})
 }
 
 /*
