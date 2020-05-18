@@ -10,7 +10,7 @@ import (
 	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
 )
 
-var max_nb_tests int = 256
+var nb_enabler_tests int = 256
 
 func TestEnablerBasic(t *testing.T) {
 	bis := g.NewBus()
@@ -40,7 +40,7 @@ func TestEnablerMaker(t *testing.T) {
 	bos := g.NewBus()
 	NewEnabler(bis, we, bos)
 
-	for j := 0; j < max_nb_tests; j++ {
+	for j := 0; j < nb_enabler_tests; j++ {
 		x := j
 		for _, r := range [2]bool{false, true} {
 			if r {

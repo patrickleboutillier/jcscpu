@@ -9,10 +9,10 @@ import (
 	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
 )
 
-var max_n_tests int = 4
+var max_decoder_n_tests int = 4
 
 func TestDecoderMaker(t *testing.T) {
-	for n := 2; n <= max_n_tests; n++ {
+	for n := 2; n <= max_decoder_n_tests; n++ {
 		bis := g.NewBusN(n)
 		bos := g.NewBusN(1 << n)
 		NewDecoder(bis, bos)
