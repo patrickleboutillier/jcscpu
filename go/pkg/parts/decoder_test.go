@@ -15,7 +15,7 @@ func TestDecoderMaker(t *testing.T) {
 	for n := 2; n <= max_n_tests; n++ {
 		bis := g.NewBusN(n)
 		bos := g.NewBusN(1 << n)
-		NewDecoder(bis, bos, fmt.Sprintf("%dx%d", n, 1<<n))
+		NewDecoder(bis, bos)
 
 		max := 1 << n
 		for j := 0; j < max; j++ {
@@ -38,9 +38,9 @@ func TestDecoderMaker(t *testing.T) {
 
 func TestDecoderErrors(t *testing.T) {
 	tm.TPanic(t, func() {
-		NewDecoder(g.NewBusN(1), g.NewBusN(2), "")
+		NewDecoder(g.NewBusN(1), g.NewBusN(2))
 	})
 	tm.TPanic(t, func() {
-		NewDecoder(g.NewBusN(2), g.NewBusN(8), "")
+		NewDecoder(g.NewBusN(2), g.NewBusN(8))
 	})
 }

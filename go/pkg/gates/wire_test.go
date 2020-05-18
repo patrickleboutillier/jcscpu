@@ -30,10 +30,10 @@ func TestWireTerminal(t *testing.T) {
 	w.SetTerminal()
 	w.SetPower(true)
 	tm.Is(t, w.GetPower(), false, "terminal froze the wire")
-	w = On()
+	w = WireOn()
 	w.SetPower(false)
 	tm.Is(t, w.GetPower(), true, "terminal froze the wire")
-	w = Off()
+	w = WireOff()
 	w.SetPower(true)
 	tm.Is(t, w.GetPower(), false, "terminal froze the wire")
 }

@@ -1,127 +1,68 @@
 package parts
 
+import (
+	"fmt"
+
+	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
+)
+
 /*
-package RAM ;
-
-use strict ;
-use Register ;
-use Decoder ;
-
-
-sub new {
-    my $class = shift ;
-    my $ba = shift ;
-    my $wsa = shift ;
-    my $bio = shift ;
-    my $ws = shift ;
-    my $we = shift ;
-
-    # Build the RAM circuit 
-    my $on = new WIRE(1, 1) ;
-    my $busd = new BUS() ;
-    my $MAR = new REGISTER($ba, $wsa, $on, $busd, "MAR") ;
-
-    my $wxs = new BUS(16) ;
-    my $wys = new BUS(16) ;
-    my @maris = $MAR->os() ;
-    my $TD = new DECODER(4, BUS->wrap(($busd->wires())[0..3]), $wxs, "4x16") ;
-    my $LD = new DECODER(4, BUS->wrap(($busd->wires())[4..7]), $wys, "4x16") ;
-    
-    # Now we create the circuit
-    my %GRID = () ;
-    for (my $x = 0 ; $x < 16 ; $x++){
-        for (my $y = 0 ; $y < 16 ; $y++){
-            # Create the subcircuit to be used at each location
-            my $wxo = new WIRE() ;
-            my $wso = new WIRE() ;
-            my $weo = new WIRE() ;
-            new AND($wxs->wire($x), $wys->wire($y), $wxo) ;
-            new AND($wxo, $ws, $wso) ;
-            new AND($wxo, $we, $weo) ;
-            my $label = sprintf("%04b%04b", $x, $y) ;
-            $GRID{$label} = new REGISTER($bio, $wso, $weo, $bio, "ADDR($label)") ;
-        }
-    }
-    
-    my $this = {
-        as => $ba,
-        sa => $wsa,
-        e => $we,
-        s => $ws,
-        ios => $bio,
-        MAR => $MAR,
-        GRID => \%GRID,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
+RAM
+*/
+type RAM struct {
+	as, io   *g.Bus
+	sa, s, e *g.Wire
+	mar      *Register
+	cells    []*Register
 }
 
+func NewRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
+	//Build the RAM circuit
+	on := g.WireOn()
+	busd := g.NewBusN(bas.GetSize())
+	mar := NewRegister(bas, wsa, on, busd, "MAR")
 
-sub as {
-    my $this = shift ;
-    return $this->{as} ;
+	n := bas.GetSize() / 2
+	n2 := 1 << n
+	wxs := g.NewBusN(n2)
+	wys := g.NewBusN(n2)
+	NewDecoder(g.WrapBus(busd.GetWires()[0:n]), wxs)
+	NewDecoder(g.WrapBus(busd.GetWires()[n:busd.GetSize()]), wys)
+
+	// Now we create the circuit
+	cells := make([]*Register, n2*n2, n2*n2)
+	for x := 0; x < n2; x++ {
+		for y := 0; y < n2; y++ {
+			// Create the subcircuit to be used at each location
+			wxo := g.NewWire()
+			wso := g.NewWire()
+			weo := g.NewWire()
+			g.NewAND(wxs.GetWire(x), wys.GetWire(y), wxo)
+			g.NewAND(wxo, ws, wso)
+			g.NewAND(wxo, we, weo)
+			idx := (x * n2) + y
+			cells[idx] = NewRegister(bio, wso, weo, bio, fmt.Sprintf("RAM[%d]", idx))
+		}
+	}
+
+	this := &RAM{bas, bio, wsa, ws, we, mar, cells}
+
+	return this
 }
 
-
-sub sa {
-    my $this = shift ;
-    return $this->{sa} ;
+func (this *RAM) GetMAR() *Register {
+	return this.mar
 }
 
-
-sub ios {
-    my $this = shift ;
-    return $this->{ios} ;
+func (this *RAM) String() string {
+	str := fmt.Sprintf("RAM:\n  %s  %s\n", this.mar.String(), this.cells[this.mar.GetPower()].String())
+	//foreach my $a (@addrs){
+	//   $str .= "  " . $this->{GRID}->{$a}->show() ;
+	// }
+	return str
 }
 
-
-sub s {
-    my $this = shift ;
-    return $this->{s} ;
-}
-
-
-sub e {
-    my $this = shift ;
-    return $this->{e} ;
-}
-
-
-sub r {
-    my $this = shift ;
-    my $addr = shift ;
-
-    return $this->{GRID}->{$addr} ;
-}
-
-
-sub MAR {
-    my $this = shift ;
-    
-    return $this->{MAR} ;
-}
-
-
-sub show {
-    my $this = shift ;
-    my @addrs = @_ ;
-
-    my $mar = $this->{MAR}->show() ;
-    my $bio = $this->ios()->power() ;
-    my $e = $this->e()->power() ;
-    my $s = $this->s()->power() ;
-    my $str = "RAM:\n  $mar  " . $this->{GRID}->{$this->{MAR}->os()->power()}->show() . "\n" ;
-    foreach my $a (@addrs){
-        $str .= "  " . $this->{GRID}->{$a}->show() ;
-    }
-
-    # Coverage
-    $this->as()->power() ;
-    $this->sa()->power() ;
-
-    return $str ;
-}
+/*
 
 
 sub peek {
@@ -143,8 +84,5 @@ sub dump {
         last if (($max > 0)&&($n++ >= $max)) ;
     }
 }
-
-
-1 ;
 
 */

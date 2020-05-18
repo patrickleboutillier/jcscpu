@@ -10,8 +10,9 @@ import (
 var arch_bits int = defaultArchBits()
 
 func checkArchBits(n int) int {
-	if (n < 8) || (n > 16) {
-		panic(fmt.Errorf("Arch bits ust be between 8 and 16 inclusively"))
+	// TODO: Should be a multiple of 2
+	if (n < 8) || (n > 16) || ((n % 2) == 1) {
+		panic(fmt.Errorf("Arch bits must be an even number between 8 and 16 inclusively"))
 	}
 	return n
 }

@@ -10,7 +10,7 @@ import (
 	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
 )
 
-var max_nb_tests int = a.GetMaxByteValue()
+var max_nb_tests int = 256
 
 func TestEnablerBasic(t *testing.T) {
 	bis := g.NewBus()

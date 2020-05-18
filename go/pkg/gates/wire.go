@@ -15,7 +15,7 @@ func NewWire() *Wire {
 	return &Wire{false, false, false, make([]*NAND, 0, 8), make([]prehook, 0, 2)}
 }
 
-func On() *Wire {
+func WireOn() *Wire {
 	if on == nil {
 		on = NewWire()
 		on.SetPower(true)
@@ -24,7 +24,7 @@ func On() *Wire {
 	return on
 }
 
-func Off() *Wire {
+func WireOff() *Wire {
 	if off == nil {
 		off = NewWire()
 		off.SetTerminal()
