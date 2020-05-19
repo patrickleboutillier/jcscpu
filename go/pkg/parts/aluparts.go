@@ -5,6 +5,30 @@ import (
 )
 
 /*
+ADDER
+*/
+type Adder struct {
+	as, bs, cs *g.Bus
+	ci, co     *g.Wire
+}
+
+func NewAdder(bas *g.Bus, bbs *g.Bus, wci *g.Wire, bcs *g.Bus, wco *g.Wire) *Adder {
+	// Build the ADDer circuit
+	twci := g.NewWire()
+	twco := wco
+	for j := 0; j < bas.GetSize(); j++ {
+		tw := twci
+		if j == (bas.GetSize() - 1) {
+			tw = wci
+		}
+		g.NewADD(bas.GetWire(j), bbs.GetWire(j), tw, bcs.GetWire(j), twco)
+		twco = twci
+		twci = g.NewWire()
+	}
+	return &Adder{bas, bbs, bcs, wci, wco}
+}
+
+/*
 SHIFTR
 */
 type ShiftRight struct {
@@ -41,6 +65,51 @@ func NewShiftLeft(bis *g.Bus, wci *g.Wire, bos *g.Bus, wco *g.Wire) *ShiftRight 
 }
 
 /*
+NOTTER
+*/
+type Notter struct {
+	is, os *g.Bus
+}
+
+func NewNotter(bis *g.Bus, bos *g.Bus) *Notter {
+	this := &Notter{bis, bos}
+	for j := 0; j < bis.GetSize(); j++ {
+		g.NewNOT(bis.GetWire(j), bos.GetWire(j))
+	}
+	return this
+}
+
+/*
+ANDDER
+*/
+type Andder struct {
+	as, bs, cs *g.Bus
+}
+
+func NewAndder(bas *g.Bus, bbs *g.Bus, bcs *g.Bus) *Andder {
+	this := &Andder{bas, bbs, bcs}
+	for j := 0; j < bas.GetSize(); j++ {
+		g.NewAND(bas.GetWire(j), bbs.GetWire(j), bcs.GetWire(j))
+	}
+	return this
+}
+
+/*
+ORRER
+*/
+type Orrer struct {
+	as, bs, cs *g.Bus
+}
+
+func NewOrrer(bas *g.Bus, bbs *g.Bus, bcs *g.Bus) *Orrer {
+	this := &Orrer{bas, bbs, bcs}
+	for j := 0; j < bas.GetSize(); j++ {
+		g.NewOR(bas.GetWire(j), bbs.GetWire(j), bcs.GetWire(j))
+	}
+	return this
+}
+
+/*
 package parts
 
 /*
@@ -71,9 +140,9 @@ sub new {
     my $this = {
         as => $bas,
         bs => $bbs,
-        carry_in => $wci, 
+        carry_in => $wci,
         sums => $bsums,
-        carry_out => $wco, 
+        carry_out => $wco,
     } ;
     bless $this, $class ;
 
@@ -111,24 +180,7 @@ sub carry_out {
 }
 
 
-sub show {
-    my $this = shift ;
 
-    my $a = $this->{as}->power() ;
-    my $b = $this->{bs}->power() ;
-    my $ci = $this->{carry_in}->power() ;
-    my $co = $this->{carry_out}->power() ;    
-    my $sum = $this->{sums}->power() ;
-
-    return "ADDER: a:$a, b:$b, ci:$ci, co:$co, sum:$sum\n" ;
-}
-
-
-1 ;
-*/
-package parts
-
-/*
 package ANDDER ;
 
 use strict ;
@@ -156,22 +208,6 @@ sub new {
 }
 
 
-sub show {
-    my $this = shift ;
-
-    my $a = $this->{as}->power() ;
-    my $b = $this->{bs}->power() ;
-    my $c = $this->{cs}->power() ;
-
-    return "ANDDER: a:$a, b:$b, c:$c\n" ;
-}
-
-
-1 ;
-*/
-package parts
-
-/*
 package BUS1 ;
 
 use strict ;
@@ -191,10 +227,10 @@ sub new {
     # Foreach AND circuit, connect to the wires.
     for (my $j = 0 ; $j < 8 ; $j++){
         if ($j < 7){
-            new AND($bis->wire($j), $wnbit1, $bos->wire($j)) ; 
+            new AND($bis->wire($j), $wnbit1, $bos->wire($j)) ;
         }
         else {
-            new OR($bis->wire($j), $wbit1, $bos->wire($j)) ;             
+            new OR($bis->wire($j), $wbit1, $bos->wire($j)) ;
         }
     }
 
@@ -209,21 +245,7 @@ sub new {
 }
 
 
-sub show {
-    my $this = shift ;
 
-    my $i = $this->{is}->power() ;
-    my $o = $this->{os}->power() ;
-
-    return "BUS1:$i/$o" ;
-}
-
-
-1 ;
-*/
-package parts
-
-/*
 package NOTTER ;
 
 use strict ;
@@ -249,21 +271,7 @@ sub new {
 }
 
 
-sub show {
-    my $this = shift ;
 
-    my $a = $this->{as}->power() ;
-    my $b = $this->{bs}->power() ;
-
-    return "NOTTER: a:$a, b:$b\n" ;
-}
-
-
-1 ;
-*/
-package parts
-
-/*
 package ORER ;
 
 use strict ;
@@ -291,22 +299,6 @@ sub new {
 }
 
 
-sub show {
-    my $this = shift ;
-
-    my $a = $this->{as}->power() ;
-    my $b = $this->{bs}->power() ;
-    my $c = $this->{cs}->power() ;
-
-    return "ORER: a:$a, b:$b, c:$c\n" ;
-}
-
-
-1 ;
-*/
-package parts
-
-/*
 package XORER ;
 
 use strict ;
@@ -320,7 +312,7 @@ sub new {
     my $bbs = shift ;
     my $bcs = shift ;
     my $weqo = shift ;
-    my $walo = shift ; 
+    my $walo = shift ;
 
     # Build the XORer circuit
     my $weqi = new WIRE(1, 1) ;
@@ -346,24 +338,6 @@ sub new {
 }
 
 
-sub show {
-    my $this = shift ;
-
-    my $a = $this->{as}->power() ;
-    my $b = $this->{bs}->power() ;
-    my $c = $this->{cs}->power() ;
-    my $alo = $this->{alo}->power() ;
-    my $eqo = $this->{eqo}->power() ;
-
-    return "XORER: a:$a, b:$b, c:$c, eqo:$eqo, alo:$alo\n" ;
-}
-
-
-1 ;
-*/
-package parts
-
-/*
 package ZERO ;
 
 use strict ;
@@ -388,16 +362,6 @@ sub new {
     bless $this, $class ;
 
     return $this ;
-}
-
-
-sub show {
-    my $this = shift ;
-
-    my $i = $this->{is}->power() ;
-    my $z = $this->{z}->power() ;
-
-    return "ZERO: i:$i, z:$z\n" ;
 }
 
 

@@ -47,21 +47,50 @@ func int2bool(i int) bool {
 	}
 }
 
+// Add simulates an ADDer
+func Add(tc ALUTestCase) ALUTestCase {
+	tc.C = tc.A + tc.B + bool2int(tc.CI)
+	tc.CO = false
+	if tc.C > a.GetMaxByteValue() {
+		tc.C -= (a.GetMaxByteValue() + 1)
+		tc.CO = true
+	}
+	return tc
+}
+
 func ShiftRight(tc ALUTestCase) ALUTestCase {
 	tc.C = (tc.A >> 1) + (bool2int(tc.CI) * ((arch.GetMaxByteValue() + 1) / 2))
 	tc.CO = int2bool(tc.A % 2)
 	return tc
 }
 
+// ShiftLeft simulates a ShiftLeftter
 func ShiftLeft(tc ALUTestCase) ALUTestCase {
-	ret := tc
-	ret.C = (ret.A << 1) + bool2int(ret.CI)
-	ret.CO = false
-	if ret.C > a.GetMaxByteValue() {
-		ret.C -= (a.GetMaxByteValue() + 1)
-		ret.CO = true
+	tc.C = (tc.A << 1) + bool2int(tc.CI)
+	tc.CO = false
+	if tc.C > a.GetMaxByteValue() {
+		tc.C -= (a.GetMaxByteValue() + 1)
+		tc.CO = true
 	}
-	return ret
+	return tc
+}
+
+// Not simulates a NOTter
+func Not(tc ALUTestCase) ALUTestCase {
+	tc.C = ^tc.A + a.GetMaxByteValue() + 1
+	return tc
+}
+
+// And simulates an ANDder
+func And(tc ALUTestCase) ALUTestCase {
+	tc.C = tc.A & tc.B
+	return tc
+}
+
+// Or simulates an ORrer
+func Or(tc ALUTestCase) ALUTestCase {
+	tc.C = tc.A | tc.B
+	return tc
 }
 
 func RunRandomALUTest(t *testing.T, op int, result ALUTest, expected ALUTest) {

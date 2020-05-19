@@ -203,6 +203,25 @@ func (this *ORe) AddWire(w *Wire) {
 }
 
 /*
+ADD
+*/
+type ADD struct {
+	a, b, c, ci, co *Wire
+}
+
+func NewADD(wa *Wire, wb *Wire, wci *Wire, wc *Wire, wco *Wire) *ADD {
+	wi := NewWire()
+	wcoa := NewWire()
+	wcob := NewWire()
+	NewXOR(wa, wb, wi)
+	NewXOR(wi, wci, wc)
+	NewAND(wci, wi, wcoa)
+	NewAND(wa, wb, wcob)
+	NewOR(wcoa, wcob, wco)
+	return &ADD{wa, wb, wc, wci, wco}
+}
+
+/*
 
 package CMP ;
 use strict ;
@@ -235,72 +254,6 @@ sub new {
         ali => $wali,
         eqo => $weqo,
         alo => $walo,
-        name => $name,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-package ORe ;
-use strict ;
-use Carp ;
-
-
-sub new {
-    my $class = shift ;
-    my $wo = shift ;
-    my $name = shift ;
-
-    my $this = {
-        ORn => new ORn(6, BUS->wrap(map { new WIRE(0) } (0..5)), $wo),
-        n => 0,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-sub add {
-    my $this = shift ;
-    my $wi = shift ;
-
-    croak("Elastic OR has reached maximum capacity of 6") if $this->{n} >= 6 ;
-    new CONN($wi, $this->{ORn}->i($this->{n})) ;
-    $this->{n}++ ;
-}
-
-
-package ADD ;
-use strict ;
-
-
-sub new {
-    my $class = shift ;
-    my $wa = shift ;
-    my $wb = shift ;
-    my $wci = shift ;
-    my $wsum = shift ;
-    my $wco = shift ;
-    my $name = shift ;
-
-    my $wi = new WIRE() ;
-    my $wcoa = new WIRE() ;
-    my $wcob = new WIRE() ;
-    new XOR($wa, $wb, $wi, "$name/XOR[1]") ;
-    new XOR($wi, $wci, $wsum, "$name/XOR[2]") ;
-    new AND($wci, $wi, $wcoa, "$name/AND[1]") ;
-    new AND($wa, $wb, $wcob, "$name/AND[2]") ;
-    new OR($wcoa, $wcob, $wco, "$name/OR[]") ;
-
-    my $this = {
-        a => $wa,
-        b => $wb,
-        carry_in => $wci,
-        sum => $wsum,
-        carry_out => $wco,
         name => $name,
     } ;
     bless $this, $class ;
