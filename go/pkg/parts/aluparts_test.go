@@ -19,7 +19,7 @@ func TestAdder(t *testing.T) {
 	bas := g.NewBus()
 	bbs := g.NewBus()
 	bcs := g.NewBus()
-	NewAdder(bas, bbs, wci, bcs, wco)
+	NewADDer(bas, bbs, wci, bcs, wco)
 
 	ta.RunRandomALUTests(t, nb_tests_per_part, 0, func(tc ta.ALUTestCase) ta.ALUTestCase {
 		bas.SetPower(tc.A)
@@ -66,7 +66,7 @@ func TestShiftLeft(t *testing.T) {
 func TestNotter(t *testing.T) {
 	bis := g.NewBus()
 	bos := g.NewBus()
-	NewNotter(bis, bos)
+	NewNOTter(bis, bos)
 
 	ta.RunRandomALUTests(t, nb_tests_per_part, 3, func(tc ta.ALUTestCase) ta.ALUTestCase {
 		bis.SetPower(tc.A)
@@ -79,7 +79,7 @@ func TestAndder(t *testing.T) {
 	bas := g.NewBus()
 	bbs := g.NewBus()
 	bcs := g.NewBus()
-	NewAndder(bas, bbs, bcs)
+	NewANDder(bas, bbs, bcs)
 
 	ta.RunRandomALUTests(t, nb_tests_per_part, 4, func(tc ta.ALUTestCase) ta.ALUTestCase {
 		bas.SetPower(tc.A)
@@ -89,11 +89,11 @@ func TestAndder(t *testing.T) {
 	}, ta.And)
 }
 
-func TestOrrer(t *testing.T) {
+func TestOrer(t *testing.T) {
 	bas := g.NewBus()
 	bbs := g.NewBus()
 	bcs := g.NewBus()
-	NewOrrer(bas, bbs, bcs)
+	NewORer(bas, bbs, bcs)
 
 	ta.RunRandomALUTests(t, nb_tests_per_part, 5, func(tc ta.ALUTestCase) ta.ALUTestCase {
 		bas.SetPower(tc.A)
@@ -103,7 +103,7 @@ func TestOrrer(t *testing.T) {
 	}, ta.Or)
 }
 
-func TestXOrrer(t *testing.T) {
+func TestXOrer(t *testing.T) {
 	bas := g.NewBus()
 	bbs := g.NewBus()
 	bcs := g.NewBus()

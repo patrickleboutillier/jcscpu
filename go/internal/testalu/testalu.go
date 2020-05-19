@@ -22,13 +22,13 @@ func NewALUTestCase(a int, b int, ci bool) ALUTestCase {
 	return ALUTestCase{A: a, B: b, CI: ci}
 }
 
-func NewRandomALUTestCase() ALUTestCase {
+func NewRandomALUTestCase(op int) ALUTestCase {
 	max := a.GetMaxByteValue()
 	rb := false
 	if rand.Intn(2) == 1 {
 		rb = true
 	}
-	return ALUTestCase{A: rand.Intn(max), B: rand.Intn(max), CI: rb}
+	return ALUTestCase{A: rand.Intn(max), B: rand.Intn(max), CI: rb, OP: op}
 }
 
 func bool2int(b bool) int {
@@ -115,12 +115,7 @@ func Zero(tc ALUTestCase) ALUTestCase {
 }
 
 func RunRandomALUTest(t *testing.T, op int, result ALUTest, expected ALUTest) {
-	if op < 0 {
-		op = rand.Intn(8)
-	}
-
-	tc := NewRandomALUTestCase()
-	tc.OP = op
+	tc := NewRandomALUTestCase(op)
 	testname := fmt.Sprintf("ALU(op:%d,a:%d,b:%d,ci:%d)", tc.OP, tc.A, tc.B, bool2int(tc.CI))
 	t.Run(testname, func(t *testing.T) {
 		tm.Is(t, result(tc), expected(tc), testname)
@@ -130,5 +125,33 @@ func RunRandomALUTest(t *testing.T, op int, result ALUTest, expected ALUTest) {
 func RunRandomALUTests(t *testing.T, n int, op int, result ALUTest, expected ALUTest) {
 	for j := 0; j < n; j++ {
 		RunRandomALUTest(t, op, result, expected)
+	}
+}
+
+func RunFullRandomALUTests(t *testing.T, n int, result ALUTest) {
+	for j := 0; j < n; j++ {
+		op := rand.Intn(8)
+		RunRandomALUTest(t, op, result, func(tc ALUTestCase) ALUTestCase {
+			var f ALUTest = nil
+			switch op {
+			case 0:
+				f = Add
+			case 1:
+				f = ShiftRight
+			case 2:
+				f = ShiftLeft
+			case 3:
+				f = Not
+			case 4:
+				f = And
+			case 5:
+				f = Or
+			case 6:
+				f = XOr
+			case 7:
+				f = Cmp
+			}
+			return Zero(f(tc))
+		})
 	}
 }

@@ -12,7 +12,7 @@ type Adder struct {
 	ci, co     *g.Wire
 }
 
-func NewAdder(bas *g.Bus, bbs *g.Bus, wci *g.Wire, bcs *g.Bus, wco *g.Wire) *Adder {
+func NewADDer(bas *g.Bus, bbs *g.Bus, wci *g.Wire, bcs *g.Bus, wco *g.Wire) *Adder {
 	// Build the ADDer circuit
 	twci := g.NewWire()
 	twco := wco
@@ -71,7 +71,7 @@ type Notter struct {
 	is, os *g.Bus
 }
 
-func NewNotter(bis *g.Bus, bos *g.Bus) *Notter {
+func NewNOTter(bis *g.Bus, bos *g.Bus) *Notter {
 	this := &Notter{bis, bos}
 	for j := 0; j < bis.GetSize(); j++ {
 		g.NewNOT(bis.GetWire(j), bos.GetWire(j))
@@ -86,7 +86,7 @@ type Andder struct {
 	as, bs, cs *g.Bus
 }
 
-func NewAndder(bas *g.Bus, bbs *g.Bus, bcs *g.Bus) *Andder {
+func NewANDder(bas *g.Bus, bbs *g.Bus, bcs *g.Bus) *Andder {
 	this := &Andder{bas, bbs, bcs}
 	for j := 0; j < bas.GetSize(); j++ {
 		g.NewAND(bas.GetWire(j), bbs.GetWire(j), bcs.GetWire(j))
@@ -101,7 +101,7 @@ type Orrer struct {
 	as, bs, cs *g.Bus
 }
 
-func NewOrrer(bas *g.Bus, bbs *g.Bus, bcs *g.Bus) *Orrer {
+func NewORer(bas *g.Bus, bbs *g.Bus, bcs *g.Bus) *Orrer {
 	this := &Orrer{bas, bbs, bcs}
 	for j := 0; j < bas.GetSize(); j++ {
 		g.NewOR(bas.GetWire(j), bbs.GetWire(j), bcs.GetWire(j))
