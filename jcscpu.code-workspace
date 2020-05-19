@@ -1,10 +1,12 @@
 {
 	"folders": [
 		{
-			"path": "perl"
+			"name": "go",
+			"path": "go"
 		},
 		{
-			"path": "go"
+			"name": "perl",
+			"path": "perl"
 		}
 	],
 	"settings": {}
