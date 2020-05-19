@@ -10,7 +10,7 @@ import (
 	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
 )
 
-var nb_ram_tests int = 256
+var nb_ram_tests int = 1024
 
 func TestRAMBasic(t *testing.T) {
 	ba := g.NewBus()

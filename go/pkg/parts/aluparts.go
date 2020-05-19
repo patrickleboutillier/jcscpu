@@ -110,260 +110,68 @@ func NewOrrer(bas *g.Bus, bbs *g.Bus, bcs *g.Bus) *Orrer {
 }
 
 /*
-package parts
+XORER
+*/
+type XORer struct {
+	as, bs, cs *g.Bus
+	eqo, alo   *g.Wire
+}
+
+func NewXORer(bas *g.Bus, bbs *g.Bus, bcs *g.Bus, weqo *g.Wire, walo *g.Wire) *XORer {
+	// Build the XORer circuit
+	weqi := g.WireOn()
+	wali := g.WireOff()
+	for j := 0; j < bas.GetSize(); j++ {
+		teqo := g.NewWire()
+		talo := g.NewWire()
+		te := teqo
+		ta := talo
+		if j == (bas.GetSize() - 1) {
+			te = weqo
+			ta = walo
+		}
+		g.NewCMP(bas.GetWire(j), bbs.GetWire(j), weqi, wali, bcs.GetWire(j), te, ta)
+		weqi = teqo
+		wali = talo
+	}
+	return &XORer{bas, bbs, bcs, weqo, walo}
+}
 
 /*
-package ADDER ;
-
-use strict ;
-use Wire ;
-use Gates ;
-
-
-sub new {
-    my $class = shift ;
-    my $bas = shift ;
-    my $bbs = shift ;
-    my $wci = shift ;
-    my $bsums = shift ;
-    my $wco = shift ;
-
-    # Build the ADDer circuit
-    my $twci = new WIRE() ;
-    my $twco = $wco ;
-    for (my $j = 0 ; $j < 8 ; $j++){
-        new ADD($bas->wire($j), $bbs->wire($j), ($j < 7 ? $twci : $wci), $bsums->wire($j), $twco) ;
-        $twco = $twci ;
-        $twci = new WIRE() ;
-    }
-
-    my $this = {
-        as => $bas,
-        bs => $bbs,
-        carry_in => $wci,
-        sums => $bsums,
-        carry_out => $wco,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-sub as {
-    my $this = shift ;
-    return $this->{as} ;
-}
-
-
-sub bs {
-    my $this = shift ;
-    return $this->{bs} ;
-}
-
-
-sub carry_in {
-    my $this = shift ;
-    return $this->{carry_in} ;
-}
-
-
-sub sums {
-    my $this = shift ;
-    return $this->{sums} ;
-}
-
-
-sub carry_out {
-    my $this = shift ;
-    return $this->{carry_out} ;
-}
-
-
-
-package ANDDER ;
-
-use strict ;
-use Wire ;
-use Gates ;
-
-
-sub new {
-    my $class = shift ;
-    my $bas = shift ;
-    my $bbs = shift ;
-    my $bcs = shift ;
-
-    # Build the ANDder circuit
-    map { new AND($bas->wire($_), $bbs->wire($_), $bcs->wire($_)) } (0..7) ;
-
-    my $this = {
-        as => $bas,
-        bs => $bbs,
-        cs => $bcs,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-package BUS1 ;
-
-use strict ;
-use Wire ;
-use Gates ;
-
-
-sub new {
-    my $class = shift ;
-    my $bis = shift ;
-    my $wbit1 = shift ;
-    my $bos = shift ;
-
-    # Build the BUS1 circuit
-    my $wnbit1 = new WIRE() ;
-    new NOT($wbit1, $wnbit1) ;
-    # Foreach AND circuit, connect to the wires.
-    for (my $j = 0 ; $j < 8 ; $j++){
-        if ($j < 7){
-            new AND($bis->wire($j), $wnbit1, $bos->wire($j)) ;
-        }
-        else {
-            new OR($bis->wire($j), $wbit1, $bos->wire($j)) ;
-        }
-    }
-
-    my $this = {
-        is => $bis,
-        os => $bos,
-        bit1 => $wbit1,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-
-package NOTTER ;
-
-use strict ;
-use Wire ;
-use Gates ;
-
-
-sub new {
-    my $class = shift ;
-    my $bis = shift ;
-    my $bos = shift ;
-
-    # Build the register circuit
-    map { new NOT($bis->wire($_), $bos->wire($_)) } (0..7) ;
-
-    my $this = {
-        as => $bis,
-        bs => $bos,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-
-package ORER ;
-
-use strict ;
-use Wire ;
-use Gates ;
-
-
-sub new {
-    my $class = shift ;
-    my $bas = shift ;
-    my $bbs = shift ;
-    my $bcs = shift ;
-
-    # Build the ANDder circuit
-    map { new OR($bas->wire($_), $bbs->wire($_), $bcs->wire($_)) } (0..7) ;
-
-    my $this = {
-        as => $bas,
-        bs => $bbs,
-        cs => $bcs,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-package XORER ;
-
-use strict ;
-use Wire ;
-use Gates ;
-
-
-sub new {
-    my $class = shift ;
-    my $bas = shift ;
-    my $bbs = shift ;
-    my $bcs = shift ;
-    my $weqo = shift ;
-    my $walo = shift ;
-
-    # Build the XORer circuit
-    my $weqi = new WIRE(1, 1) ;
-    my $wali = new WIRE(0, 1) ;
-    for (my $j = 0 ; $j < 8 ; $j++){
-        my $teqo = new WIRE() ;
-        my $talo = new WIRE() ;
-        new CMP($bas->wire($j), $bbs->wire($j), $weqi, $wali, $bcs->wire($j), ($j < 7 ? $teqo : $weqo), ($j < 7 ? $talo : $walo)) ;
-        $weqi = $teqo ;
-        $wali = $talo ;
-    }
-
-    my $this = {
-        as => $bas,
-        bs => $bbs,
-        cs => $bcs,
-        eqo => $weqo,
-        alo => $walo,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-package ZERO ;
-
-use strict ;
-use Wire ;
-use Gates ;
-
-
-sub new {
-    my $class = shift ;
-    my $bis = shift ;
-    my $wz = shift ;
-
-    # Build the ZERO circuit
-    my $wi = new WIRE() ;
-    new ORn(8, $bis, $wi) ;
-    new NOT($wi, $wz) ;
-
-    my $this = {
-        is => $bis,
-        z => $wz,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-1 ;
+ZERO
 */
+type Zero struct {
+	is *g.Bus
+	z  *g.Wire
+}
+
+func NewZero(bis *g.Bus, wz *g.Wire) *Zero {
+	// Build the ZERO circuit
+	wi := g.NewWire()
+	g.NewORn(bis, wi)
+	g.NewNOT(wi, wz)
+	return &Zero{bis, wz}
+}
+
+/*
+BUS1
+*/
+type Bus1 struct {
+	is, os *g.Bus
+	bit1   *g.Wire
+}
+
+func NewBus1(bis *g.Bus, wbit1 *g.Wire, bos *g.Bus) *Bus1 {
+	// Build the BUS1 circuit
+	wnbit1 := g.NewWire()
+	g.NewNOT(wbit1, wnbit1)
+	// Foreach AND circuit, connect to the wires.
+	for j := 0; j < bis.GetSize(); j++ {
+		if j < (bis.GetSize() - 1) {
+			g.NewAND(bis.GetWire(j), wnbit1, bos.GetWire(j))
+		} else {
+			g.NewOR(bis.GetWire(j), wbit1, bos.GetWire(j))
+		}
+	}
+	return &Bus1{bis, bos, wbit1}
+}

@@ -222,6 +222,24 @@ func NewADD(wa *Wire, wb *Wire, wci *Wire, wc *Wire, wco *Wire) *ADD {
 }
 
 /*
+CMP
+*/
+type CMP struct {
+	a, b, c, eqi, ali, eqo, alo *Wire
+}
+
+func NewCMP(wa *Wire, wb *Wire, weqi *Wire, wali *Wire, wc *Wire, weqo *Wire, walo *Wire) *CMP {
+	w23 := NewWire()
+	w45 := NewWire()
+	NewXOR(wa, wb, wc)
+	NewNOT(wc, w23)
+	NewAND(weqi, w23, weqo)
+	NewANDn(WrapBusV(weqi, wa, wc), w45)
+	NewOR(wali, w45, walo)
+	return &CMP{wa, wb, wc, weqi, wali, weqo, walo}
+}
+
+/*
 
 package CMP ;
 use strict ;
