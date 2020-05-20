@@ -45,8 +45,10 @@ func (this *Wire) String() string {
 }
 
 func (this *Wire) SetPowerSoft(v bool) {
-	this.power = v
-	this.soft = true
+	if !this.terminal {
+		this.power = v
+		this.soft = true
+	}
 }
 
 func (this *Wire) SetPower(v bool) {
@@ -54,14 +56,14 @@ func (this *Wire) SetPower(v bool) {
 		this.power = v
 		this.soft = false
 
+		for _, f := range this.prehooks {
+			f(v)
+		}
+
 		for _, g := range this.gates {
 			if this != g.c {
 				g.Signal()
 			}
-		}
-
-		for _, f := range this.prehooks {
-			f(v)
 		}
 	}
 }

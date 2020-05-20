@@ -1,6 +1,8 @@
 package parts
 
 import (
+	"fmt"
+
 	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
 )
 
@@ -34,4 +36,8 @@ func NewMemory(wi *g.Wire, ws *g.Wire, wo *g.Wire) *Memory {
 
 func (this *Memory) GetM() bool {
 	return !this.m.GetPower()
+}
+
+func (this *Memory) String() string {
+	return fmt.Sprintf("M(%s)[%s/%s/%s]", this.name, this.i.String(), this.s.String(), this.o.String())
 }

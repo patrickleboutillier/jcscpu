@@ -1,6 +1,8 @@
 package parts
 
 import (
+	"fmt"
+
 	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
 )
 
@@ -93,54 +95,37 @@ func NewStepper(wclk *g.Wire, bos *g.Bus) *Stepper {
 	m67 := NewNamedMemory(wm667, wmsnn, bos.GetWire(6), "67")
 	s7 := bos.GetWire(6)
 
-	/*
-	   this = {
-	       clk => wclk,
-	       rst => wrst,
-	       os => bos,
-	       Ss => [s1, s2, s3, s4, s5, s6, bos.GetWire(6)],
-	       Ms => [m1, m12, m2, m23, m3, m34, m4, m45, m5, m56, m6, m67],
-	   } ;
-	   bless this, class ;
+	// Hook to forward signals to the s inputs to ensure they arrive before the i inputs.
+	wclk.AddPrehook(func(v bool) {
+		wmsn.SetPowerSoft(!v)
+		wmsnn.SetPowerSoft(v)
+	})
 
-	   // Hook to forward signals to the s inputs to ensure they arrive before the i inputs.
-	   wclk->prehook(sub {
-	       v = shift ;
-	       wmsn->power(! v, 1) ;
-	       wmsnn->power(v, 1) ;
-	   }) ;
+	wrst.AddPrehook(func(v bool) {
+		if v {
+			wmsn.SetPowerSoft(v)
+			wmsnn.SetPowerSoft(v)
+		} else {
+			wmsn.SetPowerSoft(!wclk.GetPower())
+			wmsnn.SetPowerSoft(wclk.GetPower())
+		}
+	})
 
-	   wrst->prehook(sub {
-	       v = shift ;
-	       if (v){
-	           wmsn->power(v, 1) ;
-	           wmsnn->power(v, 1) ;
-	       }
-	       else {
-	           wmsn->power(! wclk->power(), 1) ;
-	           wmsnn->power(wclk->power(), 1) ;
-	       }
-	   }) ;
+	// In it's current design. the stepper goes to setup 1 as soon as it's powered on.
+	// We don't want that. We want the stepper to be in a state where the first clock tick
+	// will *bring it* to step 1.
+	// To do this, we fake 6 ticks, and turn off (softly) the power on step 7.
+	// But we have to simulate the ticks without touching wclk, which make the clock tick!
+	// We need to signal the wmsn and wmsnn Wire directly.
+	for j := 0; j < 6; j++ {
+		wmsn.SetPower(false)
+		wmsnn.SetPower(true)
+		wmsn.SetPower(true)
+		wmsnn.SetPower(false)
+	}
+	bos.GetWire(6).SetPowerSoft(false)
 
-	   // In it's current design. the stepper goes to setup 1 as soon as it's powered on.
-	   // We don't want that. We want the stepper to be in a state where the first clock tick
-	   // will *bring it* to step 1.
-	   // To do this, we fake 6 ticks, and turn off (softly) the power on step 7.
-	   // But we have to simulate the ticks without touching wclk, which make the clock tick!
-	   // We need to signal the wmsn and wmsnn Wire directly.
-	   map {
-	       wmsn->power(0) ;
-	       wmsnn->power(1) ;
-	       wmsn->power(1) ;
-	       wmsnn->power(0) ;
-	   } (0..5) ;
-	   bos.GetWire(6)->power(0, 1) ;
-
-	   // Finally, loop step 7 to the reset Wire.
-	   NewCONN(bos.GetWire(6), wrst) ;
-
-	*/
-
+	// Finally, loop step 7 to the reset Wire.
 	g.NewCONN(bos.GetWire(6), wrst)
 
 	s26 := []*g.AND{s2, s3, s4, s5, s6}
@@ -149,42 +134,30 @@ func NewStepper(wclk *g.Wire, bos *g.Bus) *Stepper {
 	return &Stepper{wclk, wrst, bos, s1, s26, s7, ms}
 }
 
-/*
 // Steps starting at 1, like in the book.
-sub step {
-    this = shift ;
+func (this *Stepper) GetStep() int {
+	for j := 0; j < 7; j++ {
+		if this.os.GetWire(j).GetPower() {
+			return (j + 1)
+		}
+	}
 
-    for (j = 0 ; j < 7 ; j++){
-        return (j + 1) if this->{os}.GetWire(j)->power() ;
-    }
-
-    // When stepper has Not yet been through a tick.
-    return 0 ;
+	// When stepper has NOT yet been through a tick.
+	return 0
 }
 
+func (this *Stepper) String() string {
+	str := fmt.Sprintf("STEPPER(%d): rst:%s  clk:%s  steps:%s\n  ", this.GetStep(), this.rst.String(), this.clk.String(), this.os.String())
+	str += "  " + this.s1.String() + "                "
+	for _, s := range this.s26 {
+		str += "  " + s.String() + "                "
+	}
+	str += "  " + this.s7.String()
+	str += "\n  "
+	for _, m := range this.ms {
+		str += m.String() + "  "
+	}
+	str += "\n"
 
-sub show {
-    this = shift ;
-
-    clk = this->{clk}->power() ;
-    rst = this->{rst}->power() ;
-    steps = this->{os}->power() ;
-    my @Ss = @{this->{Ss}} ;
-    my @Ms = @{this->{Ms}} ;
-
-    str = "STEPPER(" . this->step() . "): rst:rst, clk:clk, steps:steps\n  " ;
-    foreach S (@Ss){
-        str .= "  " . S->show() . "                " ;
-    }
-    str .= "\n  " ;
-    foreach M (@Ms){
-        str .= M->show() . "  " ;
-    }
-    str .= "\n" ;
-
-    return str ;
+	return str
 }
-
-
-1 ;
-*/

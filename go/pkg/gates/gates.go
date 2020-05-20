@@ -68,6 +68,10 @@ func NewAND(wa *Wire, wb *Wire, wc *Wire) *AND {
 	return this
 }
 
+func (this *AND) String() string {
+	return fmt.Sprintf("AND[%s/%s/%s]", this.a.String(), this.b.String(), this.c.String())
+}
+
 /*
 OR
 */
@@ -83,6 +87,10 @@ func NewOR(wa *Wire, wb *Wire, wc *Wire) *OR {
 	NewNOT(wb, wid)
 	NewNAND(wic, wid, wc)
 	return this
+}
+
+func (this *OR) String() string {
+	return fmt.Sprintf(" OR[%s/%s/%s]", this.a.String(), this.b.String(), this.c.String())
 }
 
 /*
