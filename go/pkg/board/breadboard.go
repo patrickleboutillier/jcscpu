@@ -1,4 +1,4 @@
-package parts
+package board
 
 // The BREADBOARD comes loaded with the following components:
 // - ALU, RAM and BUS
@@ -11,6 +11,7 @@ import (
 	"fmt"
 
 	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
+	p "github.com/patrickleboutillier/jcscpu/go/pkg/parts"
 )
 
 /*
@@ -19,20 +20,25 @@ BREADBOARD
 type Breadboard struct {
 	wires map[string]*g.Wire
 	buses map[string]*g.Bus
-	regs  map[string]*Register
-	RAM   *RAM
-	ALU   *ALU
-	BUS1  *Bus1
-	CLK   *Clock
-	STP   *Stepper
+	regs  map[string]*p.Register
+	ores  map[string]*g.ORe
+	RAM   *p.RAM
+	ALU   *p.ALU
+	BUS1  *p.Bus1
+	CLK   *p.Clock
+	STP   *p.Stepper
 }
 
 func NewInstProcBreadboard() *Breadboard {
-	return NewVanillaBreadboard()
+	this := NewVanillaBreadboard()
+	InstProc(this)
+	return this
 }
 
 func NewInstImplBreadboard() *Breadboard {
-	return NewInstProcBreadboard()
+	this := NewInstProcBreadboard()
+	InstImpl(this)
+	return this
 }
 
 func NewInstBreadboard(inst string) *Breadboard {
@@ -46,16 +52,17 @@ func NewInstBreadboard(inst string) *Breadboard {
 func NewVanillaBreadboard() *Breadboard {
 	wires := make(map[string]*g.Wire)
 	buses := make(map[string]*g.Bus)
-	regs := make(map[string]*Register)
+	regs := make(map[string]*p.Register)
+	ores := make(map[string]*g.ORe)
 
-	this := &Breadboard{wires: wires, buses: buses, regs: regs}
+	this := &Breadboard{wires: wires, buses: buses, regs: regs, ores: ores}
 
 	// RAM
 	this.putBus("DATA.bus", g.NewBus())
 	this.putWire("RAM.MAR.s", g.NewWire())
 	this.putWire("RAM.s", g.NewWire())
 	this.putWire("RAM.e", g.NewWire())
-	this.RAM = NewRAM(
+	this.RAM = p.NewRAM(
 		this.GetBus("DATA.bus"),
 		this.GetWire("RAM.MAR.s"),
 		this.GetBus("DATA.bus"),
@@ -79,12 +86,12 @@ func NewVanillaBreadboard() *Breadboard {
 	this.putWire("BUS1.bit1", g.NewWire())
 	this.putBus("BUS1.bus", g.NewBus())
 
-	this.putReg("R0", NewRegister(this.GetBus("DATA.bus"), this.GetWire("R0.s"), this.GetWire("R0.e"), this.GetBus("DATA.bus"), "R0"))
-	this.putReg("R1", NewRegister(this.GetBus("DATA.bus"), this.GetWire("R1.s"), this.GetWire("R1.e"), this.GetBus("DATA.bus"), "R1"))
-	this.putReg("R2", NewRegister(this.GetBus("DATA.bus"), this.GetWire("R2.s"), this.GetWire("R2.e"), this.GetBus("DATA.bus"), "R2"))
-	this.putReg("R3", NewRegister(this.GetBus("DATA.bus"), this.GetWire("R3.s"), this.GetWire("R3.e"), this.GetBus("DATA.bus"), "R3"))
-	this.putReg("TMP", NewRegister(this.GetBus("DATA.bus"), this.GetWire("TMP.s"), this.GetWire("TMP.e"), this.GetBus("TMP.bus"), "TMP"))
-	this.BUS1 = NewBus1(this.GetBus("TMP.bus"), this.GetWire("BUS1.bit1"), this.GetBus("BUS1.bus"))
+	this.putReg("R0", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("R0.s"), this.GetWire("R0.e"), this.GetBus("DATA.bus"), "R0"))
+	this.putReg("R1", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("R1.s"), this.GetWire("R1.e"), this.GetBus("DATA.bus"), "R1"))
+	this.putReg("R2", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("R2.s"), this.GetWire("R2.e"), this.GetBus("DATA.bus"), "R2"))
+	this.putReg("R3", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("R3.s"), this.GetWire("R3.e"), this.GetBus("DATA.bus"), "R3"))
+	this.putReg("TMP", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("TMP.s"), this.GetWire("TMP.e"), this.GetBus("TMP.bus"), "TMP"))
+	this.BUS1 = p.NewBus1(this.GetBus("TMP.bus"), this.GetWire("BUS1.bit1"), this.GetBus("BUS1.bus"))
 
 	// ALU
 	this.putWire("ACC.s", g.NewWire())
@@ -99,8 +106,8 @@ func NewVanillaBreadboard() *Breadboard {
 	this.putWire("FLAGS.e", g.WireOn()) // FLAGS.e is always on
 	this.putWire("FLAGS.s", g.NewWire())
 
-	this.putReg("ACC", NewRegister(this.GetBus("ALU.bus"), this.GetWire("ACC.s"), this.GetWire("ACC.e"), this.GetBus("DATA.bus"), "ACC"))
-	this.ALU = NewALU(
+	this.putReg("ACC", p.NewRegister(this.GetBus("ALU.bus"), this.GetWire("ACC.s"), this.GetWire("ACC.e"), this.GetBus("DATA.bus"), "ACC"))
+	this.ALU = p.NewALU(
 		this.GetBus("DATA.bus"),
 		this.GetBus("BUS1.bus"),
 		this.GetWire("ALU.ci"),
@@ -112,17 +119,17 @@ func NewVanillaBreadboard() *Breadboard {
 		this.GetWire("ALU.z"),
 	)
 
+	this.putBus("FLAGS.bus", g.WrapBusV(g.NewWire(), g.NewWire(), g.NewWire(), g.NewWire(),
+		g.WireOff(), g.WireOff(), g.WireOff(), g.WireOff()))
 	this.putReg("FLAGS",
-		NewRegister(
-			g.WrapBusV(this.ALU.co, this.ALU.alo, this.ALU.eqo, this.ALU.z,
+		p.NewRegister(
+			g.WrapBusV(this.GetWire("ALU.co"), this.GetWire("ALU.alo"), this.GetWire("ALU.eqo"), this.GetWire("ALU.z"),
 				g.WireOff(), g.WireOff(), g.WireOff(), g.WireOff(),
 			),
 			this.GetWire("FLAGS.s"),
 			this.GetWire("FLAGS.e"),
 			// We DO NOT hook up the ALU carry in just yet, we will do that when we setup ALU instructions processing
-			g.WrapBusV(g.NewWire(), g.NewWire(), g.NewWire(), g.NewWire(),
-				g.WireOff(), g.WireOff(), g.WireOff(), g.WireOff(),
-			),
+			this.GetBus("FLAGS.bus"),
 			"FLAGS",
 		),
 	)
@@ -132,8 +139,8 @@ func NewVanillaBreadboard() *Breadboard {
 	this.putWire("CLK.clke", g.NewWire())
 	this.putWire("CLK.clks", g.NewWire())
 	this.putBus("STP.bus", g.NewBusN(7))
-	this.CLK = NewClock(this.GetWire("CLK.clk"), this.GetWire("CLK.clke"), this.GetWire("CLK.clks"))
-	this.STP = NewStepper(this.GetWire("CLK.clk"), this.GetBus("STP.bus"))
+	this.CLK = p.NewClock(this.GetWire("CLK.clk"), this.GetWire("CLK.clke"), this.GetWire("CLK.clks"))
+	this.STP = p.NewStepper(this.GetWire("CLK.clk"), this.GetBus("STP.bus"))
 
 	// I/O
 	this.putWire("IO.clks", g.NewWire())
@@ -143,6 +150,15 @@ func NewVanillaBreadboard() *Breadboard {
 
 	this.putBus("IO.bus", g.WrapBusV(this.GetWire("IO.clks"), this.GetWire("IO.clke"), this.GetWire("IO.da"), this.GetWire("IO.io")))
 	// this.IOAdapter = NewIOAdapter(this.GetBus("DATA.bus"), this.GetBus("IO.bus"))
+
+	// Hook up the FLAGS Register co output to the ALU ci, adding the AND gate describes in the Errata #2
+	// Errata stuff: http://www.buthowdoitknow.com/errata.html
+	// Naively: new CONN($this->get("FLAGS")->os()->wire(0), $this->get("ALU")->ci()) ;
+	weor := g.NewWire()
+	wco := g.NewWire()
+	p.NewMemory(this.GetBus("FLAGS.bus").GetWire(0), this.GetWire("TMP.s"), wco)
+	g.NewAND(wco, weor, this.GetWire("ALU.ci"))
+	this.putORe("ALU.ci.ena.eor", g.NewORe(weor))
 
 	return this
 }
@@ -175,18 +191,32 @@ func (this *Breadboard) GetBus(name string) *g.Bus {
 	return this.buses[name]
 }
 
-func (this *Breadboard) putReg(name string, r *Register) {
+func (this *Breadboard) putReg(name string, r *p.Register) {
 	if _, ok := this.regs[name]; ok {
 		panic(fmt.Errorf("Register '%s' already registered with Breadboard", name))
 	}
 	this.regs[name] = r
 }
 
-func (this *Breadboard) GetReg(name string) *Register {
+func (this *Breadboard) GetReg(name string) *p.Register {
 	if _, ok := this.regs[name]; !ok {
 		panic(fmt.Errorf("Register '%s' not registered with Breadboard", name))
 	}
 	return this.regs[name]
+}
+
+func (this *Breadboard) putORe(name string, o *g.ORe) {
+	if _, ok := this.ores[name]; ok {
+		panic(fmt.Errorf("ORe '%s' already registered with Breadboard", name))
+	}
+	this.ores[name] = o
+}
+
+func (this *Breadboard) GetORe(name string) *g.ORe {
+	if _, ok := this.ores[name]; !ok {
+		panic(fmt.Errorf("Ore '%s' not registered with Breadboard", name))
+	}
+	return this.ores[name]
 }
 
 func (this *Breadboard) Tick() {

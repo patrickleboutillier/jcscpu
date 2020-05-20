@@ -14,6 +14,7 @@ type RAM struct {
 	sa, s, e *g.Wire
 	mar      *Register
 	cells    []*Register
+	n        int
 }
 
 func NewRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
@@ -45,13 +46,20 @@ func NewRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
 		}
 	}
 
-	this := &RAM{bas, bio, wsa, ws, we, mar, cells}
+	this := &RAM{bas, bio, wsa, ws, we, mar, cells, n2 * n2}
 
 	return this
 }
 
 func (this *RAM) GetMAR() *Register {
 	return this.mar
+}
+
+func (this *RAM) GetCell(n int) *Register {
+	if (n < 0) || (n >= this.n) {
+		panic(fmt.Errorf("Invalid cell index %d", n))
+	}
+	return this.cells[n]
 }
 
 func (this *RAM) String() string {
