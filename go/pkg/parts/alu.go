@@ -59,8 +59,8 @@ func NewALU(bas *g.Bus, bbs *g.Bus, wci *g.Wire, bops *g.Bus, bcs *g.Bus, wco *g
 }
 
 func (this *ALU) String() string {
-	str := fmt.Sprintf("ALU: op:%s  a:%s  b:%s  ci:%t  c:%s  co:%t  eqo:%t  alo:%t  z:%t\n",
-		this.ops.String(), this.as.String(), this.bs.String(), this.ci.GetPower(),
-		this.cs.String(), this.co.GetPower(), this.eqo.GetPower(), this.alo.GetPower(), this.z.GetPower())
+	str := fmt.Sprintf("ALU: op:%s  a:%s  b:%s  ci:%s  c:%s  co:%s  eqo:%s  alo:%s  z:%s\n",
+		this.ops.String(), this.as.String(), this.bs.String(), this.ci.String(),
+		this.cs.String(), this.co.String(), this.eqo.String(), this.alo.String(), this.z.String())
 	return str
 }
