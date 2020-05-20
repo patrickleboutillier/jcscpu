@@ -9,15 +9,16 @@ MEMORY
 */
 type Memory struct {
 	i, s, o, m *g.Wire
+	name       string
 }
 
-func NewMemory(wi *g.Wire, ws *g.Wire, wo *g.Wire) *Memory {
+func NewNamedMemory(wi *g.Wire, ws *g.Wire, wo *g.Wire, name string) *Memory {
 	wa := g.NewWire()
 	wb := g.NewWire()
 	wc := g.NewWire()
 	// Setting power to 1 here is required to have an initial value of 0 in the memory!
 	wc.SetPower(true)
-	this := &Memory{wi, ws, wo, wc}
+	this := &Memory{wi, ws, wo, wc, name}
 
 	g.NewNAND(wi, ws, wa)
 	g.NewNAND(wa, ws, wb)
@@ -25,6 +26,10 @@ func NewMemory(wi *g.Wire, ws *g.Wire, wo *g.Wire) *Memory {
 	g.NewNAND(wo, wb, wc)
 
 	return this
+}
+
+func NewMemory(wi *g.Wire, ws *g.Wire, wo *g.Wire) *Memory {
+	return NewNamedMemory(wi, ws, wo, "")
 }
 
 func (this *Memory) GetM() bool {
