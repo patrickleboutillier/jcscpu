@@ -22,19 +22,7 @@ func NewClock(wclk *g.Wire, wclke *g.Wire, wclks *g.Wire) *Clock {
 	g.NewOR(wclk, wclkd, wclke)
 	g.NewAND(wclk, wclkd, wclks)
 
-	this := &Clock{wclk, wclkd, wclke, wclks, 0, -1}
-
-	// TODO: Get rid of this and just increment qticks directly in QTick
-	//hook := func(v bool) {
-	//	if (this.maxticks >= 0) && (this.GetTicks() >= this.maxticks) {
-	//		os.Exit(0)
-	//	}
-	//	this.qticks++
-	//}
-	//wclk.AddPrehook(hook)
-	//wclkd.AddPrehook(hook)
-
-	return this
+	return &Clock{wclk, wclkd, wclke, wclks, 0, -1}
 }
 
 func (this *Clock) SetMaxTicks(n int) {
