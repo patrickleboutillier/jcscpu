@@ -5,9 +5,9 @@ import (
 	"math/rand"
 	"testing"
 
-	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
-	a "github.com/patrickleboutillier/jcscpu/go/pkg/arch"
-	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
+	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
+	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
+	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 var nb_enabler_tests int = 1024

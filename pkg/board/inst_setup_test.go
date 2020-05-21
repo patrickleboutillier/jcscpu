@@ -3,7 +3,7 @@ package board
 import (
 	"testing"
 
-	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
+	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
 )
 
 func TestInstProc(t *testing.T) {

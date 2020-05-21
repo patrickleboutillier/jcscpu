@@ -6,9 +6,9 @@ import (
 	"math/rand"
 	"testing"
 
-	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
-	"github.com/patrickleboutillier/jcscpu/go/pkg/arch"
-	a "github.com/patrickleboutillier/jcscpu/go/pkg/arch"
+	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
+	"github.com/patrickleboutillier/jcscpu/pkg/arch"
+	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 )
 
 type ALUTest func(ALUTestCase) ALUTestCase

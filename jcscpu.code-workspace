@@ -1,12 +1,8 @@
 {
 	"folders": [
 		{
-			"name": "go",
-			"path": "go"
-		},
-		{
-			"name": "perl",
-			"path": "perl"
+			"name": "jcscpu",
+			"path": "."
 		}
 	],
 	"settings": {}

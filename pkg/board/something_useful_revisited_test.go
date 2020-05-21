@@ -3,8 +3,8 @@ package board
 import (
 	"testing"
 
-	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
-	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
+	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
+	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 func TestSomethingUsefulRevisited(t *testing.T) {

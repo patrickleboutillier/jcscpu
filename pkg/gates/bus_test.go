@@ -3,8 +3,8 @@ package gates
 import (
 	"testing"
 
-	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
-	a "github.com/patrickleboutillier/jcscpu/go/pkg/arch"
+	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
+	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 )
 
 func TestBusPower(t *testing.T) {

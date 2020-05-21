@@ -3,7 +3,7 @@ package gates
 import (
 	"fmt"
 
-	a "github.com/patrickleboutillier/jcscpu/go/pkg/arch"
+	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 )
 
 type Bus struct {

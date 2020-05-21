@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"testing"
 
-	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
+	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
 )
 
 var max_n_tests int = 8

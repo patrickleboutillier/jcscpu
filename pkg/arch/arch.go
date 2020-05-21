@@ -7,7 +7,7 @@ import (
 )
 
 // Maybe set from env var?
-var arch_bits int = defaultArchBits()
+var archBits int = defaultArchBits()
 
 func checkArchBits(n int) int {
 	// TODO: Should be a multiple of 2
@@ -26,13 +26,13 @@ func defaultArchBits() int {
 }
 
 func GetArchBits() int {
-	return arch_bits
+	return archBits
 }
 
 func SetArchBits(n int) {
-	arch_bits = checkArchBits(n)
+	archBits = checkArchBits(n)
 }
 
 func GetMaxByteValue() int {
-	return (1 << arch_bits) - 1
+	return (1 << archBits) - 1
 }

@@ -3,8 +3,8 @@ package parts
 import (
 	"testing"
 
-	ta "github.com/patrickleboutillier/jcscpu/go/internal/testalu"
-	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
+	ta "github.com/patrickleboutillier/jcscpu/internal/testalu"
+	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 var nb_alu_tests int = 1024

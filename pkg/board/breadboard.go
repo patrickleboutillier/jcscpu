@@ -10,8 +10,8 @@ package board
 import (
 	"fmt"
 
-	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
-	p "github.com/patrickleboutillier/jcscpu/go/pkg/parts"
+	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
+	p "github.com/patrickleboutillier/jcscpu/pkg/parts"
 )
 
 /*

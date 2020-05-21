@@ -1,7 +1,7 @@
 package parts
 
 import (
-	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
+	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 /*

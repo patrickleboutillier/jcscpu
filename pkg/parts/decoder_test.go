@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"testing"
 
-	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
-	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
+	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
+	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 var max_decoder_n_tests int = 4

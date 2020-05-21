@@ -3,7 +3,7 @@ package parts
 import (
 	"fmt"
 
-	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
+	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 /*

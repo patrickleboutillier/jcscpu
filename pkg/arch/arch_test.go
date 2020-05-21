@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
+	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
 )
 
 func TestArch(t *testing.T) {

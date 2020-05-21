@@ -5,10 +5,10 @@ import (
 	"math/rand"
 	"testing"
 
-	ta "github.com/patrickleboutillier/jcscpu/go/internal/testalu"
-	tm "github.com/patrickleboutillier/jcscpu/go/internal/testmore"
-	a "github.com/patrickleboutillier/jcscpu/go/pkg/arch"
-	g "github.com/patrickleboutillier/jcscpu/go/pkg/gates"
+	ta "github.com/patrickleboutillier/jcscpu/internal/testalu"
+	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
+	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
+	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 var nb_tests_per_part int = 1024
