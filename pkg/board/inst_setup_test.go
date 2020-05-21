@@ -1,6 +1,8 @@
 package board
 
 import (
+	"fmt"
+	"math/rand"
 	"testing"
 
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
@@ -47,67 +49,77 @@ func TestInstProc(t *testing.T) {
 	tm.Is(t, BB.GetReg("IAR").GetPower(), 0b00000101, "IR contains the address our our next instruction")
 }
 
-func TestInstImpl(t *testing.T) {
-	/*
-	   use strict ;
-	   use Test::More ;
-	   use Breadboard ;
+func TestInstImplInstDec(t *testing.T) {
+	BB := NewInstImplBreadboard()
 
-	   plan(tests => 64 + 288) ;
+	// What we need to test here is that:
+	// 1- Bits 0-3 of the IR setup the proper instruction in the instruction decoder.
 
-	   my BB = new BREADBOARD(
-	       'instproc' => 1,
-	       'instimpl' => 1,
-	   ) ;
-	   BB.show() ;
+	for j := 0; j < 32; j++ {
+		x := j
+		if j > 15 {
+			x = rand.Intn(8)
+		}
 
-	   # What we need to test here is that:
-	   # 1- Bits 0-3 of the IR setup the proper instruction in the instruction decoder.
-	   # 2- Bits 4-7 of the IR setup the propoer register (s) to be enabled or set
+		var res int
+		// x >= 8 is an ALU instruction and does not use INST.bus
+		if x >= 8 {
+			res = 0
+		} else {
+			res = 1 << (7 - x)
+		}
+		p := x << 4
+		testname := fmt.Sprintf("IR:%dXXXX -> INST.bus:%d", x, res)
+		t.Run(testname, func(t *testing.T) {
+			BB.GetBus("DATA.bus").SetPower(p)
+			BB.GetWire("IR.s").SetPower(true)
+			BB.GetWire("IR.s").SetPower(false)
+			tm.Is(t, BB.GetReg("IR").GetPower(), p, "IR properly set to x")
 
-	   my @ts = ((0..15), (map { int rand(2) } (0..15))) ;
-	   foreach my t (@ts){
-	       my inst = sprintf("%04b", t) ;
-	       my bin = "{inst}0000" ;
-	       BB.get("DATA.bus").power(bin) ;
-	       BB.get("IR.s").power(1) ;
-	       BB.get("IR.s").power(0) ;
-	       is(BB.get("IR").power(), bin, "IR properly set to bin") ;
-	       my @res = split(//, "00000000") ;
-	       res[t] = '1' if t < 8 ; # t >= 8 is an ALU instruction and does not use INST.bus
-	       my res = join('', @res) ;
-	       is(BB.get("INST.bus").power(), res, "IR:{inst}XXXX . INST.bus:res") ;
-	   }
+			tm.Is(t, BB.GetBus("INST.bus").GetPower(), res, testname)
+		})
+	}
+}
 
+func TestInstImplRegDec(t *testing.T) {
+	BB := NewInstImplBreadboard()
 
-	   @ts = ((0..15), (map { int rand(2) } (0..15))) ;
-	   my %map = ("00" => "R0",  "01" => "R1", "10" => "R2", "11" => "R3") ;
-	   foreach my t (@ts){
-	       my rspec = sprintf("%04b", t) ;
-	       my bin = "0000{rspec}" ;
-	       BB.get("DATA.bus").power(bin) ;
-	       BB.get("IR.s").power(1) ;
-	       BB.get("IR.s").power(0) ;
-	       is(BB.get("IR").power(), bin, "IR properly set to bin") ;
-	       my b45 = substr(rspec, 0, 2) ;
-	       my b67 = substr(rspec, 2, 2) ;
-	       # REGA.e, REGB.e, REGB.s should already all be turned on since they are connected to an ORe that has no inputs yet.
-	       my ra = map{b45} ;
-	       my rb = map{b67} ;
+	// What we need to test here is that:
+	// 2- Bits 4-7 of the IR setup the proper register (s) to be enabled or set
 
-	       BB.get("CLK.clke").power(1) ;
-	       BB.get("REGA.e").power(1) ;
-	       BB.get("REGB.e").power(1) ;
-	       # warn BB.show() ;
-	       map { my res = (((_ eq ra)||(_ eq rb)) ? 1 : 0) ; is(BB.get(_ . '.e').power(), res, "_.e is res")} sort values %map ;
+	rmap := []string{"R0", "R1", "R2", "R3"}
+	for j := 0; j < 32; j++ {
+		x := j
+		if j > 15 {
+			x = rand.Intn(8)
+		}
 
-	       BB.get("CLK.clke").power(0) ;
-	       BB.get("REGA.e").power(0) ;
-	       BB.get("REGB.e").power(0) ;
-	       BB.get("CLK.clks").power(1) ;
-	       BB.get("REGB.s").power(1) ;
-	       map { my res = (_ eq rb ? 1 : 0) ; is(BB.get(_ . '.s').power(), res, "_.s is res")} sort values %map ;
-	       BB.get("CLK.clks").power(0) ;
-	       BB.get("REGB.s").power(0) ;
-	*/
+		b45 := x / 4
+		b67 := x % 4
+		testname := "REGA/B.e.s properly set"
+		t.Run(testname, func(t *testing.T) {
+			BB.GetBus("DATA.bus").SetPower(x)
+			BB.GetWire("IR.s").SetPower(true)
+			BB.GetWire("IR.s").SetPower(false)
+			tm.Is(t, BB.GetReg("IR").GetPower(), x, "IR properly set to x")
+
+			BB.GetWire("CLK.clke").SetPower(true)
+			BB.GetWire("REGA.e").SetPower(true)
+			BB.GetWire("REGB.e").SetPower(true)
+			for i, r := range rmap {
+				tm.Is(t, BB.GetWire(fmt.Sprintf("%s.e", r)).GetPower(), ((i == b45) || (i == b67)), testname)
+			}
+			BB.GetWire("CLK.clke").SetPower(false)
+			BB.GetWire("REGA.e").SetPower(false)
+			BB.GetWire("REGB.e").SetPower(false)
+
+			BB.GetWire("CLK.clks").SetPower(true)
+			BB.GetWire("REGB.s").SetPower(true)
+			for i, r := range rmap {
+				tm.Is(t, BB.GetWire(fmt.Sprintf("%s.s", r)).GetPower(), (i == b67), testname)
+			}
+			BB.GetWire("CLK.clks").SetPower(false)
+			BB.GetWire("REGB.s").SetPower(false)
+		})
+	}
 }

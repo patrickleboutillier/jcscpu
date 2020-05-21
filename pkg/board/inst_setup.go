@@ -54,54 +54,57 @@ func InstProc(this *Breadboard) {
 func InstImpl(this *Breadboard) {
 	// Then, we set up the parts that are required to actually implement instructions, i.e.
 	// - Connect the decoders for the enable and set operations on R0-R3
-	/*
-	   this.put(
-	       "REGA.e", NewWire(),
-	       "REGB.e", NewWire(),
-	       "REGB.s", NewWire(),
-	   ) ;
-	   this.put(
-	       "REGA.ena.eor", new ORe(this.GetBus("REGA.e")),
-	       "REGB.ena.eor", new ORe(this.GetBus("REGB.e")),
-	       "REGB.set.eor", new ORe(this.GetBus("REGB.s")),
-	   ) ;
 
-	   # s side
-	   my @sdeco = () ;
-	   for my s (qw/R0 R1 R2 R3/){
-	       my w = NewWire() ;
-	       new ANDn(3, BUS.wrap(this.GetBus("CLK.clks"), this.GetBus("REGB.s"), w), this.GetBus("s.s")) ;
-	       push @sdeco, w ;
-	   }
-	   this.put("REGB.s.dec", new DECODER(2, BUS.wrap(this.GetBus("IR").os().GetWire(6), this.GetBus("IR").os().GetWire(7)), BUS.wrap(@sdeco))) ;
+	this.putWire("REGA.e", g.NewWire())
+	this.putWire("REGB.e", g.NewWire())
+	this.putWire("REGB.s", g.NewWire())
 
-	   # e side
-	   my @edecoa = () ;
-	   my @edecob = () ;
-	   for my s (qw/R0 R1 R2 R3/){
-	       my wora = NewWire() ;
-	       my worb = NewWire() ;
-	       new OR(wora, worb, this.GetBus("s.e")) ;
+	this.putORe("REGA.ena.eor", g.NewORe(this.GetWire("REGA.e")))
+	this.putORe("REGB.ena.eor", g.NewORe(this.GetWire("REGB.e")))
+	this.putORe("REGB.set.eor", g.NewORe(this.GetWire("REGB.s")))
 
-	       my wa = NewWire() ;
-	       new ANDn(3, BUS.wrap(this.GetBus("CLK.clke"), this.GetBus("REGA.e"), wa), wora) ;
-	       push @edecoa, wa ;
-	       my wb = NewWire() ;
-	       new ANDn(3, BUS.wrap(this.GetBus("CLK.clke"), this.GetBus("REGB.e"), wb), worb) ;
-	       push @edecob, wb ;
-	   }
-	   this.put("REGA.e.dec", new DECODER(2, BUS.wrap(this.GetBus("IR").os().GetWire(4), this.GetBus("IR").os().GetWire(5)), BUS.wrap(@edecoa))) ;
-	   this.put("REGB.e.dec", new DECODER(2, BUS.wrap(this.GetBus("IR").os().GetWire(6), this.GetBus("IR").os().GetWire(7)), BUS.wrap(@edecob))) ;
+	// s side
+	sdeco := make([]*g.Wire, 4, 4)
+	for i, s := range []string{"R0", "R1", "R2", "R3"} {
+		w := g.NewWire()
+		g.NewANDn(g.WrapBusV(this.GetWire("CLK.clks"), this.GetWire("REGB.s"), w), this.GetWire(fmt.Sprintf("%s.s", s)))
+		sdeco[i] = w
+	}
+	sdecbus := g.WrapBus(sdeco)
+	this.putBus("REGB.s.dec.bus", sdecbus)
+	p.NewDecoder(g.WrapBusV(this.GetBus("IR.bus").GetWire(6), this.GetBus("IR.bus").GetWire(7)), sdecbus)
 
-	   # Finally, install the instruction decoder
-	   this.put('INST.bus', new BUS()) ;
-	   my notalu = NewWire() ;
-	   new NOT(this.GetBus("IR").os().GetWire(0), notalu) ;
-	   my idec = new DECODER(3, BUS.wrap(map { this.GetBus("IR").os().GetWire(_) } (1,2,3)), new BUS()) ;
-	   for (my j = 0 ; j < 8 ; j++){
-	       new AND(notalu, idec.os().GetWire(j), this.GetBus("INST.bus").GetWire(j)) ;
-	   }
-	*/
+	// e side
+	edecoa := make([]*g.Wire, 4, 4)
+	edecob := make([]*g.Wire, 4, 4)
+	for i, e := range []string{"R0", "R1", "R2", "R3"} {
+		wora := g.NewWire()
+		worb := g.NewWire()
+		g.NewOR(wora, worb, this.GetWire(fmt.Sprintf("%s.e", e)))
+
+		wa := g.NewWire()
+		g.NewANDn(g.WrapBusV(this.GetWire("CLK.clke"), this.GetWire("REGA.e"), wa), wora)
+		edecoa[i] = wa
+		wb := g.NewWire()
+		g.NewANDn(g.WrapBusV(this.GetWire("CLK.clke"), this.GetWire("REGB.e"), wb), worb)
+		edecob[i] = wb
+	}
+	edecbusa := g.WrapBus(edecoa)
+	edecbusb := g.WrapBus(edecob)
+	this.putBus("REGA.e.dec.bus", edecbusa)
+	this.putBus("REGB.e.dec.bus", edecbusb)
+	p.NewDecoder(g.WrapBusV(this.GetBus("IR.bus").GetWire(4), this.GetBus("IR.bus").GetWire(5)), edecbusa)
+	p.NewDecoder(g.WrapBusV(this.GetBus("IR.bus").GetWire(6), this.GetBus("IR.bus").GetWire(7)), edecbusb)
+
+	// Finally, install the instruction decoder
+	this.putBus("INST.bus", g.NewBusN(8))
+	notalu := g.NewWire()
+	g.NewNOT(this.GetBus("IR.bus").GetWire(0), notalu)
+	idecbus := g.NewBusN(8)
+	p.NewDecoder(g.WrapBusV(this.GetBus("IR.bus").GetWire(1), this.GetBus("IR.bus").GetWire(2), this.GetBus("IR.bus").GetWire(3)), idecbus)
+	for j := 0; j < 8; j++ {
+		g.NewAND(notalu, idecbus.GetWire(j), this.GetBus("INST.bus").GetWire(j))
+	}
 
 	// Now, setting up instruction circuits involves:
 	// - Hook up to the proper wire of INST.bus

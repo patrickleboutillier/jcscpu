@@ -131,7 +131,7 @@ func NewANDn(bis *Bus, wo *Wire) *ANDn {
 		panic(fmt.Errorf("Invalid ANDn number of inputs %d", n))
 	}
 
-	var o *Wire = nil
+	var o *Wire
 	if n == 2 {
 		o = wo
 	} else {
@@ -139,7 +139,7 @@ func NewANDn(bis *Bus, wo *Wire) *ANDn {
 	}
 	last := NewAND(bis.GetWire(0), bis.GetWire(1), o)
 	for j := 0; j < (n - 2); j++ {
-		var o *Wire = nil
+		var o *Wire
 		if n == (j + 3) {
 			o = wo
 		} else {
@@ -169,7 +169,7 @@ func NewORn(bis *Bus, wo *Wire) *ORn {
 		panic(fmt.Errorf("Invalid ORn number of inputs %d", n))
 	}
 
-	var o *Wire = nil
+	var o *Wire
 	if n == 2 {
 		o = wo
 	} else {
