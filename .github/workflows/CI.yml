@@ -39,7 +39,6 @@ jobs:
       uses: actions/setup-go@v2.0.3
     - name: Run test suite
       run: |
-        cd go
         go build ./...
         for b in 8 10 12 ; do 
           echo ARCH_BITS=$b ; 
