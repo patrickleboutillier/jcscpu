@@ -1,9 +1,15 @@
 package testmore
 
 import (
+	"math/rand"
 	"reflect"
 	"testing"
+	"time"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func Ok(t *testing.T, result bool, name string) {
 	if !result {

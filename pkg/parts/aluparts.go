@@ -1,6 +1,8 @@
 package parts
 
 import (
+	"fmt"
+
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
@@ -174,4 +176,8 @@ func NewBus1(bis *g.Bus, wbit1 *g.Wire, bos *g.Bus) *Bus1 {
 		}
 	}
 	return &Bus1{bis, bos, wbit1}
+}
+
+func (this *Bus1) String() string {
+	return fmt.Sprintf("BUS1:%s/%s", this.is.String(), this.os.String())
 }

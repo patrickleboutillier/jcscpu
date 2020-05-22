@@ -146,12 +146,13 @@ func CLFInstructions(BB *Breadboard) {
 	g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(1)), hlt1)
 	hlt1.AddPrehook(func(v bool) {
 		if v {
-			BB.CLK.Stop()
+			BB.Stop()
 		}
 	})
 
 	// TODO:
 	// DEBUG3,2,1,0
+	// DUMP (dump RAM)
 	// END (for specifying the end of a program in ROM)
 }
 
