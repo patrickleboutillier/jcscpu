@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
-	"github.com/patrickleboutillier/jcscpu/pkg/arch"
 	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 )
 
@@ -59,7 +58,7 @@ func Add(tc ALUTestCase) ALUTestCase {
 }
 
 func ShiftRight(tc ALUTestCase) ALUTestCase {
-	tc.C = (tc.A >> 1) + (bool2int(tc.CI) * ((arch.GetMaxByteValue() + 1) / 2))
+	tc.C = (tc.A >> 1) + (bool2int(tc.CI) * ((a.GetMaxByteValue() + 1) / 2))
 	tc.CO = int2bool(tc.A % 2)
 	return tc
 }
