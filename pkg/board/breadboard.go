@@ -14,6 +14,8 @@ import (
 	p "github.com/patrickleboutillier/jcscpu/pkg/parts"
 )
 
+var instHandlers = make(map[string]func(*Breadboard))
+
 /*
 BREADBOARD
 */
@@ -42,7 +44,9 @@ func NewInstImplBreadboard() *Breadboard {
 }
 
 func NewInstBreadboard(inst string) *Breadboard {
-	return NewInstImplBreadboard()
+	this := NewInstImplBreadboard()
+	instHandlers[inst](this)
+	return this
 }
 
 //func NewBreadboard() *Breadboard {

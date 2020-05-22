@@ -37,6 +37,11 @@ func (this *Clock) GetTicks() int {
 	return int(this.qticks / 4)
 }
 
+// Stop the clock on the next tick
+func (this *Clock) Stop() {
+	this.maxticks = this.GetTicks()
+}
+
 func (this *Clock) Start() int {
 	for (this.maxticks < 0) || (this.GetTicks() < this.maxticks) {
 		this.Tick()

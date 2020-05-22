@@ -1,181 +1,174 @@
 package board
 
-/*
+import (
+	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
+	p "github.com/patrickleboutillier/jcscpu/pkg/parts"
+)
 
-use strict ;
+func init() {
+	instHandlers["ALU"] = ALUInstructions
+	instHandlers["LDST"] = LDSTInstructions
+	instHandlers["DATA"] = DATAInstructions
+	instHandlers["JUMP"] = JUMPInstructions
+	instHandlers["CLF"] = CLFInstructions
+	instHandlers["IO"] = IOInstructions
+}
 
-$INSTRUCTIONS::INSTS{'ALU'} = sub {
-    my $BB = shift ;
+func ALUInstructions(BB *Breadboard) {
+	aa1 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("IR.bus").GetWire(0), aa1)
+	BB.GetORe("REGB.ena.eor").AddWire(aa1)
+	BB.GetORe("TMP.set.eor").AddWire(aa1)
 
-    my $aa1 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(3), $BB->get("IR.bus")->wire(0), $aa1) ;
-    $BB->get("REGB.ena.eor")->add($aa1) ;
-    $BB->get("TMP.set.eor")->add($aa1) ;
+	aa2 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("IR.bus").GetWire(0), aa2)
+	BB.GetORe("REGA.ena.eor").AddWire(aa2)
+	BB.GetORe("ALU.ci.ena.eor").AddWire(aa2) // Errata //2
+	BB.GetORe("ACC.set.eor").AddWire(aa2)
+	BB.GetORe("FLAGS.set.eor").AddWire(aa2)
 
-    my $aa2 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(4), $BB->get("IR.bus")->wire(0), $aa2) ;
-    $BB->get("REGA.ena.eor")->add($aa2) ;
-    $BB->get("ALU.ci.ena.eor")->add($aa2) ; # Errata #2
-    $BB->get("ACC.set.eor")->add($aa2) ;
-    $BB->get("FLAGS.set.eor")->add($aa2) ;
+	wnotcmp := g.NewWire()
+	aa3 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(5), BB.GetBus("IR.bus").GetWire(0), wnotcmp), aa3)
+	BB.GetORe("ACC.ena.eor").AddWire(aa3)
+	BB.GetORe("REGB.set.eor").AddWire(aa3)
 
-    my $wnotcmp = new WIRE() ;
-    my $aa3 = new WIRE() ;
-    new ANDn(3, BUS->wrap($BB->get("STP.bus")->wire(5), $BB->get("IR.bus")->wire(0), $wnotcmp), $aa3) ;
-    $BB->get("ACC.ena.eor")->add($aa3) ;
-    $BB->get("REGB.set.eor")->add($aa3) ;
+	// Operation selector
+	w := g.NewWire()
+	g.NewNOT(w, wnotcmp)
+	cmpbus := g.WrapBusV(BB.GetBus("IR.bus").GetWire(1), BB.GetBus("IR.bus").GetWire(2), BB.GetBus("IR.bus").GetWire(3))
+	g.NewANDn(cmpbus, w)
 
-    # Operation selector
-    my $w = new WIRE() ;
-    my $notcmp = new NOT($w, $wnotcmp) ;
-    my $cmpbus = BUS->wrap(map { $BB->get("IR.bus")->wire($_) } (1,2,3)) ;
-    my $cmp = new ANDn(3, $cmpbus, $w) ;
+	for j := 0; j < 3; j++ {
+		g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("IR.bus").GetWire(0), cmpbus.GetWire(j)), BB.GetBus("ALU.op").GetWire(j))
+	}
+}
 
-    for (my $j = 0 ; $j < 3 ; $j++){
-        new ANDn(3, BUS->wrap($BB->get("STP.bus")->wire(4), $BB->get("IR.bus")->wire(0), $cmpbus->wire($j)), $BB->get("ALU.op")->wire($j)) ;
-    }
-} ;
+func LDSTInstructions(BB *Breadboard) {
+	l1 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(0), l1)
+	BB.GetORe("REGA.ena.eor").AddWire(l1)
+	BB.GetORe("RAM.MAR.set.eor").AddWire(l1)
 
+	l2 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(0), l2)
+	BB.GetORe("RAM.ena.eor").AddWire(l2)
+	BB.GetORe("REGB.set.eor").AddWire(l2)
 
-$INSTRUCTIONS::INSTS{'LDST'} = sub {
-    my $BB = shift ;
+	s1 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(1), s1)
+	BB.GetORe("REGA.ena.eor").AddWire(s1)
+	BB.GetORe("RAM.MAR.set.eor").AddWire(s1)
 
-    my $l1 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.bus")->wire(0), $l1) ;
-    $BB->get("REGA.ena.eor")->add($l1) ;
-    $BB->get("RAM.MAR.set.eor")->add($l1) ;
+	s2 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(1), s2)
+	BB.GetORe("REGB.ena.eor").AddWire(s2)
+	BB.GetORe("RAM.set.eor").AddWire(s2)
+}
 
-    my $l2 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(4), $BB->get("INST.bus")->wire(0), $l2) ;
-    $BB->get("RAM.ena.eor")->add($l2) ;
-    $BB->get("REGB.set.eor")->add($l2) ;
+func DATAInstructions(BB *Breadboard) {
+	d1 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(2), d1)
+	BB.GetORe("BUS1.bit1.eor").AddWire(d1)
+	BB.GetORe("IAR.ena.eor").AddWire(d1)
+	BB.GetORe("RAM.MAR.set.eor").AddWire(d1)
+	BB.GetORe("ACC.set.eor").AddWire(d1)
 
-    my $s1 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.bus")->wire(1), $s1) ;
-    $BB->get("REGA.ena.eor")->add($s1) ;
-    $BB->get("RAM.MAR.set.eor")->add($s1) ;
+	d2 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(2), d2)
+	BB.GetORe("RAM.ena.eor").AddWire(d2)
+	BB.GetORe("REGB.set.eor").AddWire(d2)
 
-    my $s2 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(4), $BB->get("INST.bus")->wire(1), $s2) ;
-    $BB->get("REGB.ena.eor")->add($s2) ;
-    $BB->get("RAM.set.eor")->add($s2) ;
-} ;
+	d3 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(5), BB.GetBus("INST.bus").GetWire(2), d3)
+	BB.GetORe("ACC.ena.eor").AddWire(d3)
+	BB.GetORe("IAR.set.eor").AddWire(d3)
+}
 
+func JUMPInstructions(BB *Breadboard) {
+	// JUMPR
+	jr1 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(3), jr1)
+	BB.GetORe("REGB.ena.eor").AddWire(jr1)
+	BB.GetORe("IAR.set.eor").AddWire(jr1)
 
-$INSTRUCTIONS::INSTS{'DATA'} = sub {
-    my $BB = shift ;
+	// JUMP
+	j1 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(4), j1)
+	BB.GetORe("IAR.ena.eor").AddWire(j1)
+	BB.GetORe("RAM.MAR.set.eor").AddWire(j1)
 
-    my $d1 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.bus")->wire(2), $d1) ;
-    $BB->get("BUS1.bit1.eor")->add($d1) ;
-    $BB->get("IAR.ena.eor")->add($d1) ;
-    $BB->get("RAM.MAR.set.eor")->add($d1) ;
-    $BB->get("ACC.set.eor")->add($d1) ;
+	j2 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(4), j2)
+	BB.GetORe("RAM.ena.eor").AddWire(j2)
+	BB.GetORe("IAR.set.eor").AddWire(j2)
 
-    my $d2 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(4), $BB->get("INST.bus")->wire(2), $d2) ;
-    $BB->get("RAM.ena.eor")->add($d2) ;
-    $BB->get("REGB.set.eor")->add($d2) ;
+	// JUMPIF
+	ji1 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(5), ji1)
+	BB.GetORe("BUS1.bit1.eor").AddWire(ji1)
+	BB.GetORe("IAR.ena.eor").AddWire(ji1)
+	BB.GetORe("RAM.MAR.set.eor").AddWire(ji1)
+	BB.GetORe("ACC.set.eor").AddWire(ji1)
 
-    my $d3 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(5), $BB->get("INST.bus")->wire(2), $d3) ;
-    $BB->get("ACC.ena.eor")->add($d3) ;
-    $BB->get("IAR.set.eor")->add($d3) ;
-} ;
+	ji2 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(5), ji2)
+	BB.GetORe("ACC.ena.eor").AddWire(ji2)
+	BB.GetORe("IAR.set.eor").AddWire(ji2)
 
+	ji3 := g.NewWire()
+	flago := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(5), BB.GetBus("INST.bus").GetWire(5), flago), ji3)
+	BB.GetORe("RAM.ena.eor").AddWire(ji3)
+	BB.GetORe("IAR.set.eor").AddWire(ji3)
 
-$INSTRUCTIONS::INSTS{'JUMP'} = sub {
-    my $BB = shift ;
+	fbus := g.NewBusN(4)
+	for j := 0; j < 4; j++ {
+		g.NewAND(BB.GetBus("FLAGS.bus").GetWire(j), BB.GetBus("IR.bus").GetWire(j+4), fbus.GetWire(j))
+	}
+	g.NewORn(fbus, flago)
+}
 
-    # JUMPR
-    my $jr1 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.bus")->wire(3), $jr1) ;
-    $BB->get("REGB.ena.eor")->add($jr1) ;
-    $BB->get("IAR.set.eor")->add($jr1) ;
+func CLFInstructions(BB *Breadboard) {
+	// Use the last 4 bits of the CLF instruction for control instructions.
+	breg := g.WrapBusV(BB.GetBus("IR.bus").GetWire(4), BB.GetBus("IR.bus").GetWire(5), BB.GetBus("IR.bus").GetWire(6), BB.GetBus("IR.bus").GetWire(7))
+	binst := g.NewBusN(16)
+	p.NewDecoder(breg, binst)
 
-    # JUMP
-    my $j1 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.bus")->wire(4), $j1) ;
-    $BB->get("IAR.ena.eor")->add($j1) ;
-    $BB->get("RAM.MAR.set.eor")->add($j1) ;
+	// CLF, 0110000
+	cl1 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(0)), cl1)
+	BB.GetORe("BUS1.bit1.eor").AddWire(cl1)
+	BB.GetORe("FLAGS.set.eor").AddWire(cl1)
 
-    my $j2 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(4), $BB->get("INST.bus")->wire(4), $j2) ;
-    $BB->get("RAM.ena.eor")->add($j2) ;
-    $BB->get("IAR.set.eor")->add($j2) ;
+	// HALT, 01100001
+	hlt1 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(1)), hlt1)
+	hlt1.AddPrehook(func(v bool) {
+		if v {
+			BB.CLK.Stop()
+		}
+	})
 
-    # JUMPIF
-    my $ji1 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(3), $BB->get("INST.bus")->wire(5), $ji1) ;
-    $BB->get("BUS1.bit1.eor")->add($ji1) ;
-    $BB->get("IAR.ena.eor")->add($ji1) ;
-    $BB->get("RAM.MAR.set.eor")->add($ji1) ;
-    $BB->get("ACC.set.eor")->add($ji1) ;
+	// TODO:
+	// DEBUG3,2,1,0
+	// END (for specifying the end of a program in ROM)
+}
 
-    my $ji2 = new WIRE() ;
-    new AND($BB->get("STP.bus")->wire(4), $BB->get("INST.bus")->wire(5), $ji2) ;
-    $BB->get("ACC.ena.eor")->add($ji2) ;
-    $BB->get("IAR.set.eor")->add($ji2) ;
+func IOInstructions(BB *Breadboard) {
+	// IO
+	io1 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(7), BB.GetBus("IR.bus").GetWire(4)), io1)
+	BB.GetORe("REGB.ena.eor").AddWire(io1)
 
-    my $ji3 = new WIRE() ;
-    my $flago = new WIRE() ;
-    new ANDn(3, BUS->wrap($BB->get("STP.bus")->wire(5), $BB->get("INST.bus")->wire(5), $flago), $ji3) ;
-    $BB->get("RAM.ena.eor")->add($ji3) ;
-    $BB->get("IAR.set.eor")->add($ji3) ;
+	ion4 := g.NewWire()
+	g.NewNOT(BB.GetBus("IR.bus").GetWire(4), ion4)
+	io2 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(7), ion4), io2)
+	BB.GetORe("REGB.set.eor").AddWire(io2)
 
-    my $fbus = new BUS(4) ;
-    for (my $j = 0 ; $j < 4 ; $j++){
-        new AND($BB->get("FLAGS")->os()->wire($j), $BB->get("IR.bus")->wire($j + 4), $fbus->wire($j)) ;
-    }
-    new ORn(4, $fbus, $flago) ;
-} ;
-
-
-$INSTRUCTIONS::INSTS{'CLF'} = sub {
-    my $BB = shift ;
-
-    # Use the last 4 bits of the CLF instruction for control instructions.
-    my $breg = BUS->wrap($BB->get("IR.bus")->wire(4), $BB->get("IR.bus")->wire(5), $BB->get("IR.bus")->wire(6), $BB->get("IR.bus")->wire(7)) ;
-    my $binst = new BUS(16) ;
-    my $opdec = new DECODER(4, $breg, $binst) ;
-
-    # CLF, 0110000
-    my $cl1 = new WIRE() ;
-    new ANDn(3, BUS->wrap($BB->get("INST.bus")->wire(6), $BB->get("STP.bus")->wire(3), $binst->wire(0)), $cl1) ;
-    $BB->get("BUS1.bit1.eor")->add($cl1) ;
-    $BB->get("FLAGS.set.eor")->add($cl1) ;
-
-    # HALT, 01100001
-    my $hlt1 = new WIRE() ;
-    new ANDn(3, BUS->wrap($BB->get("INST.bus")->wire(6), $BB->get("STP.bus")->wire(3), $binst->wire(1)), $hlt1) ;
-    $hlt1->prehook(sub {
-        if ($_[0]){
-            $BB->on_halt()->() if $BB->on_halt() ;
-            # warn "HALTING!" ;
-            exit(0) ;
-        }
-    }) ;
-} ;
-
-
-$INSTRUCTIONS::INSTS{'IO'} = sub {
-    my $BB = shift ;
-
-    # IO
-    my $io1 = new WIRE() ;
-    new ANDn(3, BUS->wrap($BB->get("STP.bus")->wire(3), $BB->get("INST.bus")->wire(7), $BB->get("IR.bus")->wire(4)), $io1) ;
-    $BB->get("REGB.ena.eor")->add($io1) ;
-
-    my $ion4 = new WIRE() ;
-    new NOT($BB->get("IR.bus")->wire(4), $ion4) ;
-    my $io2 = new WIRE() ;
-    new ANDn(3, BUS->wrap($BB->get("STP.bus")->wire(4), $BB->get("INST.bus")->wire(7), $ion4), $io2) ;
-    $BB->get("REGB.set.eor")->add($io2) ;
-
-    new AND($BB->get("CLK.clks"), $io1, $BB->get("IO.clks")) ;
-    new AND($BB->get("CLK.clke"), $io2, $BB->get("IO.clke")) ;
-    new CONN($BB->get("IR.bus")->wire(4), $BB->get("IO.io")) ;
-    new CONN($BB->get("IR.bus")->wire(5), $BB->get("IO.da")) ;
-} ;
-
-*/
+	g.NewAND(BB.GetWire("CLK.clks"), io1, BB.GetWire("IO.clks"))
+	g.NewAND(BB.GetWire("CLK.clke"), io2, BB.GetWire("IO.clke"))
+	g.NewCONN(BB.GetBus("IR.bus").GetWire(4), BB.GetWire("IO.io"))
+	g.NewCONN(BB.GetBus("IR.bus").GetWire(5), BB.GetWire("IO.da"))
+}
