@@ -12,7 +12,7 @@ type Wire struct {
 }
 
 func NewWire() *Wire {
-	return &Wire{false, false, false, make([]*NAND, 0, 8), make([]prehook, 0, 2)}
+	return &Wire{false, false, false, make([]*NAND, 0, 0), make([]prehook, 0, 2)}
 }
 
 func WireOn() *Wire {
