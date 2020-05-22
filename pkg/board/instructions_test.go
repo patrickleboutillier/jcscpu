@@ -74,7 +74,7 @@ func TestSTInstruction(t *testing.T) {
 		func(tc ti.INSTTestCase) {
 			data := tc.DATA
 			if tc.RA == tc.RB {
-				// In this case, RB gets overriden with the address, so the data becomes the address
+				// In this case, RB gets overridden with the address, so the data becomes the address
 				data = tc.ADDR
 			}
 			tm.Is(t, BB.RAM.GetCell(tc.ADDR).GetPower(), data, fmt.Sprintf("%d stored from %s to RAM@%d (via %s)", data, tc.RB, tc.ADDR, tc.RA))
