@@ -130,14 +130,13 @@ func NewVanillaBreadboard() *Breadboard {
 		this.GetWire("ALU.alo"),
 		this.GetWire("ALU.z"),
 	)
-
+	this.putBus("FLAGS.in", g.WrapBusV(this.GetWire("ALU.co"), this.GetWire("ALU.alo"), this.GetWire("ALU.eqo"), this.GetWire("ALU.z"),
+		g.WireOff(), g.WireOff(), g.WireOff(), g.WireOff()))
 	this.putBus("FLAGS.bus", g.WrapBusV(g.NewWire(), g.NewWire(), g.NewWire(), g.NewWire(),
 		g.WireOff(), g.WireOff(), g.WireOff(), g.WireOff()))
 	this.putReg("FLAGS",
 		p.NewRegister(
-			g.WrapBusV(this.GetWire("ALU.co"), this.GetWire("ALU.alo"), this.GetWire("ALU.eqo"), this.GetWire("ALU.z"),
-				g.WireOff(), g.WireOff(), g.WireOff(), g.WireOff(),
-			),
+			this.GetBus("FLAGS.in"),
 			this.GetWire("FLAGS.s"),
 			this.GetWire("FLAGS.e"),
 			// We DO NOT hook up the ALU carry in just yet, we will do that when we setup ALU instructions processing

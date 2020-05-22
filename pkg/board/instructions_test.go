@@ -55,7 +55,7 @@ func TestLDInstruction(t *testing.T) {
 			BB.SetRAM(tc.ADDR, tc.DATA)
 			BB.SetReg(tc.RA, tc.ADDR)
 		},
-		doInst(BB),
+		doInst(BB, nil),
 		func(tc ti.INSTTestCase) {
 			tm.Is(t, BB.GetReg(tc.RB).GetPower(), tc.DATA, fmt.Sprintf("%d copied from RAM@%d (via %s) to %s", tc.DATA, tc.ADDR, tc.RA, tc.RB))
 			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IADDR+1, fmt.Sprintf("IAR has advanced to the next instruction at tc.IADDR+1"))
@@ -69,10 +69,8 @@ func TestSTInstruction(t *testing.T) {
 		func(tc ti.INSTTestCase) {
 			BB.SetReg(tc.RB, tc.DATA)
 			BB.SetReg(tc.RA, tc.ADDR)
-			t.Log(tc)
-			t.Log(BB)
 		},
-		doInst(BB),
+		doInst(BB, nil),
 		func(tc ti.INSTTestCase) {
 			data := tc.DATA
 			if tc.RA == tc.RB {
@@ -90,19 +88,92 @@ func TestDATAInstruction(t *testing.T) {
 	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0010,
 		func(tc ti.INSTTestCase) {
 		},
-		doInst(BB),
+		doInst(BB, nil),
 		func(tc ti.INSTTestCase) {
 			tm.Is(t, BB.GetReg(tc.RB).GetPower(), tc.IDATA, fmt.Sprintf("%d copied from program (RAM@%d) to %s", tc.IDATA, tc.IDADDR, tc.RB))
-			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IADDR+2, fmt.Sprintf("IAR has advanced to the next instruction at tc.IADDR+1"))
+			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IADDR+2, fmt.Sprintf("IAR has advanced to the next instruction at tc.IADDR+2"))
 		},
 	)
 }
 
-func doInst(BB *Breadboard) ti.INSTDo {
+func TestJMPRInstruction(t *testing.T) {
+	BB := NewInstBreadboard("JUMP")
+	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0011,
+		func(tc ti.INSTTestCase) {
+			BB.SetReg(tc.RB, tc.ADDR)
+		},
+		doInst(BB, nil),
+		func(tc ti.INSTTestCase) {
+			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.ADDR, fmt.Sprintf("IAR is now %d", tc.ADDR))
+		},
+	)
+}
+
+func TestJMPInstruction(t *testing.T) {
+	BB := NewInstBreadboard("JUMP")
+	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0100,
+		func(tc ti.INSTTestCase) {
+		},
+		doInst(BB, nil),
+		func(tc ti.INSTTestCase) {
+			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IDATA, fmt.Sprintf("IAR is now %d", tc.IDATA))
+		},
+	)
+}
+
+func TestJMPIFInstruction(t *testing.T) {
+	BB := NewInstBreadboard("JUMP")
+	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0101,
+		func(tc ti.INSTTestCase) {
+			BB.GetBus("FLAGS.in").SetPower(tc.FLAGS << 4)
+			BB.GetWire("FLAGS.s").SetPower(true)
+			BB.GetWire("FLAGS.s").SetPower(false)
+			// Reset bus once flags are set in the reg
+			BB.GetBus("FLAGS.in").SetPower(0)
+		},
+		doInst(BB, nil),
+		func(tc ti.INSTTestCase) {
+			// Decide if we should have jumped or not. If any of the bits of FLAGS and IFLAGS are both on, we jump
+			jump := (tc.FLAGS & tc.IFLAGS) > 0
+			if jump {
+				tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IDATA, fmt.Sprintf("IAR is now %d", tc.IDATA))
+			} else {
+				tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IADDR+2, fmt.Sprintf("IAR has advanced to the next instruction at tc.IADDR+2"))
+			}
+		},
+	)
+}
+
+func TestCLFInstruction(t *testing.T) {
+	BB := NewInstBreadboard("CLF")
+	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0110,
+		func(tc ti.INSTTestCase) {
+			// Inject the flags in the FLAG reg input
+			BB.GetBus("FLAGS.in").SetPower(tc.FLAGS << 4)
+			BB.GetWire("FLAGS.s").SetPower(true)
+			BB.GetWire("FLAGS.s").SetPower(false)
+			// Reset bus once flags are set in the reg
+			BB.GetBus("FLAGS.in").SetPower(0)
+		},
+		func(tc ti.INSTTestCase) {
+			// Make sure instruction is a CLF (01100000)
+			tc.INST = 0b01100000
+			doInst(BB, nil)(tc)
+		},
+		func(tc ti.INSTTestCase) {
+			tm.Is(t, BB.GetReg("FLAGS").GetPower(), 0b00000000, "FLAGS reset")
+		},
+	)
+}
+
+func doInst(BB *Breadboard, hook func(tc ti.INSTTestCase)) ti.INSTDo {
 	return func(tc ti.INSTTestCase) {
 		BB.SetRAM(tc.IADDR, tc.INST)
 		BB.SetRAM(tc.IDADDR, tc.IDATA)
 		BB.SetReg("IAR", tc.IADDR)
+		if hook != nil {
+			hook(tc)
+		}
 		BB.Inst()
 	}
 }

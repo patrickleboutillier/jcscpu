@@ -17,12 +17,14 @@ func Ok(t *testing.T, result bool, name string) {
 	}
 }
 
-func Is(t *testing.T, result interface{}, expected interface{}, name string) {
+func Is(t *testing.T, result interface{}, expected interface{}, name string) bool {
 	if !reflect.DeepEqual(result, expected) {
 		//ry, _ := yaml.Marshal(result)
 		//ey, _ := yaml.Marshal(expected)
 		t.Errorf("Failed test '%s':\ngot:\n%+v\nexpected:\n%+v\n", name, result, expected)
+		return false
 	}
+	return true
 }
 
 func TPanic(t *testing.T, f func()) {

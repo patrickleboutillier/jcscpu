@@ -19,18 +19,19 @@ map { make_clf_test() } (1..$nb_test_per_op) ;
 sub make_clf_test {
     my $a = int(rand(256)) ;
     my $iaddr = sprintf("%08b", $a) ;
-    my $aluflags = sprintf("%04b", int rand(4)) ;
+    my $aluflags = sprintf("%04b", int rand(16)) ;
     my $cinst = "01100000" ;
 
     # Inject the flags in the FLAG reg input
     $BB->get("FLAGS")->is()->power($aluflags . "0000") ;
     $BB->get("FLAGS.s")->power(1) ;
     $BB->get("FLAGS.s")->power(0) ;
+    $BB->get("FLAGS")->is()->power("00000000") ;
     $BB->setRAM($iaddr, $cinst) ; 
     $BB->setREG("IAR", $iaddr) ;
     $BB->inst() ;
 
-    is($BB->get("FLAGS")->power(), "00001111", "FLAGS reset") ;
+    is($BB->get("FLAGS")->power(), "00000000", "FLAGS reset") ;
 }
 
 
