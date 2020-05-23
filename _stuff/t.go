@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"runtime/pprof"
 	"time"
 
@@ -13,11 +14,16 @@ import (
 )
 
 func main() {
-	f, err := os.Create("./cpu.prof")
+	fc, err := os.Create("./cpu.prof")
 	if err != nil {
 		log.Fatal(err)
 	}
-	pprof.StartCPUProfile(f)
+	fm, err := os.Create("./mem.prof")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pprof.StartCPUProfile(fc)
 	defer pprof.StopCPUProfile()
 
 	a.SetArchBits(16)
@@ -34,4 +40,8 @@ func main() {
 	elapsed := end.Sub(start)
 	fmt.Printf("NbNANDs: %d, NbWires: %d\n", g.NbNANDs, g.NbWires)
 	fmt.Printf("Duration: %dms\n", elapsed/1000000)
+
+	defer fm.Close()
+	runtime.GC() // get up-to-date statistics
+	pprof.WriteHeapProfile(fm)
 }
