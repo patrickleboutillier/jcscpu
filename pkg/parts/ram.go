@@ -3,6 +3,7 @@ package parts
 import (
 	"fmt"
 
+	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
@@ -16,35 +17,44 @@ type RAM struct {
 	cells    []*Register
 	n        int
 
-	fast bool // Fast mode using prehooks and disconnected buses
-	cur  int  // For fast mode
+	fast   bool
+	cur    int  // For fast mode
+	powers []int
 }
 
 func NewRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
-	this := newRAM(bas, g.NewWire(), bio, g.NewWire(), g.NewWire(), true)
+	// Use classic RAM circuit if we are using an 8 bit architecture
+	if (a.GetArchBits() > 8){
+		return NewRAMFast(bas, wsa, bio, ws, we)
+	}
+	return NewRAMClassic(bas, wsa, bio, ws, we)
+}
+
+func NewRAMFast(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
+	// Build the RAM circuit
+	on := g.WireOn()
+	busd := g.NewBusN(bas.GetSize())
+	mar := NewRegister(bas, wsa, on, busd, "MAR")
+
+	// Now we create the circuit
+	n := 1 << bas.GetSize()
+	powers := make([]int, n, n)
+	this := &RAM{bas, bio, g.NewWire(), g.NewWire(), g.NewWire(), mar, nil, n, true, -1, powers}
 
 	// Hooks that implement 'fast' mode
 	wsa.AddPrehook(func(v bool) {
 		if v {
-			// Record the address on as.
 			this.cur = this.as.GetPower()
 		}
-		this.sa.SetPower(v)
 	})
 	ws.AddPrehook(func(v bool) {
-		// Copy bus value and relay to the cell's s wire
-		r := this.cells[this.cur]
 		if v {
-			r.is.SetPower(this.io.GetPower())
+			this.powers[this.cur] = this.io.GetPower()
 		}
-		r.s.SetPower(v)
 	})
 	we.AddPrehook(func(v bool) {
-		// Relay to the cell's e wire and copy to the bus
-		r := this.cells[this.cur]
-		r.e.SetPower(v)
 		if v {
-			this.io.SetPower(r.os.GetPower())
+			this.io.SetPower(this.powers[this.cur])
 		} else {
 			this.io.SetPower(0)
 		}
@@ -53,19 +63,11 @@ func NewRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
 	return this
 }
 
-func NewRAMSlow(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
-	return newRAM(bas, wsa, bio, ws, we, false)
-}
-
-func newRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire, fast bool) *RAM {
+func NewRAMClassic(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
 	// Build the RAM circuit
 	on := g.WireOn()
 	busd := g.NewBusN(bas.GetSize())
-	bus := busd
-	if fast {
-		bus = g.NewBus()
-	}
-	mar := NewRegister(bas, wsa, on, bus, "MAR")
+	mar := NewRegister(bas, wsa, on, busd, "MAR")
 
 	n := bas.GetSize() / 2
 	n2 := 1 << n
@@ -87,15 +89,11 @@ func newRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire, fast bo
 			g.NewAND(wxo, we, weo)
 			idx := (x * n2) + y
 
-			bus := bio
-			if fast {
-				bus = g.NewBus()
-			}
-			cells[idx] = NewRegister(bus, wso, weo, bus, fmt.Sprintf("RAM[%d]", idx))
+			cells[idx] = NewRegister(bio, wso, weo, bio, fmt.Sprintf("RAM[%d]", idx))
 		}
 	}
 
-	this := &RAM{bas, bio, wsa, ws, we, mar, cells, n2 * n2, fast, -1}
+	this := &RAM{bas, bio, wsa, ws, we, mar, cells, n2 * n2, false, -1, nil}
 
 	return this
 }
@@ -104,18 +102,29 @@ func (this *RAM) GetMAR() *Register {
 	return this.mar
 }
 
-func (this *RAM) GetCell(n int) *Register {
+func (this *RAM) GetCellPower(n int) int {
 	if (n < 0) || (n >= this.n) {
 		panic(fmt.Errorf("Invalid cell index %d", n))
 	}
-	return this.cells[n]
+	if this.fast {
+		return this.powers[n]
+	} 
+	return this.cells[n].GetPower()
 }
 
 func (this *RAM) String() string {
-	str := fmt.Sprintf("RAM:\n  %s  %s\n", this.mar.String(), this.cells[this.mar.GetPower()].String())
+	str := fmt.Sprintf("RAM:\n  %s  ", this.mar.String())
+
+	f := fmt.Sprintf("%%0%db", this.as.GetSize())
+	idx := this.mar.GetPower()
+	addr := fmt.Sprintf(f, idx)
+	cell := fmt.Sprintf(f, this.GetCellPower(idx))
+	str += fmt.Sprintf("RAM[%s]:%s\n", addr, cell)
+
 	//foreach my $a (@addrs){
 	//   $str .= "  " . $this->{GRID}->{$a}->show() ;
 	// }
+
 	return str
 }
 
