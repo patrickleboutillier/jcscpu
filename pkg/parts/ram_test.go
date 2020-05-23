@@ -98,7 +98,7 @@ func TestRAMMaker(t *testing.T) {
 			bio.SetPower(data)
 			ws.SetPower(true)
 			ws.SetPower(false)
-			tm.Is(t, RAM.cells[addr].GetPower(), data, testname)
+			tm.Is(t, RAM.GetCellPower(addr), data, testname)
 		})
 	}
 
