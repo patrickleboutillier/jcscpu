@@ -178,26 +178,18 @@ func NewVanillaBreadboard() *Breadboard {
 	this.putORe("ALU.ci.ena.eor", g.NewORe(weor))
 
 	// Debug handlers:
-	// Instruction
-	this.GetBus("STP.bus").GetWire(0).AddEarlyhook(func(v bool) {
-		if v && this.debug == 1 {
-			this.Log(this.String())
-		}
-	})
-	// Tick/Step
 	this.GetWire("CLK.clk").AddEarlyhook(func(v bool) {
-		if v && this.debug == 2 {
-			this.Log(this.String())
-		}
-	})
-	// QTick
-	f := func(v bool) {
-		if this.debug == 3 {
-			this.Log(this.String())
-		}
-	}
-	this.GetWire("CLK.clk").AddEarlyhook(f)
-	this.GetWire("CLK.clkd").AddEarlyhook(f)
+                if (this.debug == 1 && v && (this.CLK.GetQTicks() % 24) == 0) ||
+                   (this.debug == 2 && v && (this.CLK.GetQTicks() % 4) == 0) ||
+                   (this.debug == 3) {
+                        this.Log(this.String())
+                }
+        })
+	this.GetWire("CLK.clkd").AddEarlyhook(func(v bool) {
+                if (this.debug == 3) {
+                        this.Log(this.String())
+                }
+        })
 
 	return this
 }
