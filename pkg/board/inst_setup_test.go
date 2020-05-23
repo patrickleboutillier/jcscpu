@@ -10,6 +10,9 @@ import (
 
 func TestInstProc(t *testing.T) {
 	BB := NewInstProcBreadboard()
+	BB.LogWith(func(msg string) {
+		t.Log(msg)
+	})
 
 	// Place some fake instructions in RAM
 	BB.GetBus("DATA.bus").SetPower(0b00000100)
@@ -45,8 +48,9 @@ func TestInstProc(t *testing.T) {
 	tm.Is(t, BB.GetReg("ACC").GetPower(), 0b00000101, "ACC contains previous contents of IAR + 1")
 	BB.Tick()
 	tm.Is(t, BB.GetReg("IR").GetPower(), 0b10101010, "IR contains our first fake instruction")
+	tm.Is(t, BB.GetReg("ACC").GetPower(), 0b00000101, "ACC still contains previous contents of IAR + 1")
 	BB.Tick()
-	tm.Is(t, BB.GetReg("IAR").GetPower(), 0b00000101, "IR contains the address our our next instruction")
+	tm.Is(t, BB.GetReg("IAR").GetPower(), 0b00000101, "IAR contains the address our our next instruction")
 }
 
 func TestInstImplInstDec(t *testing.T) {

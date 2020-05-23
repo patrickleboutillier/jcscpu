@@ -9,12 +9,12 @@ import (
 /*
 ADDER
 */
-type Adder struct {
+type ADDer struct {
 	as, bs, cs *g.Bus
 	ci, co     *g.Wire
 }
 
-func NewADDer(bas *g.Bus, bbs *g.Bus, wci *g.Wire, bcs *g.Bus, wco *g.Wire) *Adder {
+func NewADDer(bas *g.Bus, bbs *g.Bus, wci *g.Wire, bcs *g.Bus, wco *g.Wire) *ADDer {
 	// Build the ADDer circuit
 	twci := g.NewWire()
 	twco := wco
@@ -27,7 +27,12 @@ func NewADDer(bas *g.Bus, bbs *g.Bus, wci *g.Wire, bcs *g.Bus, wco *g.Wire) *Add
 		twco = twci
 		twci = g.NewWire()
 	}
-	return &Adder{bas, bbs, bcs, wci, wco}
+	return &ADDer{bas, bbs, bcs, wci, wco}
+}
+
+func (this *ADDer) String() string {
+	return fmt.Sprintf("ADDER: a:%s  b:%s  ci:%s  c:%s  co:%s\n", this.as.String(), this.bs.String(), this.ci.String(),
+		this.cs.String(), this.co.String())
 }
 
 /*
@@ -48,6 +53,10 @@ func NewShiftRight(bis *g.Bus, wci *g.Wire, bos *g.Bus, wco *g.Wire) *ShiftRight
 	return this
 }
 
+func (this *ShiftRight) String() string {
+	return fmt.Sprintf("SHIFTR: si:%s  i:%s  o:%s  so:%s\n", this.ci.String(), this.is.String(), this.os.String(), this.co.String())
+}
+
 /*
 SHIFTL
 */
@@ -66,49 +75,65 @@ func NewShiftLeft(bis *g.Bus, wci *g.Wire, bos *g.Bus, wco *g.Wire) *ShiftRight 
 	return this
 }
 
+func (this *ShiftLeft) String() string {
+	return fmt.Sprintf("SHIFTR: i:%s  si:%s  so:%s  o:%s\n", this.is.String(), this.ci.String(), this.co.String(), this.os.String())
+}
+
 /*
 NOTTER
 */
-type Notter struct {
+type NOTter struct {
 	is, os *g.Bus
 }
 
-func NewNOTter(bis *g.Bus, bos *g.Bus) *Notter {
-	this := &Notter{bis, bos}
+func NewNOTter(bis *g.Bus, bos *g.Bus) *NOTter {
+	this := &NOTter{bis, bos}
 	for j := 0; j < bis.GetSize(); j++ {
 		g.NewNOT(bis.GetWire(j), bos.GetWire(j))
 	}
 	return this
 }
 
+func (this *NOTter) String() string {
+	return fmt.Sprintf("NOTTER: a:%s  b:%s\n", this.is.String(), this.os.String())
+}
+
 /*
 ANDDER
 */
-type Andder struct {
+type ANDder struct {
 	as, bs, cs *g.Bus
 }
 
-func NewANDder(bas *g.Bus, bbs *g.Bus, bcs *g.Bus) *Andder {
-	this := &Andder{bas, bbs, bcs}
+func NewANDder(bas *g.Bus, bbs *g.Bus, bcs *g.Bus) *ANDder {
+	this := &ANDder{bas, bbs, bcs}
 	for j := 0; j < bas.GetSize(); j++ {
 		g.NewAND(bas.GetWire(j), bbs.GetWire(j), bcs.GetWire(j))
 	}
 	return this
 }
 
+func (this *ANDder) String() string {
+	return fmt.Sprintf("ANDDER: a:%s  b:%s  c:%s\n", this.as.String(), this.bs.String(), this.cs.String())
+}
+
 /*
 ORRER
 */
-type Orrer struct {
+type ORer struct {
 	as, bs, cs *g.Bus
 }
 
-func NewORer(bas *g.Bus, bbs *g.Bus, bcs *g.Bus) *Orrer {
-	this := &Orrer{bas, bbs, bcs}
+func NewORer(bas *g.Bus, bbs *g.Bus, bcs *g.Bus) *ORer {
+	this := &ORer{bas, bbs, bcs}
 	for j := 0; j < bas.GetSize(); j++ {
 		g.NewOR(bas.GetWire(j), bbs.GetWire(j), bcs.GetWire(j))
 	}
 	return this
+}
+
+func (this *ORer) String() string {
+	return fmt.Sprintf("ORER: a:%s  b:%s  c:%s\n", this.as.String(), this.bs.String(), this.cs.String())
 }
 
 /*
@@ -139,6 +164,11 @@ func NewXORer(bas *g.Bus, bbs *g.Bus, bcs *g.Bus, weqo *g.Wire, walo *g.Wire) *X
 	return &XORer{bas, bbs, bcs, weqo, walo}
 }
 
+func (this *XORer) String() string {
+	return fmt.Sprintf("XORER: a:%s  b:%s  c:%s  eqo:%s  alo:%s\n", this.as.String(), this.bs.String(), this.cs.String(),
+		this.eqo.String(), this.alo.String())
+}
+
 /*
 ZERO
 */
@@ -153,6 +183,10 @@ func NewZero(bis *g.Bus, wz *g.Wire) *Zero {
 	g.NewORn(bis, wi)
 	g.NewNOT(wi, wz)
 	return &Zero{bis, wz}
+}
+
+func (this *Zero) String() string {
+	return fmt.Sprintf("ZERO: i:%s  z:%s\n", this.is.String(), this.z.String())
 }
 
 /*

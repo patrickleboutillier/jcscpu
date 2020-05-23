@@ -15,13 +15,57 @@ type RAM struct {
 	mar      *Register
 	cells    []*Register
 	n        int
+
+	fast bool // Fast mode using prehooks and disconnected buses
+	cur  int  // For fast mode
 }
 
 func NewRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
-	//Build the RAM circuit
+	this := newRAM(bas, g.NewWire(), bio, g.NewWire(), g.NewWire(), true)
+
+	// Hooks that implement 'fast' mode
+	wsa.AddPrehook(func(v bool) {
+		if v {
+			// Record the address on as.
+			this.cur = this.as.GetPower()
+		}
+		this.sa.SetPower(v)
+	})
+	ws.AddPrehook(func(v bool) {
+		// Copy bus value and relay to the cell's s wire
+		r := this.cells[this.cur]
+		if v {
+			r.is.SetPower(this.io.GetPower())
+		}
+		r.s.SetPower(v)
+	})
+	we.AddPrehook(func(v bool) {
+		// Relay to the cell's e wire and copy to the bus
+		r := this.cells[this.cur]
+		r.e.SetPower(v)
+		if v {
+			this.io.SetPower(r.os.GetPower())
+		} else {
+			this.io.SetPower(0)
+		}
+	})
+
+	return this
+}
+
+func NewRAMSlow(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
+	return newRAM(bas, wsa, bio, ws, we, false)
+}
+
+func newRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire, fast bool) *RAM {
+	// Build the RAM circuit
 	on := g.WireOn()
 	busd := g.NewBusN(bas.GetSize())
-	mar := NewRegister(bas, wsa, on, busd, "MAR")
+	bus := busd
+	if fast {
+		bus = g.NewBus()
+	}
+	mar := NewRegister(bas, wsa, on, bus, "MAR")
 
 	n := bas.GetSize() / 2
 	n2 := 1 << n
@@ -42,11 +86,16 @@ func NewRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
 			g.NewAND(wxo, ws, wso)
 			g.NewAND(wxo, we, weo)
 			idx := (x * n2) + y
-			cells[idx] = NewRegister(bio, wso, weo, bio, fmt.Sprintf("RAM[%d]", idx))
+
+			bus := bio
+			if fast {
+				bus = g.NewBus()
+			}
+			cells[idx] = NewRegister(bus, wso, weo, bus, fmt.Sprintf("RAM[%d]", idx))
 		}
 	}
 
-	this := &RAM{bas, bio, wsa, ws, we, mar, cells, n2 * n2}
+	this := &RAM{bas, bio, wsa, ws, we, mar, cells, n2 * n2, fast, -1}
 
 	return this
 }

@@ -25,6 +25,10 @@ func NewClock(wclk *g.Wire, wclke *g.Wire, wclks *g.Wire) *Clock {
 	return &Clock{wclk, wclkd, wclke, wclks, 0, -1}
 }
 
+func (this *Clock) Clkd() *g.Wire {
+	return this.clkd
+}
+
 func (this *Clock) SetMaxTicks(n int) {
 	this.maxticks = n
 }

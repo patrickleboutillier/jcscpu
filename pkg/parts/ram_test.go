@@ -12,6 +12,15 @@ import (
 
 var nb_ram_tests int = 1024
 
+func TestRAMInit(t *testing.T) {
+	ba := g.NewBus()
+	wsa := g.NewWire()
+	bio := g.NewBus()
+	ws := g.NewWire()
+	we := g.NewWire()
+	NewRAM(ba, wsa, bio, ws, we)
+}
+
 func TestRAMBasic(t *testing.T) {
 	ba := g.NewBus()
 	wsa := g.NewWire()

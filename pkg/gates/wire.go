@@ -4,15 +4,18 @@ type prehook func(bool)
 
 var on *Wire = nil
 var off *Wire = nil
+var NbWires int
 
 type Wire struct {
 	power, soft, terminal bool
 	gates                 []*NAND
 	prehooks              []prehook
+	earlyhooks            []prehook
 }
 
 func NewWire() *Wire {
-	return &Wire{false, false, false, make([]*NAND, 0, 0), make([]prehook, 0, 2)}
+	NbWires++
+	return &Wire{false, false, false, make([]*NAND, 0, 0), make([]prehook, 0, 0), make([]prehook, 0, 0)}
 }
 
 func WireOn() *Wire {
@@ -53,6 +56,10 @@ func (this *Wire) SetPowerSoft(v bool) {
 
 func (this *Wire) SetPower(v bool) {
 	if !this.terminal {
+		for _, f := range this.earlyhooks {
+			f(v)
+		}
+
 		this.power = v
 		this.soft = false
 
@@ -74,6 +81,10 @@ func (this *Wire) SetTerminal() {
 
 func (this *Wire) AddPrehook(f prehook) {
 	this.prehooks = append(this.prehooks, f)
+}
+
+func (this *Wire) AddEarlyhook(f prehook) {
+	this.earlyhooks = append(this.earlyhooks, f)
 }
 
 // Connect the gates to the current Wire.

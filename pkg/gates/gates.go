@@ -2,6 +2,8 @@ package gates
 
 import "fmt"
 
+var NbNANDs int
+
 /*
 NAND
 */
@@ -10,6 +12,7 @@ type NAND struct {
 }
 
 func NewNAND(wa *Wire, wb *Wire, wc *Wire) *NAND {
+	NbNANDs++
 	this := &NAND{wa, wb, wc}
 	wa.Connect(this)
 	wb.Connect(this)
