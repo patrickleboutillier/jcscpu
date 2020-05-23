@@ -26,7 +26,7 @@ func main() {
 	pprof.StartCPUProfile(fc)
 	defer pprof.StopCPUProfile()
 
-	a.SetArchBits(16)
+	fmt.Printf("ArchBits: %d\n", a.GetArchBits())
 
 	ba := g.NewBus()
 	wsa := g.NewWire()
