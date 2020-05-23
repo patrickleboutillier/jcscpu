@@ -4,6 +4,7 @@ type prehook func(bool)
 
 var on *Wire = nil
 var off *Wire = nil
+
 var NbWires int
 
 type Wire struct {
@@ -14,8 +15,9 @@ type Wire struct {
 }
 
 func NewWire() *Wire {
+	this := &Wire{gates: make([]*NAND, 0, 2)}
 	NbWires++
-	return &Wire{false, false, false, make([]*NAND, 0, 0), make([]prehook, 0, 0), make([]prehook, 0, 0)}
+	return this ;
 }
 
 func WireOn() *Wire {
@@ -80,10 +82,16 @@ func (this *Wire) SetTerminal() {
 }
 
 func (this *Wire) AddPrehook(f prehook) {
+	if this.prehooks == nil {
+		this.prehooks = make([]prehook, 0, 0)
+	}
 	this.prehooks = append(this.prehooks, f)
 }
 
 func (this *Wire) AddEarlyhook(f prehook) {
+	if this.earlyhooks == nil {
+		this.earlyhooks = make([]prehook, 0, 0)
+	}
 	this.earlyhooks = append(this.earlyhooks, f)
 }
 

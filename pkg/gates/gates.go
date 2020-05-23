@@ -12,12 +12,12 @@ type NAND struct {
 }
 
 func NewNAND(wa *Wire, wb *Wire, wc *Wire) *NAND {
-	NbNANDs++
 	this := &NAND{wa, wb, wc}
 	wa.Connect(this)
 	wb.Connect(this)
 	wc.Connect(this)
 	this.Signal()
+	NbNANDs++
 	return this
 }
 
