@@ -245,7 +245,7 @@ func (this *Breadboard) putORe(name string, o *g.ORe) {
 
 func (this *Breadboard) GetORe(name string) *g.ORe {
 	if _, ok := this.ores[name]; !ok {
-		panic(fmt.Errorf("Ore '%s' not registered with Breadboard", name))
+		panic(fmt.Errorf("ORe '%s' not registered with Breadboard", name))
 	}
 	return this.ores[name]
 }

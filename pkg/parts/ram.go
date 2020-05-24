@@ -103,12 +103,9 @@ func (this *RAM) GetMAR() *Register {
 }
 
 func (this *RAM) GetCellPower(n int) int {
-	if (n < 0) || (n >= this.n) {
-		panic(fmt.Errorf("Invalid cell index %d", n))
-	}
 	if this.fast {
 		return this.powers[n]
-	} 
+	}
 	return this.cells[n].GetPower()
 }
 
