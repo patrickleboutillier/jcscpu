@@ -10,6 +10,9 @@ import (
 
 func TestInstProc(t *testing.T) {
 	BB := NewInstProcBreadboard()
+	BB.LogWith(func(msg string) {
+		t.Log(msg)
+	})
 
 	// Place some fake instructions in RAM
 	BB.GetBus("DATA.bus").SetPower(0b00000100)
@@ -18,21 +21,21 @@ func TestInstProc(t *testing.T) {
 	BB.GetBus("DATA.bus").SetPower(0b10101010)
 	BB.GetWire("RAM.s").SetPower(true)
 	BB.GetWire("RAM.s").SetPower(false)
-	tm.Is(t, BB.RAM.GetCell(0b00000100).GetPower(), 0b10101010, "RAM set correctly at 00000100")
+	tm.Is(t, BB.RAM.GetCellPower(0b00000100), 0b10101010, "RAM set correctly at 00000100")
 	BB.GetBus("DATA.bus").SetPower(0b00000101)
 	BB.GetWire("RAM.MAR.s").SetPower(true)
 	BB.GetWire("RAM.MAR.s").SetPower(false)
 	BB.GetBus("DATA.bus").SetPower(0b01010101)
 	BB.GetWire("RAM.s").SetPower(true)
 	BB.GetWire("RAM.s").SetPower(false)
-	tm.Is(t, BB.RAM.GetCell(0b00000101).GetPower(), 0b01010101, "RAM set correctly at 00000101")
+	tm.Is(t, BB.RAM.GetCellPower(0b00000101), 0b01010101, "RAM set correctly at 00000101")
 	BB.GetBus("DATA.bus").SetPower(0b00000110)
 	BB.GetWire("RAM.MAR.s").SetPower(true)
 	BB.GetWire("RAM.MAR.s").SetPower(false)
 	BB.GetBus("DATA.bus").SetPower(0b11110000)
 	BB.GetWire("RAM.s").SetPower(true)
 	BB.GetWire("RAM.s").SetPower(false)
-	tm.Is(t, BB.RAM.GetCell(0b00000110).GetPower(), 0b11110000, "RAM set correctly at 00000110")
+	tm.Is(t, BB.RAM.GetCellPower(0b00000110), 0b11110000, "RAM set correctly at 00000110")
 
 	// Set the IAR to our start address
 	BB.GetBus("DATA.bus").SetPower(0b00000100)
@@ -45,8 +48,9 @@ func TestInstProc(t *testing.T) {
 	tm.Is(t, BB.GetReg("ACC").GetPower(), 0b00000101, "ACC contains previous contents of IAR + 1")
 	BB.Tick()
 	tm.Is(t, BB.GetReg("IR").GetPower(), 0b10101010, "IR contains our first fake instruction")
+	tm.Is(t, BB.GetReg("ACC").GetPower(), 0b00000101, "ACC still contains previous contents of IAR + 1")
 	BB.Tick()
-	tm.Is(t, BB.GetReg("IAR").GetPower(), 0b00000101, "IR contains the address our our next instruction")
+	tm.Is(t, BB.GetReg("IAR").GetPower(), 0b00000101, "IAR contains the address our our next instruction")
 }
 
 func TestInstImplInstDec(t *testing.T) {

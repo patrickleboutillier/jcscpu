@@ -33,7 +33,8 @@ type Breadboard struct {
 	CLK   *p.Clock
 	STP   *p.Stepper
 
-	logger *log.Logger
+	logger func(string)
+	debug  int
 	CU     bool
 }
 
@@ -66,8 +67,12 @@ func NewVanillaBreadboard() *Breadboard {
 	regs := make(map[string]*p.Register)
 	ores := make(map[string]*g.ORe)
 
+	logger := log.New(os.Stderr, "DEBUG", log.Ldate|log.Ltime)
 	this := &Breadboard{wires: wires, buses: buses, regs: regs, ores: ores,
-		logger: log.New(os.Stderr, "DEBUG", log.Ldate|log.Ltime)}
+		logger: func(msg string) {
+			logger.Output(1, msg)
+		},
+	}
 
 	// RAM
 	this.putBus("DATA.bus", g.NewBus())
@@ -151,6 +156,7 @@ func NewVanillaBreadboard() *Breadboard {
 	this.putWire("CLK.clks", g.NewWire())
 	this.putBus("STP.bus", g.NewBusN(7))
 	this.CLK = p.NewClock(this.GetWire("CLK.clk"), this.GetWire("CLK.clke"), this.GetWire("CLK.clks"))
+	this.putWire("CLK.clkd", this.CLK.Clkd())
 	this.STP = p.NewStepper(this.GetWire("CLK.clk"), this.GetBus("STP.bus"))
 
 	// I/O
@@ -170,6 +176,20 @@ func NewVanillaBreadboard() *Breadboard {
 	p.NewMemory(this.GetBus("FLAGS.bus").GetWire(0), this.GetWire("TMP.s"), wco)
 	g.NewAND(wco, weor, this.GetWire("ALU.ci"))
 	this.putORe("ALU.ci.ena.eor", g.NewORe(weor))
+
+	// Debug handlers:
+	this.GetWire("CLK.clk").AddEarlyhook(func(v bool) {
+                if (this.debug == 1 && v && (this.CLK.GetQTicks() % 24) == 0) ||
+                   (this.debug == 2 && v && (this.CLK.GetQTicks() % 4) == 0) ||
+                   (this.debug == 3) {
+                        this.Log(this.String())
+                }
+        })
+	this.GetWire("CLK.clkd").AddEarlyhook(func(v bool) {
+                if (this.debug == 3) {
+                        this.Log(this.String())
+                }
+        })
 
 	return this
 }
@@ -225,7 +245,7 @@ func (this *Breadboard) putORe(name string, o *g.ORe) {
 
 func (this *Breadboard) GetORe(name string) *g.ORe {
 	if _, ok := this.ores[name]; !ok {
-		panic(fmt.Errorf("Ore '%s' not registered with Breadboard", name))
+		panic(fmt.Errorf("ORe '%s' not registered with Breadboard", name))
 	}
 	return this.ores[name]
 }
@@ -278,9 +298,30 @@ func (this *Breadboard) Stop() {
 	this.CLK.Stop()
 }
 
+// Replace logger with a new function
+func (this *Breadboard) LogWith(f func(msg string)) {
+	this.logger = f
+}
+
+func (this *Breadboard) DebugInst() {
+	this.debug = 1
+}
+
+func (this *Breadboard) DebugTick() {
+	this.debug = 2
+}
+
+func (this *Breadboard) DebugQTick() {
+	this.debug = 3
+}
+
+func (this *Breadboard) DebugOff() {
+	this.debug = 3
+}
+
 // Send a debug message to the debug writer
 func (this *Breadboard) Log(msg string) {
-	this.logger.Output(1, msg)
+	this.logger(msg)
 }
 
 func (this *Breadboard) SetReg(reg string, data int) {
@@ -309,9 +350,9 @@ func (this *Breadboard) String() string {
 	str += this.ALU.String()
 	str += this.RAM.String()
 
+	str += "CU:\n"
+	str += "  " + this.GetReg("IAR").String() + "  " + this.GetReg("IR").String()
 	if this.CU {
-		str += "CU:\n"
-		str += "  " + this.GetReg("IAR").String() + "  " + this.GetReg("IR").String()
 		str += "  INST.bus:" + this.GetBus("INST.bus").String()
 		str += "  REGA.e:" + this.GetWire("REGA.e").String() + "/" + this.GetBus("REGA.e.dec.bus").String()
 		str += "  REGB.e:" + this.GetWire("REGB.e").String() + "/" + this.GetBus("REGB.e.dec.bus").String()

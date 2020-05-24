@@ -49,12 +49,12 @@ func TestSomethingUseful(t *testing.T) {
 	})
 	BB.GetBus("STP.bus").GetWire(4).AddPrehook(func(v bool) {
 		if v {
-			tm.Is(t, BB.STP.GetStep(), 5, "Step 4 does nothing!")
+			tm.Is(t, BB.STP.GetStep(), 5, "Step 5 does nothing!")
 		}
 	})
 	BB.GetBus("STP.bus").GetWire(5).AddPrehook(func(v bool) {
 		if v {
-			tm.Is(t, BB.STP.GetStep(), 6, "Step 4 does nothing!")
+			tm.Is(t, BB.STP.GetStep(), 6, "Step 6 does nothing!")
 		}
 	})
 	BB.GetBus("STP.bus").GetWire(6).AddPrehook(func(v bool) {
@@ -103,8 +103,6 @@ func cycle1(t *testing.T, BB *Breadboard) {
 func cycle2(t *testing.T, BB *Breadboard) {
 	BB.GetWire("R0.e").SetPower(true)
 	BB.GetBus("ALU.op").SetPower(0b000)
-	t.Log(BB.ALU.String())
-	t.Log(BB.GetReg("ACC"))
 	BB.GetWire("ACC.s").SetPower(true)
 	BB.GetWire("ACC.s").SetPower(false)
 	BB.GetWire("R0.e").SetPower(false)

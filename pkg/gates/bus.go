@@ -17,7 +17,7 @@ func NewBus() *Bus {
 
 func NewBusN(n int) *Bus {
 	if n < 1 {
-		panic(fmt.Errorf("Bus sizes must be >= 1"))
+		panic(fmt.Errorf("Bus sizes must be >= 1, not %d", n))
 	}
 	ws := make([]*Wire, n, n)
 	for j := 0; j < n; j++ {
@@ -57,18 +57,10 @@ func (this *Bus) GetWires() []*Wire {
 }
 
 func (this *Bus) GetWire(n int) *Wire {
-	if (n < 0) || (n >= this.n) {
-		panic(fmt.Errorf("Invalid wire index %d (n is %d)", n, this.n))
-	}
-
 	return this.wires[n]
 }
 
 func (this *Bus) GetBit(n int) *Wire {
-	if (n < 0) || (n >= this.n) {
-		panic(fmt.Errorf("Invalid bit index %d (n is %d)", n, this.n))
-	}
-
 	return this.wires[(this.n-1)-n]
 }
 
@@ -99,7 +91,7 @@ func (this *Bus) String() string {
 // This is used mostly in the test suite.
 func (this *Bus) SetPower(vs int) {
 	if vs < 0 {
-		panic(fmt.Errorf("Power value for bus must be positive"))
+		panic(fmt.Errorf("Power value for bus must be positive, not %d", vs))
 	}
 	if vs > ((1 << this.n) - 1) {
 		panic(fmt.Errorf("Power value %d too large for bus (n is %d)", vs, this.n))

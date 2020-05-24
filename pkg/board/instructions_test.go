@@ -93,7 +93,7 @@ func TestSTInstruction(t *testing.T) {
 				// In this case, RB gets overridden with the address, so the data becomes the address
 				data = tc.ADDR
 			}
-			tm.Is(t, BB.RAM.GetCell(tc.ADDR).GetPower(), data, fmt.Sprintf("%d stored from %s to RAM@%d (via %s)", data, tc.RB, tc.ADDR, tc.RA))
+			tm.Is(t, BB.RAM.GetCellPower(tc.ADDR), data, fmt.Sprintf("%d stored from %s to RAM@%d (via %s)", data, tc.RB, tc.ADDR, tc.RA))
 			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IADDR+1, fmt.Sprintf("IAR has advanced to the next instruction at tc.IADDR+1"))
 		},
 	)

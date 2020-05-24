@@ -1,3 +1,4 @@
 *.code-workspace
 .vscode
-_stuff
+*.prof
+*.exe

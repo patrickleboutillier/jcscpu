@@ -2,6 +2,8 @@ package gates
 
 import "fmt"
 
+var NbNANDs int
+
 /*
 NAND
 */
@@ -15,6 +17,7 @@ func NewNAND(wa *Wire, wb *Wire, wc *Wire) *NAND {
 	wb.Connect(this)
 	wc.Connect(this)
 	this.Signal()
+	NbNANDs++
 	return this
 }
 
