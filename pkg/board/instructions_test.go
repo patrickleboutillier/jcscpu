@@ -9,7 +9,6 @@ import (
 	ti "github.com/patrickleboutillier/jcscpu/internal/testinst"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
 	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
-	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 var nb_tests_per_inst = 256
@@ -225,15 +224,15 @@ func TestIOInstruction(t *testing.T) {
 		func(tc ti.INSTTestCase) {
 			if !BB.IOAdapter.IsRegistered(tc.IODEV) {
 				BB.IOAdapter.Register(BB, tc.IODEV, fmt.Sprintf("dummy-%d", tc.IODEV),
-					func(bus *g.Bus) {
+					func() {
 						// Simulate data being placed on the bus by the device
 						sent = rand.Intn(a.GetMaxByteValue())
-						bus.SetPower(sent)
+						BB.GetBus("DATA.bus").SetPower(sent)
 					},
-					func(bus *g.Bus) {
+					func() {
 						// Data was made available to our device on the DATA.bus.
 						// Let's grab it and put it in a local var.
-						received = bus.GetPower()
+						received = BB.GetBus("DATA.bus").GetPower()
 					},
 				)
 			}

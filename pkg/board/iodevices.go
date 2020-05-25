@@ -2,29 +2,41 @@ package board
 
 import (
 	"fmt"
-	"io"
+	"math/rand"
 	"os"
 
-	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
+	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 )
 
 func init() {
 	iodevHandlers["TTY"] = TTYIODevice
+	iodevHandlers["RNG"] = RNGIODevice
 }
 
 // TTY: Device 0
 // An output-only TTY implementation, just grabs the ASCII code on the bus and prints
 // the corresponding character to TTYWriter
-var TTYWriter io.Writer = os.Stdout
-
 func TTYIODevice(BB *Breadboard) {
+	BB.TTYWriter = os.Stdout
 	BB.IOAdapter.Register(BB, 0, "TTY",
 		nil,
-		func(bus *g.Bus) {
+		func() {
 			byte := BB.GetBus("DATA.bus").GetPower()
 			rune := rune(byte)
-			fmt.Fprintf(TTYWriter, "%c", rune)
+			fmt.Fprintf(BB.TTYWriter, "%c", rune)
 		},
+	)
+}
+
+// RNG: Device 1
+// A Random Number Generator. Places a random byte on the data bus, and saves in in RNGLast for testing purposes
+func RNGIODevice(BB *Breadboard) {
+	BB.IOAdapter.Register(BB, 1, "RNG",
+		func() {
+			BB.RNGLast = rand.Intn(a.GetMaxByteValue())
+			BB.GetBus("DATA.bus").SetPower(BB.RNGLast)
+		},
+		nil,
 	)
 }
 

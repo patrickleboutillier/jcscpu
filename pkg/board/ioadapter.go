@@ -19,8 +19,6 @@ type IOAdapter struct {
 	devices                          []*IODevice
 }
 
-type IODeviceHandler func(*g.Bus)
-
 /*
 IODEVICE
 */
@@ -73,7 +71,7 @@ func (this *IOAdapter) IsRegistered(n int) bool {
 }
 
 // Register a new device
-func (this *IOAdapter) Register(BB *Breadboard, id int, name string, in IODeviceHandler, out IODeviceHandler) {
+func (this *IOAdapter) Register(BB *Breadboard, id int, name string, in func(), out func()) {
 	if (id < 0) || (id >= this.n) {
 		log.Panicf("Invalid device number %d", id)
 	}
@@ -88,13 +86,8 @@ func (this *IOAdapter) Register(BB *Breadboard, id int, name string, in IODevice
 		inhook := g.NewWire()
 		g.NewAND(wmem, this.indata, inhook)
 		inhook.AddPrehook(func(v bool) {
-			// TODO: See if this can work using BB.STP.GetStep() == 5
-
 			if v && ((BB.CLK.GetTicks() % 6) == 4) {
-				BB.Log(v)
-				BB.Log(BB.CLK)
-				BB.Log(BB.STP)
-				in(BB.GetBus("DATA.bus"))
+				in()
 			}
 		})
 	}
@@ -103,7 +96,7 @@ func (this *IOAdapter) Register(BB *Breadboard, id int, name string, in IODevice
 		g.NewAND(wmem, this.outdata, outhook)
 		outhook.AddPrehook(func(v bool) {
 			if v && ((BB.CLK.GetTicks() % 6) == 3) {
-				out(BB.GetBus("DATA.bus"))
+				out()
 			}
 		})
 	}

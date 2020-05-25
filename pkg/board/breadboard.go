@@ -6,6 +6,7 @@ package board
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -41,9 +42,11 @@ type Breadboard struct {
 	Ctmp      *p.Memory
 	IOAdapter *IOAdapter
 
-	//logger func(string)
 	debug int
 	CU    bool
+
+	TTYWriter io.Writer
+	RNGLast   int
 }
 
 func NewInstProcBreadboard() *Breadboard {
