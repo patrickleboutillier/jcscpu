@@ -221,7 +221,7 @@ func TestIOInstruction(t *testing.T) {
 
 	received := -1
 	sent := -1
-	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0110,
+	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0111,
 		func(tc ti.INSTTestCase) {
 			if !BB.IOAdapter.IsRegistered(tc.IODEV) {
 				BB.IOAdapter.Register(BB, tc.IODEV, fmt.Sprintf("dummy-%d", tc.IODEV),
@@ -270,40 +270,3 @@ func doInst(BB *Breadboard) ti.INSTDo {
 		BB.Inst()
 	}
 }
-
-/*
-sub make_io_test {
-
-
-    # First, activate the device (11)
-    my $iinst = sprintf("011111%02b", $rb) ;
-    #warn "inst: $iinst" ;
-    $BB->setREG("R$rb", sprintf("%08b", $n)) ;
-    $BB->setRAM($iaddr, $iinst) ;
-    $BB->setREG("IAR", $iaddr) ;
-    $BB->inst() ;
-    is($BB->get("IO.adapter")->active($n), 1, "Adapter is active") ;
-    #warn $BB->show() ;
-
-    # Then, send data to the device (10)
-    my $iinst = sprintf("011110%02b", $rb) ;
-    #warn "inst: $iinst, data=$data" ;
-    $BB->setREG("R$rb", $data) ;
-    $BB->setRAM($iaddr, $iinst) ;
-    $BB->setREG("IAR", $iaddr) ;
-    $BB->inst() ;
-    is($outpower, $data, "Data $data is was grabbed from the bus by device $n") ;
-    #warn $BB->show() ;
-
-    # Then, ask for data from the device (00)
-    my $iinst = sprintf("011100%02b", $rb) ;
-    # warn "inst: $iinst" ;
-    $BB->setRAM($iaddr, $iinst) ;
-    $BB->setREG("IAR", $iaddr) ;
-    $BB->inst() ;
-    # warn $BB->show() ;
-
-    is($BB->get("R$rb")->power(), $gendata, "Data $data is was grabbed from the bus by device $n") ;
-    #warn $BB->show() ;
-}
-*/

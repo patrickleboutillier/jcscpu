@@ -65,9 +65,16 @@ func NewInstBreadboard(inst string) *Breadboard {
 	return this
 }
 
-//func NewBreadboard() *Breadboard {
-//	return NewInstImplBreadboard()
-//}
+func NewBreadboard() *Breadboard {
+	this := NewInstImplBreadboard()
+	for _, f := range instHandlers {
+		f(this)
+	}
+	for _, f := range iodevHandlers {
+		f(this)
+	}
+	return this
+}
 
 func NewVanillaBreadboard() *Breadboard {
 	wires := make(map[string]*g.Wire)

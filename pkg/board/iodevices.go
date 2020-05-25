@@ -1,6 +1,8 @@
 package board
 
 import (
+	"fmt"
+	"io"
 	"os"
 
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
@@ -13,17 +15,15 @@ func init() {
 // TTY: Device 0
 // An output-only TTY implementation, just grabs the ASCII code on the bus and prints
 // the corresponding character to TTYWriter
-var TTYWriter = os.Stdout
+var TTYWriter io.Writer = os.Stdout
 
 func TTYIODevice(BB *Breadboard) {
 	BB.IOAdapter.Register(BB, 0, "TTY",
 		nil,
 		func(bus *g.Bus) {
-			//byte := BB.GetBus("DATA.bus").GetPower() % 256
-			//dec = oct("0b$byte") ;
-			//char = chr($dec) ;
-			//print $DEVICES::TTY_OUTPUT "$char" ;
-			//EVICES::TTY_OUTPUT->flush() ;
+			byte := BB.GetBus("DATA.bus").GetPower()
+			rune := rune(byte)
+			fmt.Fprintf(TTYWriter, "%c", rune)
 		},
 	)
 }
