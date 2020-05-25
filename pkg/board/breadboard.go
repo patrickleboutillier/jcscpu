@@ -15,9 +15,10 @@ import (
 )
 
 var instHandlers = make(map[string]func(*Breadboard))
+var iodevHandlers = make(map[string]func(*Breadboard))
 
 // Default logger
-var logger = log.New(os.Stderr, "DEBUG", 0)
+var logger = log.New(os.Stderr, "DEBUG: ", 0)
 
 // Defaut log function
 var logWith = func(msg string) {
@@ -28,16 +29,17 @@ var logWith = func(msg string) {
 BREADBOARD
 */
 type Breadboard struct {
-	wires map[string]*g.Wire
-	buses map[string]*g.Bus
-	regs  map[string]*p.Register
-	ores  map[string]*g.ORe
-	RAM   *p.RAM
-	ALU   *p.ALU
-	BUS1  *p.Bus1
-	CLK   *p.Clock
-	STP   *p.Stepper
-	Ctmp  *p.Memory
+	wires     map[string]*g.Wire
+	buses     map[string]*g.Bus
+	regs      map[string]*p.Register
+	ores      map[string]*g.ORe
+	RAM       *p.RAM
+	ALU       *p.ALU
+	BUS1      *p.Bus1
+	CLK       *p.Clock
+	STP       *p.Stepper
+	Ctmp      *p.Memory
+	IOAdapter *IOAdapter
 
 	//logger func(string)
 	debug int
@@ -167,7 +169,7 @@ func NewVanillaBreadboard() *Breadboard {
 	this.putWire("IO.io", g.NewWire())
 
 	this.putBus("IO.bus", g.WrapBusV(this.GetWire("IO.clks"), this.GetWire("IO.clke"), this.GetWire("IO.da"), this.GetWire("IO.io")))
-	// this.IOAdapter = NewIOAdapter(this.GetBus("DATA.bus"), this.GetBus("IO.bus"))
+	this.IOAdapter = NewIOAdapter(this.GetBus("DATA.bus"), this.GetBus("IO.bus"))
 
 	// Hook up the FLAGS Register co output to the ALU ci, adding the AND gate described in the Errata #2
 	// Errata stuff: http://www.buthowdoitknow.com/errata.html

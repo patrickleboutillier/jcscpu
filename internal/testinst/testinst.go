@@ -27,6 +27,7 @@ type INSTTestCase struct {
 
 	DATA2 int  // Random data #2 to be used by ALU instruction
 	CI    bool // Random carry in to be used by ALU instruction
+	IODEV int  // Randon IO Device
 }
 
 func NewRandomINSTTestCase(inst int) INSTTestCase {
@@ -46,6 +47,7 @@ func NewRandomINSTTestCase(inst int) INSTTestCase {
 	data := rand.Intn(max)
 	data2 := rand.Intn(max)
 	ci := rand.Intn(2) != 0
+	iodev := rand.Intn(16)
 
 	// Make sure instruction addr is different from iaddr and idaddr
 	for (addr == iaddr) || (addr == idaddr) {
@@ -54,7 +56,7 @@ func NewRandomINSTTestCase(inst int) INSTTestCase {
 
 	return INSTTestCase{INST: inst, RA: regs[ra], RB: regs[rb],
 		IADDR: iaddr, IDADDR: idaddr, IDATA: idata, ADDR: addr, DATA: data,
-		FLAGS: rand.Intn(16), IFLAGS: iflags, DATA2: data2, CI: ci,
+		FLAGS: rand.Intn(16), IFLAGS: iflags, DATA2: data2, CI: ci, IODEV: iodev,
 	}
 }
 

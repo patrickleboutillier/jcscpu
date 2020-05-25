@@ -9,6 +9,7 @@ import (
 	ti "github.com/patrickleboutillier/jcscpu/internal/testinst"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
 	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
+	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 var nb_tests_per_inst = 256
@@ -210,6 +211,53 @@ func TestCLFInstruction(t *testing.T) {
 		},
 		func(tc ti.INSTTestCase) {
 			tm.Is(t, BB.GetReg("FLAGS").GetPower(), 0b00000000, "FLAGS reset")
+			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IADDR+1, fmt.Sprintf("IAR has advanced to the next instruction at tc.IADDR+1"))
+		},
+	)
+}
+
+func TestIOInstruction(t *testing.T) {
+	BB := NewInstBreadboard("IO")
+
+	received := -1
+	sent := -1
+	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0110,
+		func(tc ti.INSTTestCase) {
+			if !BB.IOAdapter.IsRegistered(tc.IODEV) {
+				BB.IOAdapter.Register(BB, tc.IODEV, fmt.Sprintf("dummy-%d", tc.IODEV),
+					func(bus *g.Bus) {
+						// Simulate data being placed on the bus by the device
+						sent = rand.Intn(a.GetMaxByteValue())
+						bus.SetPower(sent)
+					},
+					func(bus *g.Bus) {
+						// Data was made available to our device on the DATA.bus.
+						// Let's grab it and put it in a local var.
+						received = bus.GetPower()
+					},
+				)
+			}
+		},
+		func(tc ti.INSTTestCase) {
+			// First, activate the device (11)
+			rb := tc.INST % 4
+			tc.INST = 0b01111100 + rb
+			BB.SetReg(tc.RB, tc.IODEV)
+			doInst(BB)(tc)
+			tm.Is(t, BB.IOAdapter.IsActive(tc.IODEV), true, fmt.Sprintf("Adapter %d is active", tc.IODEV))
+
+			// Then, send data to the device (10)
+			tc.INST = 0b01111000 + rb
+			BB.SetReg(tc.RB, tc.DATA)
+			doInst(BB)(tc)
+			tm.Is(t, received, tc.DATA, fmt.Sprintf("Data %d was grabbed from the bus by device %d", received, tc.IODEV))
+
+			// Then, ask for data from the device (00)
+			tc.INST = 0b01110000 + rb
+			doInst(BB)(tc)
+			tm.Is(t, BB.GetReg(tc.RB).GetPower(), sent, fmt.Sprintf("Data %d was grabbed from the bus by device %d", received, tc.IODEV))
+		},
+		func(tc ti.INSTTestCase) {
 		},
 	)
 }
@@ -224,44 +272,38 @@ func doInst(BB *Breadboard) ti.INSTDo {
 }
 
 /*
+sub make_io_test {
 
-sub alu {
-    my $tc = shift
 
-    my %res = %{$tc}
+    # First, activate the device (11)
+    my $iinst = sprintf("011111%02b", $rb) ;
+    #warn "inst: $iinst" ;
+    $BB->setREG("R$rb", sprintf("%08b", $n)) ;
+    $BB->setRAM($iaddr, $iinst) ;
+    $BB->setREG("IAR", $iaddr) ;
+    $BB->inst() ;
+    is($BB->get("IO.adapter")->active($n), 1, "Adapter is active") ;
+    #warn $BB->show() ;
 
-    delete $res{ci} // No flags
+    # Then, send data to the device (10)
+    my $iinst = sprintf("011110%02b", $rb) ;
+    #warn "inst: $iinst, data=$data" ;
+    $BB->setREG("R$rb", $data) ;
+    $BB->setRAM($iaddr, $iinst) ;
+    $BB->setREG("IAR", $iaddr) ;
+    $BB->inst() ;
+    is($outpower, $data, "Data $data is was grabbed from the bus by device $n") ;
+    #warn $BB->show() ;
 
-    // Generate a random RAM address
-    my $addr = sprintf("%08b", int rand(255))
+    # Then, ask for data from the device (00)
+    my $iinst = sprintf("011100%02b", $rb) ;
+    # warn "inst: $iinst" ;
+    $BB->setRAM($iaddr, $iinst) ;
+    $BB->setREG("IAR", $iaddr) ;
+    $BB->inst() ;
+    # warn $BB->show() ;
 
-    // When this is implemented, there is no CLF instruction available yet.
-    // We need to reset the FLAGS register because the presence of a trailing CI bit will give a bad answer.
-    // We also bump s on TMP to let the value into the Ctmp M.
-    BB.get("FLAGS")->is().GetPower("00000000")
-    BB.get("FLAGS")->s().GetPower(1)
-    BB.get("FLAGS")->s().GetPower(0)
-    BB.get("TMP")->s().GetPower(1)
-    BB.get("TMP")->s().GetPower(0)
-
-    BB.setREG("R$res{ra}", $res{bina})
-    BB.setREG("R$res{rb}", $res{binb})
-    BB.setRAM($addr, $res{inst})
-    BB.setREG("IAR", $addr)
-    BB.inst()
-    //warn Dumper($tc)
-    //warn BB.show()
-    //for (my $j = 0 $j < 12 $j++){
-    //    BB.qtick()
-    //    warn BB.show()
-    //}
-
-    $res{out} = oct(0b" . BB.get("R$res{rb}").GetPower()) if ($res{op} < 7)
-
-    if (defined($res{out})){
-        $res{binout} = sprintf("%08b", $res{out})
-    }
-
-    return \%res
+    is($BB->get("R$rb")->power(), $gendata, "Data $data is was grabbed from the bus by device $n") ;
+    #warn $BB->show() ;
 }
 */
