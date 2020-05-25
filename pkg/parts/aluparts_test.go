@@ -155,8 +155,7 @@ func TestZero(t *testing.T) {
 		return ta.Zero(tc)
 	})
 
-	tc := ta.NewALUTestCase(0, 0, false)
-	tc.OP = 8
+	tc := ta.NewALUTestCase(0, 0, false, 8)
 	testname := fmt.Sprintf("ALU(op:%d,a:%d,b:%d,ci:%d)", tc.OP, tc.A, tc.B, 0)
 	t.Run(testname, func(t *testing.T) {
 		result := func(tc ta.ALUTestCase) ta.ALUTestCase {

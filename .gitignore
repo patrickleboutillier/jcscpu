@@ -2,3 +2,4 @@
 .vscode
 *.prof
 *.exe
+coverage

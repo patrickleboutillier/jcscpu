@@ -2,8 +2,10 @@ package board
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 
+	ta "github.com/patrickleboutillier/jcscpu/internal/testalu"
 	ti "github.com/patrickleboutillier/jcscpu/internal/testinst"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
 	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
@@ -49,17 +51,47 @@ func TestALUInstuctionsBasic(t *testing.T) {
 }
 
 func TestALUInstructions(t *testing.T) {
-	//BB := NewInstBreadboard("ALU")
-	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b1000,
+	BB := NewInstBreadboard("ALU")
+	LogWith(func(msg string) {
+		t.Log(msg)
+	})
+
+	op := rand.Intn(8)
+	ti.RunRandomINSTTests(t, nb_tests_per_inst, 8+op,
 		func(tc ti.INSTTestCase) {
+			BB.SetReg(tc.RA, tc.DATA)
+			BB.SetReg(tc.RB, tc.DATA2)
+
+			// Set CO, let it in the FLAGS reg and thne clear the FLAGS.in
+			BB.GetBus("FLAGS.in").SetPower(0)
+			BB.GetBus("FLAGS.in").GetWire(0).SetPower(tc.CI)
+			BB.GetWire("FLAGS.s").SetPower(true)
+			BB.GetWire("FLAGS.s").SetPower(false)
+			BB.GetBus("FLAGS.in").SetPower(0)
 		},
+		doInst(BB),
 		func(tc ti.INSTTestCase) {
-			// Select a random type of ALU instruction
-			//tc.INST = 0b01100000
-			//doInst(BB)(tc)
-		},
-		func(tc ti.INSTTestCase) {
-			//tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IADDR+1, fmt.Sprintf("IAR has advanced to the next instruction at tc.IADDR+1"))
+			if tc.RA == tc.RB {
+				// In this case, RA gets overridden with DATA2, so the DATA becomes DATA2
+				tc.DATA = tc.DATA2
+			}
+
+			atc := ta.NewALUTestCase(tc.DATA, tc.DATA2, tc.CI, op)
+			ta.RunALUTest(t, atc, func(res ta.ALUTestCase) ta.ALUTestCase {
+				// Initialize fields of tc with the of tc.RB + FLAGS
+				if op < 7 {
+					res.C = BB.GetReg(tc.RB).GetPower()
+				}
+				res.CO = BB.GetBus("FLAGS.bus").GetWire(0).GetPower()
+				res.ALO = BB.GetBus("FLAGS.bus").GetWire(1).GetPower()
+				res.EQO = BB.GetBus("FLAGS.bus").GetWire(2).GetPower()
+				res.Z = BB.GetBus("FLAGS.bus").GetWire(3).GetPower()
+				return res
+			}, func(res ta.ALUTestCase) ta.ALUTestCase {
+				return ta.Cmp(ta.GetALUExpectedResult(res))
+			})
+
+			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IADDR+1, fmt.Sprintf("IAR has advanced to the next instruction at tc.IADDR+1"))
 		},
 	)
 }
@@ -192,88 +224,6 @@ func doInst(BB *Breadboard) ti.INSTDo {
 }
 
 /*
-use strict
-use Test::More
-use Breadboard
-use Data::Dumper
-
-push @INC, './t'
-require 'test_alu.pm'
-
-
-my $nb_test_per_op = 8
-my @ops = (0,1,2,3,4,5,6,7)
-plan(tests => 4 + $nb_test_per_op*(scalar(@ops)))
-
-my $BB = new BREADBOARD(
-    'instproc' => 1,
-    'instimpl' => 1,
-    'insts' => ['ALU'],
-)
-
-// Testing of ALU instructions.
-// Add contents of R1 and R2, result in R2
-BB.setREG("R1", "01100100") // 100
-BB.setREG("R2", "00110010") // 50
-BB.setRAM("00001000", "10000110")
-BB.setREG("IAR", "00001000")
-BB.inst()
-is(BB.get("R2").GetPower(), "10010110", "100 + 50 = 150") // 150
-
-// Add contents of R1 and R1, result in R1
-BB.setREG("R1", "01100100") // 100
-BB.setRAM("00001000", "10000101")
-BB.setREG("IAR", "00001000")
-BB.inst()
-is(BB.get("R1").GetPower(), "11001000", "100 + 100 = 200") // 200
-
-// Not contents of R0 back in R0
-BB.setREG("R0", "10101010")
-BB.setRAM("00001001", "10110000")
-BB.setREG("IAR", "00001001")
-BB.inst()
-is(BB.get("R0").GetPower(), "01010101", "NOT of 10101010 = 01010101")
-
-// Bug with TMP.e
-BB.setREG("R3", "00111101")
-BB.setRAM("00001010", "11001111")
-BB.setREG("IAR", "00001010")
-BB.setREG("TMP", "00010111")
-BB.get("BUS1.bit1").GetPower("0") // Simulate a bit1 reset after inst1 of the instper.
-BB.inst()
-is(BB.get("R3").GetPower(), "00111101", "AND of 00111101 with itself = 00111101")
-
-
-foreach my $op (@ops){
-    for (my $j = 0 $j < $nb_test_per_op $j++){
-        do_test_case($op)
-    }
-}
-
-
-sub do_test_case {
-    my $op = shift
-
-    my $tc = gen_test_case()
-    $tc->{op} = $op
-
-    $tc->{ra} = int rand(4)
-    $tc->{rb} = int rand(4)
-    if ($tc->{ra} == $tc->{rb}){
-        $tc->{b} = $tc->{a}
-        $tc->{binb} = sprintf("%08b", $tc->{b})
-    }
-    // Create our instruction
-    $tc->{inst} = "1" . sprintf("%03b%02b%02b", $tc->{op}, $tc->{ra}, $tc->{rb})
-
-    my $res = alu($tc)
-    my $vres = valu($tc, 1)
-
-    my $desc = Dumper($tc)
-    $desc =~ s/\n\s+//gs
-    is_deeply($res, $vres, "inst:$tc->{inst}, $desc")
-}
-
 
 sub alu {
     my $tc = shift

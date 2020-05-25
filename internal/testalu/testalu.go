@@ -17,8 +17,8 @@ type ALUTestCase struct {
 	CI, CO, ALO, EQO, Z bool
 }
 
-func NewALUTestCase(a int, b int, ci bool) ALUTestCase {
-	return ALUTestCase{A: a, B: b, CI: ci}
+func NewALUTestCase(a int, b int, ci bool, op int) ALUTestCase {
+	return ALUTestCase{A: a, B: b, CI: ci, OP: op}
 }
 
 func NewRandomALUTestCase(op int) ALUTestCase {
@@ -113,6 +113,13 @@ func Zero(tc ALUTestCase) ALUTestCase {
 	return tc
 }
 
+func RunALUTest(t *testing.T, tc ALUTestCase, result ALUTest, expected ALUTest) {
+	testname := fmt.Sprintf("ALU(op:%d,a:%d,b:%d,ci:%d)", tc.OP, tc.A, tc.B, bool2int(tc.CI))
+	t.Run(testname, func(t *testing.T) {
+		tm.Is(t, result(tc), expected(tc), testname)
+	})
+}
+
 func RunRandomALUTest(t *testing.T, op int, result ALUTest, expected ALUTest) {
 	tc := NewRandomALUTestCase(op)
 	testname := fmt.Sprintf("ALU(op:%d,a:%d,b:%d,ci:%d)", tc.OP, tc.A, tc.B, bool2int(tc.CI))
@@ -127,30 +134,35 @@ func RunRandomALUTests(t *testing.T, n int, op int, result ALUTest, expected ALU
 	}
 }
 
+func GetALUExpectedResult(tc ALUTestCase) ALUTestCase {
+	var f ALUTest
+	switch tc.OP {
+	case 0:
+		f = Add
+	case 1:
+		f = ShiftRight
+	case 2:
+		f = ShiftLeft
+	case 3:
+		f = Not
+	case 4:
+		f = And
+	case 5:
+		f = Or
+	case 6:
+		f = XOr
+	case 7:
+		f = Cmp
+	}
+	return Zero(f(tc))
+}
+
 func RunFullRandomALUTests(t *testing.T, n int, result ALUTest) {
 	for j := 0; j < n; j++ {
 		op := rand.Intn(8)
 		RunRandomALUTest(t, op, result, func(tc ALUTestCase) ALUTestCase {
-			var f ALUTest = nil
-			switch op {
-			case 0:
-				f = Add
-			case 1:
-				f = ShiftRight
-			case 2:
-				f = ShiftLeft
-			case 3:
-				f = Not
-			case 4:
-				f = And
-			case 5:
-				f = Or
-			case 6:
-				f = XOr
-			case 7:
-				f = Cmp
-			}
-			return Zero(f(tc))
+			tc.OP = op
+			return GetALUExpectedResult(tc)
 		})
 	}
 }

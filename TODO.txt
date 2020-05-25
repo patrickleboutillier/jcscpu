@@ -1,0 +1,1 @@
+Replace panic(fmt.Errorf... by log.PanicF

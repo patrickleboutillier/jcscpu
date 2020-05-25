@@ -147,17 +147,18 @@ func (this *Stepper) GetStep() int {
 }
 
 func (this *Stepper) String() string {
-	str := fmt.Sprintf("STEPPER(%d): rst:%s  clk:%s  steps:%s\n  ", this.GetStep(), this.rst.String(), this.clk.String(), this.os.String())
-	str += "  " + this.s1.String() + "                "
-	for _, s := range this.s26 {
-		str += "  " + s.String() + "                "
-	}
-	str += "  " + this.s7.String()
-	str += "\n  "
-	for _, m := range this.ms {
-		str += m.String() + "  "
-	}
-	str += "\n"
-
+	str := fmt.Sprintf("STEPPER(%d): rst:%s  clk:%s  steps:%s", this.GetStep(), this.rst.String(), this.clk.String(), this.os.String())
+	/*
+		str += "\n  " + this.s1.String() + "                "
+		for _, s := range this.s26 {
+			str += "  " + s.String() + "                "
+		}
+		str += "  " + this.s7.String()
+		str += "\n  "
+		for _, m := range this.ms {
+			str += m.String() + "  "
+		}
+		str += "\n"
+	*/
 	return str
 }

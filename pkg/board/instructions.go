@@ -23,7 +23,7 @@ func ALUInstructions(BB *Breadboard) {
 	aa2 := g.NewWire()
 	g.NewAND(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("IR.bus").GetWire(0), aa2)
 	BB.GetORe("REGA.ena.eor").AddWire(aa2)
-	BB.GetORe("ALU.ci.ena.eor").AddWire(aa2) // Errata //2
+	BB.GetORe("ALU.ci.ena.eor").AddWire(aa2) // Errata #2
 	BB.GetORe("ACC.set.eor").AddWire(aa2)
 	BB.GetORe("FLAGS.set.eor").AddWire(aa2)
 

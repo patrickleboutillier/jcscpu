@@ -18,13 +18,13 @@ type RAM struct {
 	n        int
 
 	fast   bool
-	cur    int  // For fast mode
+	cur    int // For fast mode
 	powers []int
 }
 
 func NewRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
 	// Use classic RAM circuit if we are using an 8 bit architecture
-	if (a.GetArchBits() > 8){
+	if a.GetArchBits() > 8 {
 		return NewRAMFast(bas, wsa, bio, ws, we)
 	}
 	return NewRAMClassic(bas, wsa, bio, ws, we)
@@ -110,7 +110,7 @@ func (this *RAM) GetCellPower(n int) int {
 }
 
 func (this *RAM) String() string {
-	str := fmt.Sprintf("RAM:\n  %s  ", this.mar.String())
+	str := fmt.Sprintf("RAM: %s  ", this.mar.String())
 
 	f := fmt.Sprintf("%%0%db", this.as.GetSize())
 	idx := this.mar.GetPower()

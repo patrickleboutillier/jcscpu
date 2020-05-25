@@ -81,6 +81,6 @@ func (this *Clock) Tick() {
 }
 
 func (this *Clock) String() string {
-	return fmt.Sprintf("CLK(@%d.%d[%d]): clk:%s  clkd:%s  clke:%s  clks:%s\n", this.GetTicks(), (this.qticks % 4), this.qticks,
+	return fmt.Sprintf("CLK(@%d.%d[%d]): clk:%s  clkd:%s  clke:%s  clks:%s", this.GetTicks(), (this.qticks % 4), this.qticks,
 		this.clk.String(), this.clkd.String(), this.clke.String(), this.clks.String())
 }

@@ -10,9 +10,6 @@ import (
 
 func TestInstProc(t *testing.T) {
 	BB := NewInstProcBreadboard()
-	BB.LogWith(func(msg string) {
-		t.Log(msg)
-	})
 
 	// Place some fake instructions in RAM
 	BB.GetBus("DATA.bus").SetPower(0b00000100)

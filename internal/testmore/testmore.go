@@ -21,7 +21,7 @@ func Is(t *testing.T, result interface{}, expected interface{}, name string) boo
 	if !reflect.DeepEqual(result, expected) {
 		//ry, _ := yaml.Marshal(result)
 		//ey, _ := yaml.Marshal(expected)
-		t.Errorf("Failed test '%s':\ngot:\n%+v\nexpected:\n%+v\n", name, result, expected)
+		t.Errorf("Failed test '%s':\ngot:\n  %+v\nexpected:\n  %+v\n", name, result, expected)
 		return false
 	}
 	return true

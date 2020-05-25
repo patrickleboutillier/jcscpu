@@ -24,6 +24,9 @@ type INSTTestCase struct {
 	ADDR  int // Random address used by the instruction (LD, ST, JUMP, ...)
 	DATA  int // Random data used by the instruction
 	FLAGS int // ALU flags
+
+	DATA2 int  // Random data #2 to be used by ALU instruction
+	CI    bool // Random carry in to be used by ALU instruction
 }
 
 func NewRandomINSTTestCase(inst int) INSTTestCase {
@@ -41,6 +44,8 @@ func NewRandomINSTTestCase(inst int) INSTTestCase {
 	idata := rand.Intn(max)
 	addr := rand.Intn(max)
 	data := rand.Intn(max)
+	data2 := rand.Intn(max)
+	ci := rand.Intn(2) != 0
 
 	// Make sure instruction addr is different from iaddr and idaddr
 	for (addr == iaddr) || (addr == idaddr) {
@@ -49,7 +54,7 @@ func NewRandomINSTTestCase(inst int) INSTTestCase {
 
 	return INSTTestCase{INST: inst, RA: regs[ra], RB: regs[rb],
 		IADDR: iaddr, IDADDR: idaddr, IDATA: idata, ADDR: addr, DATA: data,
-		FLAGS: rand.Intn(16), IFLAGS: iflags,
+		FLAGS: rand.Intn(16), IFLAGS: iflags, DATA2: data2, CI: ci,
 	}
 }
 

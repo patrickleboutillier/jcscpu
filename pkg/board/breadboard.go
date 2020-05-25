@@ -3,9 +3,6 @@ package board
 // The BREADBOARD comes loaded with the following components:
 // - ALU, RAM and BUS
 // - All registers (except IAR and IR registers)
-//
-// Using the options hash, you can specify more componnents be added:
-//  instproc: Add IAR, IR and elactic ORs to create the Enables and Sets sides of the board for everything
 
 import (
 	"fmt"
@@ -18,6 +15,14 @@ import (
 )
 
 var instHandlers = make(map[string]func(*Breadboard))
+
+// Default logger
+var logger = log.New(os.Stderr, "DEBUG", 0)
+
+// Defaut log function
+var logWith = func(msg string) {
+	logger.Output(1, msg)
+}
 
 /*
 BREADBOARD
@@ -32,10 +37,11 @@ type Breadboard struct {
 	BUS1  *p.Bus1
 	CLK   *p.Clock
 	STP   *p.Stepper
+	Ctmp  *p.Memory
 
-	logger func(string)
-	debug  int
-	CU     bool
+	//logger func(string)
+	debug int
+	CU    bool
 }
 
 func NewInstProcBreadboard() *Breadboard {
@@ -67,12 +73,7 @@ func NewVanillaBreadboard() *Breadboard {
 	regs := make(map[string]*p.Register)
 	ores := make(map[string]*g.ORe)
 
-	logger := log.New(os.Stderr, "DEBUG", log.Ldate|log.Ltime)
-	this := &Breadboard{wires: wires, buses: buses, regs: regs, ores: ores,
-		logger: func(msg string) {
-			logger.Output(1, msg)
-		},
-	}
+	this := &Breadboard{wires: wires, buses: buses, regs: regs, ores: ores}
 
 	// RAM
 	this.putBus("DATA.bus", g.NewBus())
@@ -168,28 +169,28 @@ func NewVanillaBreadboard() *Breadboard {
 	this.putBus("IO.bus", g.WrapBusV(this.GetWire("IO.clks"), this.GetWire("IO.clke"), this.GetWire("IO.da"), this.GetWire("IO.io")))
 	// this.IOAdapter = NewIOAdapter(this.GetBus("DATA.bus"), this.GetBus("IO.bus"))
 
-	// Hook up the FLAGS Register co output to the ALU ci, adding the AND gate describes in the Errata #2
+	// Hook up the FLAGS Register co output to the ALU ci, adding the AND gate described in the Errata #2
 	// Errata stuff: http://www.buthowdoitknow.com/errata.html
 	// Naively: new CONN($this.get("FLAGS").os().wire(0), $this.get("ALU").ci())
 	weor := g.NewWire()
 	wco := g.NewWire()
-	p.NewMemory(this.GetBus("FLAGS.bus").GetWire(0), this.GetWire("TMP.s"), wco)
+	this.Ctmp = p.NewNamedMemory(this.GetBus("FLAGS.bus").GetWire(0), this.GetWire("TMP.s"), wco, "Ctmp")
 	g.NewAND(wco, weor, this.GetWire("ALU.ci"))
 	this.putORe("ALU.ci.ena.eor", g.NewORe(weor))
 
 	// Debug handlers:
 	this.GetWire("CLK.clk").AddEarlyhook(func(v bool) {
-                if (this.debug == 1 && v && (this.CLK.GetQTicks() % 24) == 0) ||
-                   (this.debug == 2 && v && (this.CLK.GetQTicks() % 4) == 0) ||
-                   (this.debug == 3) {
-                        this.Log(this.String())
-                }
-        })
+		if (this.debug == 1 && v && (this.CLK.GetQTicks()%24) == 0) ||
+			(this.debug == 2 && v && (this.CLK.GetQTicks()%4) == 0) ||
+			(this.debug == 3) {
+			this.Debug()
+		}
+	})
 	this.GetWire("CLK.clkd").AddEarlyhook(func(v bool) {
-                if (this.debug == 3) {
-                        this.Log(this.String())
-                }
-        })
+		if this.debug == 3 {
+			this.Debug()
+		}
+	})
 
 	return this
 }
@@ -299,8 +300,12 @@ func (this *Breadboard) Stop() {
 }
 
 // Replace logger with a new function
-func (this *Breadboard) LogWith(f func(msg string)) {
-	this.logger = f
+func LogWith(f func(msg string)) {
+	logWith = f
+}
+
+func (this *Breadboard) Debug() {
+	this.Log(this.String())
 }
 
 func (this *Breadboard) DebugInst() {
@@ -316,12 +321,14 @@ func (this *Breadboard) DebugQTick() {
 }
 
 func (this *Breadboard) DebugOff() {
-	this.debug = 3
+	// Final state.
+	this.Debug()
+	this.debug = 0
 }
 
-// Send a debug message to the debug writer
-func (this *Breadboard) Log(msg string) {
-	this.logger(msg)
+// Send a debug something to the debug writer
+func (this *Breadboard) Log(l interface{}) {
+	logWith(fmt.Sprintf("%+v", l))
 }
 
 func (this *Breadboard) SetReg(reg string, data int) {
@@ -342,16 +349,20 @@ func (this *Breadboard) SetRAM(addr int, data int) {
 
 func (this *Breadboard) String() string {
 	str := "\n"
-	str += this.CLK.String()
-	str += this.STP.String()
+	str += this.CLK.String() + "  " + this.STP.String() + "\n"
 	str += "BUS:" + this.GetBus("DATA.bus").String() + "  "
 	str += strings.Join([]string{this.GetReg("TMP").String(), this.BUS1.String(), this.GetReg("ACC").String(), this.GetReg("FLAGS").String(),
 		this.GetReg("R0").String(), this.GetReg("R1").String(), this.GetReg("R2").String(), this.GetReg("R3").String()}, "  ") + "\n"
-	str += this.ALU.String()
+	var ctmp string
+	if this.Ctmp.GetM() {
+		ctmp = "1"
+	} else {
+		ctmp = "0"
+	}
+	str += this.ALU.String() + "  ctmp:" + ctmp + "\n"
 	str += this.RAM.String()
 
-	str += "CU:\n"
-	str += "  " + this.GetReg("IAR").String() + "  " + this.GetReg("IR").String()
+	str += "CU: " + this.GetReg("IAR").String() + "  " + this.GetReg("IR").String()
 	if this.CU {
 		str += "  INST.bus:" + this.GetBus("INST.bus").String()
 		str += "  REGA.e:" + this.GetWire("REGA.e").String() + "/" + this.GetBus("REGA.e.dec.bus").String()
