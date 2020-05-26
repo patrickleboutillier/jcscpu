@@ -39,9 +39,9 @@ func ParseInstructions() []int {
 	for scanner.Scan() {
 		nbline++
 		line := strings.TrimSpace(scanner.Text())
-		//if len(line) == 0 || line[0] == '#' {
-		//	continue
-		//}
+		if len(line) == 0 || line[0] == '#' {
+			continue
+		}
 		var inst int
 		_, err := fmt.Sscanf(line, "%b", &inst)
 		if err != nil {
