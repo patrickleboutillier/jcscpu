@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"testing"
 
-	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
+	ta "github.com/patrickleboutillier/jcscpu/internal/testarch"
 )
 
 type INSTSetup func(INSTTestCase)
@@ -39,7 +39,7 @@ func NewRandomINSTTestCase(inst int) INSTTestCase {
 	iflags := (ra << 2) + rb
 	inst = (inst << 4) + (ra << 2) + rb
 
-	max := a.GetMaxByteValue()
+	max := ta.GetMaxByteValue()
 	iaddr := rand.Intn(max - 2)
 	idaddr := iaddr + 1
 	idata := rand.Intn(max)
@@ -76,33 +76,3 @@ func RunRandomINSTTests(t *testing.T, n int, inst int, setup INSTSetup, do INSTD
 		RunRandomINSTTest(t, inst, setup, do, ok)
 	}
 }
-
-/*
-func RunFullRandomINSTTests(t *testing.T, n int, result INSTTest) {
-	for j := 0; j < n; j++ {
-		op := rand.Intn(8)
-		RunRandomINSTTest(t, op, result, func(tc INSTTestCase) INSTTestCase {
-			var f INSTTest = nil
-			switch op {
-			case 0:
-				f = Add
-			case 1:
-				f = ShiftRight
-			case 2:
-				f = ShiftLeft
-			case 3:
-				f = Not
-			case 4:
-				f = And
-			case 5:
-				f = Or
-			case 6:
-				f = XOr
-			case 7:
-				f = Cmp
-			}
-			return Zero(f(tc))
-		})
-	}
-}
-*/

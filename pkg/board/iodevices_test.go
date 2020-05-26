@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	t8 "github.com/patrickleboutillier/jcscpu/internal/testarch"
 	ti "github.com/patrickleboutillier/jcscpu/internal/testinst"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
 )
@@ -12,7 +13,7 @@ import (
 var nb_tests_per_ioinst = 256
 
 func TestTTYDevice(t *testing.T) {
-	BB := NewBreadboard()
+	BB := NewBreadboard(t8.GetArchBits())
 	buffer := new(bytes.Buffer)
 	BB.TTYWriter = buffer
 
@@ -50,7 +51,7 @@ func TestTTYDevice(t *testing.T) {
 }
 
 func TestRNGDevice(t *testing.T) {
-	BB := NewBreadboard()
+	BB := NewBreadboard(t8.GetArchBits())
 
 	ti.RunRandomINSTTests(t, nb_tests_per_ioinst, 0b0111,
 		func(tc ti.INSTTestCase) {

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	ta "github.com/patrickleboutillier/jcscpu/internal/testalu"
+	t8 "github.com/patrickleboutillier/jcscpu/internal/testarch"
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
@@ -15,10 +16,10 @@ func TestALU(t *testing.T) {
 	weqo := g.NewWire()
 	walo := g.NewWire()
 	wz := g.NewWire()
-	bas := g.NewBus()
-	bbs := g.NewBus()
-	bcs := g.NewBus()
-	bops := g.NewBusN(3)
+	bas := g.NewBus(t8.GetArchBits())
+	bbs := g.NewBus(t8.GetArchBits())
+	bcs := g.NewBus(t8.GetArchBits())
+	bops := g.NewBus(3)
 	NewALU(bas, bbs, wci, bops, bcs, wco, weqo, walo, wz)
 
 	ta.RunFullRandomALUTests(t, nb_alu_tests, func(tc ta.ALUTestCase) ta.ALUTestCase {

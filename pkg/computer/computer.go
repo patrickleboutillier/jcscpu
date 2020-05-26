@@ -1,7 +1,6 @@
 package computer
 
 import (
-	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 	b "github.com/patrickleboutillier/jcscpu/pkg/board"
 )
 
@@ -13,8 +12,7 @@ type Computer struct {
 }
 
 func NewComputer(bits int) *Computer {
-	a.SetArchBits(bits)
-	BB := b.NewBreadboard()
+	BB := b.NewBreadboard(bits)
 	return &Computer{BB}
 }
 

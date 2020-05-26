@@ -202,7 +202,7 @@ type ORe struct {
 }
 
 func NewORe(wo *Wire) *ORe {
-	return &ORe{NewORn(NewBusN(6), wo), wo, 0}
+	return &ORe{NewORn(NewBus(6), wo), wo, 0}
 }
 
 func (this *ORe) AddWire(w *Wire) {
@@ -249,46 +249,3 @@ func NewCMP(wa *Wire, wb *Wire, weqi *Wire, wali *Wire, wc *Wire, weqo *Wire, wa
 	NewOR(wali, w45, walo)
 	return &CMP{wa, wb, wc, weqi, wali, weqo, walo}
 }
-
-/*
-
-package CMP ;
-use strict ;
-
-
-sub new {
-    my $class = shift ;
-    my $wa = shift ;
-    my $wb = shift ;
-    my $weqi = shift ;
-    my $wali = shift ;
-    my $wc = shift ;
-    my $weqo = shift ;
-    my $walo = shift ;
-    my $name = shift ;
-
-    my $w23 = new WIRE() ;
-    my $w45 = new WIRE() ;
-    new XOR($wa, $wb, $wc, "$name/XOR[1]") ;
-    new NOT($wc, $w23, "$name/NOT[2]") ;
-    new AND($weqi, $w23, $weqo, "$name/AND[3]") ;
-    new ANDn(3, BUS->wrap($weqi, $wa, $wc), $w45, "$name/AND3[4]") ;
-    new OR($wali, $w45, $walo, "$name/NAND[g3]") ;
-
-    my $this = {
-        a => $wa,
-        b => $wb,
-        c => $wc,
-        eqi => $weqi,
-        ali => $wali,
-        eqo => $weqo,
-        alo => $walo,
-        name => $name,
-    } ;
-    bless $this, $class ;
-
-    return $this ;
-}
-
-
-*/

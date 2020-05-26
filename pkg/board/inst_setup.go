@@ -13,7 +13,7 @@ func InstProc(this *Breadboard) {
 	this.putWire("IAR.e", g.NewWire())
 	this.putWire("IR.s", g.NewWire())
 	this.putWire("IR.e", g.WireOn()) // IR.e is always on
-	this.putBus("IR.bus", g.NewBusN(8))
+	this.putBus("IR.bus", g.NewBus(8))
 
 	this.putReg("IAR", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("IAR.s"), this.GetWire("IAR.e"), this.GetBus("DATA.bus"), "IAR"))
 	// IR uses only the first 8 bits of the DATA.bus
@@ -97,10 +97,10 @@ func InstImpl(this *Breadboard) {
 	p.NewDecoder(g.WrapBusV(this.GetBus("IR.bus").GetWire(6), this.GetBus("IR.bus").GetWire(7)), edecbusb)
 
 	// Finally, install the instruction decoder
-	this.putBus("INST.bus", g.NewBusN(8))
+	this.putBus("INST.bus", g.NewBus(8))
 	notalu := g.NewWire()
 	g.NewNOT(this.GetBus("IR.bus").GetWire(0), notalu)
-	idecbus := g.NewBusN(8)
+	idecbus := g.NewBus(8)
 	p.NewDecoder(g.WrapBusV(this.GetBus("IR.bus").GetWire(1), this.GetBus("IR.bus").GetWire(2), this.GetBus("IR.bus").GetWire(3)), idecbus)
 	for j := 0; j < 8; j++ {
 		g.NewAND(notalu, idecbus.GetWire(j), this.GetBus("INST.bus").GetWire(j))

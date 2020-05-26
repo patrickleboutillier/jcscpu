@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 
-	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 	c "github.com/patrickleboutillier/jcscpu/pkg/computer"
 )
 
@@ -22,7 +21,7 @@ func main() {
 	}
 
 	C := c.NewComputer(int(*bits))
-	insts := ParseInstructions()
+	insts := ParseInstructions(int(*bits))
 	if len(insts) == 0 {
 		log.Fatal("No valid instructions provided!")
 	}
@@ -31,7 +30,7 @@ func main() {
 	C.BB.Run(insts)
 }
 
-func ParseInstructions() []int {
+func ParseInstructions(bits int) []int {
 	ret := make([]int, 0, 64)
 
 	scanner := bufio.NewScanner(os.Stdin)
@@ -47,7 +46,7 @@ func ParseInstructions() []int {
 		if err != nil {
 			log.Fatalf("Error parsing line %d: %v", nbline, err)
 		}
-		if inst > a.GetMaxByteValue() {
+		if inst >= (1 << bits) {
 			log.Fatalf("Instruction '%b' to large for architecture size at line %d", inst, nbline)
 		}
 

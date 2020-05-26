@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"testing"
 
+	ta "github.com/patrickleboutillier/jcscpu/internal/testarch"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
-	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 )
 
 type ALUTest func(ALUTestCase) ALUTestCase
@@ -22,7 +22,7 @@ func NewALUTestCase(a int, b int, ci bool, op int) ALUTestCase {
 }
 
 func NewRandomALUTestCase(op int) ALUTestCase {
-	max := a.GetMaxByteValue()
+	max := ta.GetMaxByteValue()
 	rb := false
 	if rand.Intn(2) == 1 {
 		rb = true
@@ -50,15 +50,15 @@ func int2bool(i int) bool {
 func Add(tc ALUTestCase) ALUTestCase {
 	tc.C = tc.A + tc.B + bool2int(tc.CI)
 	tc.CO = false
-	if tc.C > a.GetMaxByteValue() {
-		tc.C -= (a.GetMaxByteValue() + 1)
+	if tc.C > ta.GetMaxByteValue() {
+		tc.C -= (ta.GetMaxByteValue() + 1)
 		tc.CO = true
 	}
 	return tc
 }
 
 func ShiftRight(tc ALUTestCase) ALUTestCase {
-	tc.C = (tc.A >> 1) + (bool2int(tc.CI) * ((a.GetMaxByteValue() + 1) / 2))
+	tc.C = (tc.A >> 1) + (bool2int(tc.CI) * ((ta.GetMaxByteValue() + 1) / 2))
 	tc.CO = int2bool(tc.A % 2)
 	return tc
 }
@@ -67,8 +67,8 @@ func ShiftRight(tc ALUTestCase) ALUTestCase {
 func ShiftLeft(tc ALUTestCase) ALUTestCase {
 	tc.C = (tc.A << 1) + bool2int(tc.CI)
 	tc.CO = false
-	if tc.C > a.GetMaxByteValue() {
-		tc.C -= (a.GetMaxByteValue() + 1)
+	if tc.C > ta.GetMaxByteValue() {
+		tc.C -= (ta.GetMaxByteValue() + 1)
 		tc.CO = true
 	}
 	return tc
@@ -76,7 +76,7 @@ func ShiftLeft(tc ALUTestCase) ALUTestCase {
 
 // Not simulates a NOTter
 func Not(tc ALUTestCase) ALUTestCase {
-	tc.C = ^tc.A + a.GetMaxByteValue() + 1
+	tc.C = ^tc.A + ta.GetMaxByteValue() + 1
 	return tc
 }
 

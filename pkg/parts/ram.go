@@ -3,7 +3,6 @@ package parts
 import (
 	"fmt"
 
-	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
@@ -24,7 +23,7 @@ type RAM struct {
 
 func NewRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
 	// Use classic RAM circuit if we are using an 8 bit architecture
-	if a.GetArchBits() > 8 {
+	if bas.GetSize() > 8 {
 		return NewRAMFast(bas, wsa, bio, ws, we)
 	}
 	return NewRAMClassic(bas, wsa, bio, ws, we)
@@ -33,7 +32,7 @@ func NewRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
 func NewRAMFast(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
 	// Build the RAM circuit
 	on := g.WireOn()
-	busd := g.NewBusN(bas.GetSize())
+	busd := g.NewBus(bas.GetSize())
 	mar := NewRegister(bas, wsa, on, busd, "MAR")
 
 	// Now we create the circuit
@@ -66,13 +65,13 @@ func NewRAMFast(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RA
 func NewRAMClassic(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
 	// Build the RAM circuit
 	on := g.WireOn()
-	busd := g.NewBusN(bas.GetSize())
+	busd := g.NewBus(bas.GetSize())
 	mar := NewRegister(bas, wsa, on, busd, "MAR")
 
 	n := bas.GetSize() / 2
 	n2 := 1 << n
-	wxs := g.NewBusN(n2)
-	wys := g.NewBusN(n2)
+	wxs := g.NewBus(n2)
+	wys := g.NewBus(n2)
 	NewDecoder(g.WrapBus(busd.GetWires()[0:n]), wxs)
 	NewDecoder(g.WrapBus(busd.GetWires()[n:busd.GetSize()]), wys)
 
@@ -124,28 +123,3 @@ func (this *RAM) String() string {
 
 	return str
 }
-
-/*
-
-
-sub peek {
-    my $this = shift ;
-    my $addr = shift ;
-
-    return $this->{GRID}->{$addr}->power() ;
-}
-
-
-sub dump {
-    my $this = shift ;
-    my $max = shift ;
-
-    my $n = 0 ;
-    foreach my $addr (sort keys %{$this->{GRID}}){
-        my $n = oct("0b$addr") ;
-        printf("$addr (%3d): %s\n", $n, $this->{GRID}->{$addr}->power()) ;
-        last if (($max > 0)&&($n++ >= $max)) ;
-    }
-}
-
-*/

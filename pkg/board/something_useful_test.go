@@ -3,11 +3,12 @@ package board
 import (
 	"testing"
 
+	t8 "github.com/patrickleboutillier/jcscpu/internal/testarch"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
 )
 
 func TestSomethingUseful(t *testing.T) {
-	BB := NewVanillaBreadboard()
+	BB := newVanillaBreadboard(t8.GetArchBits())
 
 	tm.Is(t, 0b00010100, 20, "00010100=20")
 	tm.Is(t, 0b00010110, 22, "00010110=22")

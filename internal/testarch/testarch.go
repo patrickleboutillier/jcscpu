@@ -1,4 +1,4 @@
-package arch
+package testarch
 
 import (
 	"log"
@@ -27,10 +27,6 @@ func defaultArchBits() int {
 
 func GetArchBits() int {
 	return archBits
-}
-
-func SetArchBits(n int) {
-	archBits = checkArchBits(n)
 }
 
 func GetMaxByteValue() int {

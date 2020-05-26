@@ -18,14 +18,6 @@ import (
 var instHandlers = make(map[string]func(*Breadboard))
 var iodevHandlers = make(map[string]func(*Breadboard))
 
-// Default logger
-var logger = log.New(os.Stderr, "DEBUG: ", 0)
-
-// Defaut log function
-var logWith = func(msg string) {
-	logger.Output(1, msg)
-}
-
 /*
 BREADBOARD
 */
@@ -52,27 +44,27 @@ type Breadboard struct {
 	ROM         []int
 }
 
-func NewInstProcBreadboard() *Breadboard {
-	this := NewVanillaBreadboard()
+func newInstProcBreadboard(bits int) *Breadboard {
+	this := newVanillaBreadboard(bits)
 	InstProc(this)
 	return this
 }
 
-func NewInstImplBreadboard() *Breadboard {
-	this := NewInstProcBreadboard()
+func newInstImplBreadboard(bits int) *Breadboard {
+	this := newInstProcBreadboard(bits)
 	InstImpl(this)
 	this.CU = true
 	return this
 }
 
-func NewInstBreadboard(inst string) *Breadboard {
-	this := NewInstImplBreadboard()
+func newInstBreadboard(bits int, inst string) *Breadboard {
+	this := newInstImplBreadboard(bits)
 	instHandlers[inst](this)
 	return this
 }
 
-func NewBreadboard() *Breadboard {
-	this := NewInstImplBreadboard()
+func NewBreadboard(bits int) *Breadboard {
+	this := newInstImplBreadboard(bits)
 	for _, f := range instHandlers {
 		f(this)
 	}
@@ -82,7 +74,7 @@ func NewBreadboard() *Breadboard {
 	return this
 }
 
-func NewVanillaBreadboard() *Breadboard {
+func newVanillaBreadboard(bits int) *Breadboard {
 	wires := make(map[string]*g.Wire)
 	buses := make(map[string]*g.Bus)
 	regs := make(map[string]*p.Register)
@@ -98,7 +90,7 @@ func NewVanillaBreadboard() *Breadboard {
 	}
 
 	// RAM
-	this.putBus("DATA.bus", g.NewBus())
+	this.putBus("DATA.bus", g.NewBus(bits))
 	this.putWire("RAM.MAR.s", g.NewWire())
 	this.putWire("RAM.s", g.NewWire())
 	this.putWire("RAM.e", g.NewWire())
@@ -122,9 +114,9 @@ func NewVanillaBreadboard() *Breadboard {
 	this.putWire("R3.e", g.NewWire())
 	this.putWire("TMP.s", g.NewWire())
 	this.putWire("TMP.e", g.WireOn()) // TMP.e is always on
-	this.putBus("TMP.bus", g.NewBus())
+	this.putBus("TMP.bus", g.NewBus(bits))
 	this.putWire("BUS1.bit1", g.NewWire())
-	this.putBus("BUS1.bus", g.NewBus())
+	this.putBus("BUS1.bus", g.NewBus(bits))
 
 	this.putReg("R0", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("R0.s"), this.GetWire("R0.e"), this.GetBus("DATA.bus"), "R0"))
 	this.putReg("R1", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("R1.s"), this.GetWire("R1.e"), this.GetBus("DATA.bus"), "R1"))
@@ -136,9 +128,9 @@ func NewVanillaBreadboard() *Breadboard {
 	// ALU
 	this.putWire("ACC.s", g.NewWire())
 	this.putWire("ACC.e", g.NewWire())
-	this.putBus("ALU.bus", g.NewBus())
+	this.putBus("ALU.bus", g.NewBus(bits))
 	this.putWire("ALU.ci", g.NewWire())
-	this.putBus("ALU.op", g.NewBusN(3))
+	this.putBus("ALU.op", g.NewBus(3))
 	this.putWire("ALU.co", g.NewWire())
 	this.putWire("ALU.eqo", g.NewWire())
 	this.putWire("ALU.alo", g.NewWire())
@@ -177,7 +169,7 @@ func NewVanillaBreadboard() *Breadboard {
 	this.putWire("CLK.clk", g.NewWire())
 	this.putWire("CLK.clke", g.NewWire())
 	this.putWire("CLK.clks", g.NewWire())
-	this.putBus("STP.bus", g.NewBusN(7))
+	this.putBus("STP.bus", g.NewBus(7))
 	this.CLK = p.NewClock(this.GetWire("CLK.clk"), this.GetWire("CLK.clke"), this.GetWire("CLK.clks"))
 	this.putWire("CLK.clkd", this.CLK.Clkd())
 	this.STP = p.NewStepper(this.GetWire("CLK.clk"), this.GetBus("STP.bus"))

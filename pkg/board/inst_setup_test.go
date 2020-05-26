@@ -5,11 +5,12 @@ import (
 	"math/rand"
 	"testing"
 
+	t8 "github.com/patrickleboutillier/jcscpu/internal/testarch"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
 )
 
 func TestInstProc(t *testing.T) {
-	BB := NewInstProcBreadboard()
+	BB := newInstProcBreadboard(t8.GetArchBits())
 
 	// Place some fake instructions in RAM
 	BB.GetBus("DATA.bus").SetPower(0b00000100)
@@ -51,7 +52,7 @@ func TestInstProc(t *testing.T) {
 }
 
 func TestInstImplInstDec(t *testing.T) {
-	BB := NewInstImplBreadboard()
+	BB := newInstImplBreadboard(t8.GetArchBits())
 
 	// What we need to test here is that:
 	// 1- Bits 0-3 of the IR setup the proper instruction in the instruction decoder.
@@ -83,7 +84,7 @@ func TestInstImplInstDec(t *testing.T) {
 }
 
 func TestInstImplRegDec(t *testing.T) {
-	BB := NewInstImplBreadboard()
+	BB := newInstImplBreadboard(t8.GetArchBits())
 
 	// What we need to test here is that:
 	// 2- Bits 4-7 of the IR setup the proper register (s) to be enabled or set

@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	ta "github.com/patrickleboutillier/jcscpu/internal/testalu"
+	t8 "github.com/patrickleboutillier/jcscpu/internal/testarch"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
-	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
@@ -16,9 +16,9 @@ var nb_tests_per_part int = 1024
 func TestAdder(t *testing.T) {
 	wci := g.NewWire()
 	wco := g.NewWire()
-	bas := g.NewBus()
-	bbs := g.NewBus()
-	bcs := g.NewBus()
+	bas := g.NewBus(t8.GetArchBits())
+	bbs := g.NewBus(t8.GetArchBits())
+	bcs := g.NewBus(t8.GetArchBits())
 	NewADDer(bas, bbs, wci, bcs, wco)
 
 	ta.RunRandomALUTests(t, nb_tests_per_part, 0, func(tc ta.ALUTestCase) ta.ALUTestCase {
@@ -34,8 +34,8 @@ func TestAdder(t *testing.T) {
 func TestShiftRight(t *testing.T) {
 	wci := g.NewWire()
 	wco := g.NewWire()
-	bis := g.NewBus()
-	bos := g.NewBus()
+	bis := g.NewBus(t8.GetArchBits())
+	bos := g.NewBus(t8.GetArchBits())
 	NewShiftRight(bis, wci, bos, wco)
 
 	ta.RunRandomALUTests(t, nb_tests_per_part, 1, func(tc ta.ALUTestCase) ta.ALUTestCase {
@@ -50,8 +50,8 @@ func TestShiftRight(t *testing.T) {
 func TestShiftLeft(t *testing.T) {
 	wci := g.NewWire()
 	wco := g.NewWire()
-	bis := g.NewBus()
-	bos := g.NewBus()
+	bis := g.NewBus(t8.GetArchBits())
+	bos := g.NewBus(t8.GetArchBits())
 	NewShiftLeft(bis, wci, bos, wco)
 
 	ta.RunRandomALUTests(t, nb_tests_per_part, 2, func(tc ta.ALUTestCase) ta.ALUTestCase {
@@ -64,8 +64,8 @@ func TestShiftLeft(t *testing.T) {
 }
 
 func TestNotter(t *testing.T) {
-	bis := g.NewBus()
-	bos := g.NewBus()
+	bis := g.NewBus(t8.GetArchBits())
+	bos := g.NewBus(t8.GetArchBits())
 	NewNOTter(bis, bos)
 
 	ta.RunRandomALUTests(t, nb_tests_per_part, 3, func(tc ta.ALUTestCase) ta.ALUTestCase {
@@ -76,9 +76,9 @@ func TestNotter(t *testing.T) {
 }
 
 func TestAndder(t *testing.T) {
-	bas := g.NewBus()
-	bbs := g.NewBus()
-	bcs := g.NewBus()
+	bas := g.NewBus(t8.GetArchBits())
+	bbs := g.NewBus(t8.GetArchBits())
+	bcs := g.NewBus(t8.GetArchBits())
 	NewANDder(bas, bbs, bcs)
 
 	ta.RunRandomALUTests(t, nb_tests_per_part, 4, func(tc ta.ALUTestCase) ta.ALUTestCase {
@@ -90,9 +90,9 @@ func TestAndder(t *testing.T) {
 }
 
 func TestOrer(t *testing.T) {
-	bas := g.NewBus()
-	bbs := g.NewBus()
-	bcs := g.NewBus()
+	bas := g.NewBus(t8.GetArchBits())
+	bbs := g.NewBus(t8.GetArchBits())
+	bcs := g.NewBus(t8.GetArchBits())
 	NewORer(bas, bbs, bcs)
 
 	ta.RunRandomALUTests(t, nb_tests_per_part, 5, func(tc ta.ALUTestCase) ta.ALUTestCase {
@@ -104,9 +104,9 @@ func TestOrer(t *testing.T) {
 }
 
 func TestXOrer(t *testing.T) {
-	bas := g.NewBus()
-	bbs := g.NewBus()
-	bcs := g.NewBus()
+	bas := g.NewBus(t8.GetArchBits())
+	bbs := g.NewBus(t8.GetArchBits())
+	bcs := g.NewBus(t8.GetArchBits())
 	weqo := g.NewWire()
 	walo := g.NewWire()
 	NewXORer(bas, bbs, bcs, weqo, walo)
@@ -122,9 +122,9 @@ func TestXOrer(t *testing.T) {
 }
 
 func TestCmp(t *testing.T) {
-	bas := g.NewBus()
-	bbs := g.NewBus()
-	bcs := g.NewBus()
+	bas := g.NewBus(t8.GetArchBits())
+	bbs := g.NewBus(t8.GetArchBits())
+	bcs := g.NewBus(t8.GetArchBits())
 	weqo := g.NewWire()
 	walo := g.NewWire()
 	NewXORer(bas, bbs, bcs, weqo, walo)
@@ -139,7 +139,7 @@ func TestCmp(t *testing.T) {
 }
 
 func TestZero(t *testing.T) {
-	bis := g.NewBus()
+	bis := g.NewBus(t8.GetArchBits())
 	wz := g.NewWire()
 	NewZero(bis, wz)
 
@@ -172,13 +172,13 @@ func TestZero(t *testing.T) {
 }
 
 func TestBus1(t *testing.T) {
-	bis := g.NewBus()
+	bis := g.NewBus(t8.GetArchBits())
 	wbit1 := g.NewWire()
-	bos := g.NewBus()
+	bos := g.NewBus(t8.GetArchBits())
 	NewBus1(bis, wbit1, bos)
 
 	for j := 0; j < nb_tests_per_part; j++ {
-		x := rand.Intn(a.GetMaxByteValue())
+		x := rand.Intn(bis.GetMaxPower() + 1)
 		y := rand.Intn(2)
 		b := false
 		res := x

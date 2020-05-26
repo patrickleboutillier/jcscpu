@@ -3,12 +3,13 @@ package board
 import (
 	"testing"
 
+	t8 "github.com/patrickleboutillier/jcscpu/internal/testarch"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 func TestSomethingUsefulRevisited(t *testing.T) {
-	BB := NewVanillaBreadboard()
+	BB := newVanillaBreadboard(t8.GetArchBits())
 
 	// Add our extra connections to the Harness
 	steps := BB.GetBus("STP.bus")

@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"testing"
 
+	t8 "github.com/patrickleboutillier/jcscpu/internal/testarch"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 func TestRegisterBasic(t *testing.T) {
 	// Basic test for Register circuit.
-	bin := g.NewBus()
-	bout := g.NewBus()
+	bin := g.NewBus(t8.GetArchBits())
+	bout := g.NewBus(t8.GetArchBits())
 	ws := g.NewWire()
 	we := g.NewWire()
 	R := NewRegister(bin, ws, we, bout, "R")
@@ -39,7 +40,7 @@ func TestRegisterBasic(t *testing.T) {
 
 func TestRegisterIO(t *testing.T) {
 	// Tests using a REGISTRY with input and output on the same BUS.
-	bio := g.NewBus()
+	bio := g.NewBus(t8.GetArchBits())
 	ws := g.NewWire()
 	we := g.NewWire()
 	NewRegister(bio, ws, we, bio, "R")
@@ -64,7 +65,7 @@ func TestRegisterIO(t *testing.T) {
 
 func TestRegisterMultiple(t *testing.T) {
 	// Multiple registers.
-	bio := g.NewBus()
+	bio := g.NewBus(t8.GetArchBits())
 	ws1 := g.NewWire()
 	we1 := g.NewWire()
 	ws2 := g.NewWire()

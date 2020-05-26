@@ -5,17 +5,17 @@ import (
 	"math/rand"
 	"testing"
 
+	t8 "github.com/patrickleboutillier/jcscpu/internal/testarch"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
-	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 var nb_enabler_tests int = 1024
 
 func TestEnablerBasic(t *testing.T) {
-	bis := g.NewBus()
+	bis := g.NewBus(t8.GetArchBits())
 	we := g.NewWire()
-	bos := g.NewBus()
+	bos := g.NewBus(t8.GetArchBits())
 	NewEnabler(bis, we, bos)
 
 	bis.GetBit(7).SetPower(true)
@@ -35,16 +35,16 @@ func TestEnablerBasic(t *testing.T) {
 }
 
 func TestEnablerMaker(t *testing.T) {
-	bis := g.NewBus()
+	bis := g.NewBus(t8.GetArchBits())
 	we := g.NewWire()
-	bos := g.NewBus()
+	bos := g.NewBus(t8.GetArchBits())
 	NewEnabler(bis, we, bos)
 
 	for j := 0; j < nb_enabler_tests; j++ {
-		x := j % (a.GetMaxByteValue() + 1)
+		x := j % (1 << bis.GetSize())
 		for _, r := range [2]bool{false, true} {
 			if r {
-				x = rand.Intn(a.GetMaxByteValue())
+				x = rand.Intn(bis.GetMaxPower())
 			}
 
 			testname := fmt.Sprintf("ENABLER(%d, 1)=%d", x, x)

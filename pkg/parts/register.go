@@ -18,7 +18,7 @@ type Register struct {
 func NewRegister(bis *g.Bus, ws *g.Wire, we *g.Wire, bos *g.Bus, name string) *Register {
 	g.CheckBusSizes(bis, bos, "Register input and output buses")
 	n := bis.GetSize()
-	bus := g.NewBusN(n)
+	bus := g.NewBus(n)
 	this := &Register{bis, bus, bos, ws, we, name}
 
 	NewByte(bis, ws, bus)

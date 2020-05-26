@@ -5,26 +5,26 @@ import (
 	"math/rand"
 	"testing"
 
+	t8 "github.com/patrickleboutillier/jcscpu/internal/testarch"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
-	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 var nb_ram_tests int = 1024
 
 func TestRAMInit(t *testing.T) {
-	ba := g.NewBus()
+	ba := g.NewBus(t8.GetArchBits())
 	wsa := g.NewWire()
-	bio := g.NewBus()
+	bio := g.NewBus(t8.GetArchBits())
 	ws := g.NewWire()
 	we := g.NewWire()
 	NewRAM(ba, wsa, bio, ws, we)
 }
 
 func TestRAMBasic(t *testing.T) {
-	ba := g.NewBus()
+	ba := g.NewBus(t8.GetArchBits())
 	wsa := g.NewWire()
-	bio := g.NewBus()
+	bio := g.NewBus(t8.GetArchBits())
 	ws := g.NewWire()
 	we := g.NewWire()
 	NewRAM(ba, wsa, bio, ws, we)
@@ -75,19 +75,19 @@ func TestRAMBasic(t *testing.T) {
 }
 
 func TestRAMMaker(t *testing.T) {
-	ba := g.NewBus()
+	ba := g.NewBus(t8.GetArchBits())
 	wsa := g.NewWire()
-	bio := g.NewBus()
+	bio := g.NewBus(t8.GetArchBits())
 	ws := g.NewWire()
 	we := g.NewWire()
 	RAM := NewRAM(ba, wsa, bio, ws, we)
 
 	xs := make([]int, nb_ram_tests, nb_ram_tests)
 	for j := 0; j < nb_ram_tests; j++ {
-		x := rand.Intn(a.GetMaxByteValue())
+		x := rand.Intn(ba.GetMaxPower())
 		xs[j] = x
 		addr := x
-		data := a.GetMaxByteValue() - x
+		data := ba.GetMaxPower() - x
 		testname := fmt.Sprintf("Value %d properly stored in RAM[%d]", data, addr)
 		t.Run(testname, func(t *testing.T) {
 			// Set addr on addr bus
@@ -104,7 +104,7 @@ func TestRAMMaker(t *testing.T) {
 
 	for _, x := range xs {
 		addr := x
-		data := a.GetMaxByteValue() - x
+		data := ba.GetMaxPower() - x
 		testname := fmt.Sprintf("Value %d properly retreived from RAM[%d]", data, addr)
 		t.Run(testname, func(t *testing.T) {
 			ba.SetPower(addr)
@@ -122,31 +122,3 @@ func TestRAMMaker(t *testing.T) {
 		})
 	}
 }
-
-/*
-
-
-
-sub make_ram_test {
-    random = shift
-
-    foreach t (@ts){
-        addr = sprintf("%08b", t)
-        ba.GetPower(addr)
-        wsa.GetPower(1)
-        wsa.GetPower(0)
-
-        # Clear the IO bus before enabling.
-        # In the final setup this will not be necessary as each instruction will start with a clean bus.
-        bio.GetPower("00000000")
-
-        # Now if we turn on the e, we should get our data back on the bus.
-        we.GetPower(1)
-        data = join('', scalar(reverse(addr)))
-        is(bio.GetPower(), data)
-        we.GetPower(0)
-    }
-}
-
-
-*/

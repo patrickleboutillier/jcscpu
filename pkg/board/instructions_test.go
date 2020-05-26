@@ -6,15 +6,15 @@ import (
 	"testing"
 
 	ta "github.com/patrickleboutillier/jcscpu/internal/testalu"
+	t8 "github.com/patrickleboutillier/jcscpu/internal/testarch"
 	ti "github.com/patrickleboutillier/jcscpu/internal/testinst"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
-	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 )
 
 var nb_tests_per_inst = 256
 
 func TestALUInstuctionsBasic(t *testing.T) {
-	BB := NewInstBreadboard("ALU")
+	BB := newInstBreadboard(t8.GetArchBits(), "ALU")
 
 	// Testing of ALU instructions.
 	// Add contents of R1 and R2, result in R2
@@ -37,7 +37,7 @@ func TestALUInstuctionsBasic(t *testing.T) {
 	BB.SetRAM(0b00001001, 0b10110000)
 	BB.SetReg("IAR", 0b00001001)
 	BB.Inst()
-	xtra := a.GetMaxByteValue() - 255
+	xtra := BB.GetBus("DATA.bus").GetMaxPower() - 255
 	tm.Is(t, BB.GetReg("R0").GetPower(), xtra+0b01010101, "NOT of 10101010 = 01010101")
 
 	// Bug with TMP.e
@@ -51,7 +51,7 @@ func TestALUInstuctionsBasic(t *testing.T) {
 }
 
 func TestALUInstructions(t *testing.T) {
-	BB := NewInstBreadboard("ALU")
+	BB := newInstBreadboard(t8.GetArchBits(), "ALU")
 	BB.LogWith(func(msg string) {
 		t.Log(msg)
 	})
@@ -97,7 +97,7 @@ func TestALUInstructions(t *testing.T) {
 }
 
 func TestLDInstruction(t *testing.T) {
-	BB := NewInstBreadboard("LDST")
+	BB := newInstBreadboard(t8.GetArchBits(), "LDST")
 	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0000,
 		func(tc ti.INSTTestCase) {
 			BB.SetRAM(tc.ADDR, tc.DATA)
@@ -112,7 +112,7 @@ func TestLDInstruction(t *testing.T) {
 }
 
 func TestSTInstruction(t *testing.T) {
-	BB := NewInstBreadboard("LDST")
+	BB := newInstBreadboard(t8.GetArchBits(), "LDST")
 	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0001,
 		func(tc ti.INSTTestCase) {
 			BB.SetReg(tc.RB, tc.DATA)
@@ -132,7 +132,7 @@ func TestSTInstruction(t *testing.T) {
 }
 
 func TestDATAInstruction(t *testing.T) {
-	BB := NewInstBreadboard("DATA")
+	BB := newInstBreadboard(t8.GetArchBits(), "DATA")
 	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0010,
 		func(tc ti.INSTTestCase) {
 		},
@@ -145,7 +145,7 @@ func TestDATAInstruction(t *testing.T) {
 }
 
 func TestJMPRInstruction(t *testing.T) {
-	BB := NewInstBreadboard("JUMP")
+	BB := newInstBreadboard(t8.GetArchBits(), "JUMP")
 	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0011,
 		func(tc ti.INSTTestCase) {
 			BB.SetReg(tc.RB, tc.ADDR)
@@ -158,7 +158,7 @@ func TestJMPRInstruction(t *testing.T) {
 }
 
 func TestJMPInstruction(t *testing.T) {
-	BB := NewInstBreadboard("JUMP")
+	BB := newInstBreadboard(t8.GetArchBits(), "JUMP")
 	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0100,
 		func(tc ti.INSTTestCase) {
 		},
@@ -170,7 +170,7 @@ func TestJMPInstruction(t *testing.T) {
 }
 
 func TestJMPIFInstruction(t *testing.T) {
-	BB := NewInstBreadboard("JUMP")
+	BB := newInstBreadboard(t8.GetArchBits(), "JUMP")
 	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0101,
 		func(tc ti.INSTTestCase) {
 			BB.GetBus("FLAGS.in").SetPower(tc.FLAGS << 4)
@@ -193,7 +193,7 @@ func TestJMPIFInstruction(t *testing.T) {
 }
 
 func TestCLFInstruction(t *testing.T) {
-	BB := NewInstBreadboard("CLF")
+	BB := newInstBreadboard(t8.GetArchBits(), "CLF")
 	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0110,
 		func(tc ti.INSTTestCase) {
 			// Inject the flags in the FLAG reg input
@@ -216,7 +216,7 @@ func TestCLFInstruction(t *testing.T) {
 }
 
 func TestIOInstruction(t *testing.T) {
-	BB := NewInstBreadboard("IO")
+	BB := newInstBreadboard(t8.GetArchBits(), "IO")
 
 	received := -1
 	sent := -1
@@ -226,7 +226,7 @@ func TestIOInstruction(t *testing.T) {
 				BB.IOAdapter.Register(BB, tc.IODEV, fmt.Sprintf("dummy-%d", tc.IODEV),
 					func() {
 						// Simulate data being placed on the bus by the device
-						sent = rand.Intn(a.GetMaxByteValue())
+						sent = rand.Intn(BB.GetBus("DATA.bus").GetMaxPower())
 						BB.GetBus("DATA.bus").SetPower(sent)
 					},
 					func() {

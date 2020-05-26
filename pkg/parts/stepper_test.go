@@ -17,7 +17,7 @@ func TestStepperManual(t *testing.T) {
 	C := NewClock(wclk, wclke, wclks)
 
 	// First we make the stepper advance manually.
-	bsteps := g.NewBusN(7)
+	bsteps := g.NewBus(7)
 	S := NewStepper(wclk, bsteps)
 
 	type tc struct {
@@ -50,7 +50,7 @@ func TestStepperAuto(t *testing.T) {
 	C.SetMaxTicks(256)
 
 	// First we make the stepper advance manually.
-	bsteps := g.NewBusN(7)
+	bsteps := g.NewBus(7)
 	S := NewStepper(wclk, bsteps)
 
 	tm.Is(t, C.GetQTicks(), 0, "Starting test at qtick 0")

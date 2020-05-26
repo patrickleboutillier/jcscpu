@@ -124,7 +124,7 @@ func JUMPInstructions(BB *Breadboard) {
 	BB.GetORe("RAM.ena.eor").AddWire(ji3)
 	BB.GetORe("IAR.set.eor").AddWire(ji3)
 
-	fbus := g.NewBusN(4)
+	fbus := g.NewBus(4)
 	for j := 0; j < 4; j++ {
 		g.NewAND(BB.GetBus("FLAGS.bus").GetWire(j), BB.GetBus("IR.bus").GetWire(j+4), fbus.GetWire(j))
 	}
@@ -134,7 +134,7 @@ func JUMPInstructions(BB *Breadboard) {
 func CLFInstructions(BB *Breadboard) {
 	// Use the last 4 bits of the CLF instruction for control instructions.
 	breg := g.WrapBusV(BB.GetBus("IR.bus").GetWire(4), BB.GetBus("IR.bus").GetWire(5), BB.GetBus("IR.bus").GetWire(6), BB.GetBus("IR.bus").GetWire(7))
-	binst := g.NewBusN(16)
+	binst := g.NewBus(16)
 	p.NewDecoder(breg, binst)
 
 	// CLF, 01100000

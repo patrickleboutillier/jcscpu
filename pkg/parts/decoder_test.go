@@ -13,8 +13,8 @@ var max_decoder_n_tests int = 4
 
 func TestDecoderMaker(t *testing.T) {
 	for n := 2; n <= max_decoder_n_tests; n++ {
-		bis := g.NewBusN(n)
-		bos := g.NewBusN(1 << n)
+		bis := g.NewBus(n)
+		bos := g.NewBus(1 << n)
 		NewDecoder(bis, bos)
 
 		max := 1 << n
@@ -38,9 +38,9 @@ func TestDecoderMaker(t *testing.T) {
 
 func TestDecoderErrors(t *testing.T) {
 	tm.TPanic(t, func() {
-		NewDecoder(g.NewBusN(1), g.NewBusN(2))
+		NewDecoder(g.NewBus(1), g.NewBus(2))
 	})
 	tm.TPanic(t, func() {
-		NewDecoder(g.NewBusN(2), g.NewBusN(8))
+		NewDecoder(g.NewBus(2), g.NewBus(8))
 	})
 }

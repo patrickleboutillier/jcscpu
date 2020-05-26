@@ -3,8 +3,6 @@ package gates
 import (
 	"fmt"
 	"log"
-
-	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 )
 
 type Bus struct {
@@ -12,11 +10,7 @@ type Bus struct {
 	wires []*Wire
 }
 
-func NewBus() *Bus {
-	return NewBusN(a.GetArchBits())
-}
-
-func NewBusN(n int) *Bus {
+func NewBus(n int) *Bus {
 	if n < 1 {
 		log.Panicf("Bus sizes must be >= 1, not %d", n)
 	}
@@ -81,6 +75,10 @@ func (this *Bus) GetPower() int {
 	}
 
 	return ret
+}
+
+func (this *Bus) GetMaxPower() int {
+	return (1 << this.GetSize()) - 1
 }
 
 func (this *Bus) String() string {

@@ -35,7 +35,7 @@ func NewIOAdapter(cpu *g.Bus, io *g.Bus) *IOAdapter {
 	// TODO: make sure n <= cpu.GetSize()
 
 	// This decoder decodes the operation on the IO bus. There are only 4 wires that we are interested in:
-	bop := g.NewBusN(16)
+	bop := g.NewBus(16)
 	p.NewDecoder(io, bop)
 	this.indata = bop.GetWire(0b0100)
 	this.inaddr = bop.GetWire(0b0110)
@@ -44,7 +44,7 @@ func NewIOAdapter(cpu *g.Bus, io *g.Bus) *IOAdapter {
 
 	// Now we create the decoder that will dispatch to the proper device.
 	// We use the last 4 wires of CPU bus, which will give us support for 16 IO devices
-	this.bdev = g.NewBusN(this.n)
+	this.bdev = g.NewBus(this.n)
 	cpuws := cpu.GetWires()
 	p.NewDecoder(g.WrapBus(cpuws[len(cpuws)-4:]), this.bdev)
 

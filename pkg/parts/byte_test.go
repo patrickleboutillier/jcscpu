@@ -3,14 +3,15 @@ package parts
 import (
 	"testing"
 
+	t8 "github.com/patrickleboutillier/jcscpu/internal/testarch"
 	tm "github.com/patrickleboutillier/jcscpu/internal/testmore"
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
 
 func TestByte(t *testing.T) {
-	bis := g.NewBus()
+	bis := g.NewBus(t8.GetArchBits())
 	ws := g.NewWire()
-	bos := g.NewBus()
+	bos := g.NewBus(t8.GetArchBits())
 	NewByte(bis, ws, bos)
 
 	ws.SetPower(true)
