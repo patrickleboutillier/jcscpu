@@ -392,12 +392,6 @@ func (this *Breadboard) Run(insts []int) {
 	this.Start()
 }
 
-// Place the instructions in the ROM and calls Run() with the booloader program.
-// A HALT instruction is appeneded at the end to make sure the computer stops when the program is over.
-// An END instruction is appeneded at the end to make sure the bootloader stops knows when to stop reading the program.
-func (this *Breadboard) Boot(insts []int) {
-}
-
 func (this *Breadboard) String() string {
 	str := "\n"
 	str += this.CLK.String() + "  " + this.STP.String() + "\n"
@@ -419,12 +413,12 @@ func (this *Breadboard) String() string {
 		str += "  REGA.e:" + this.GetWire("REGA.e").String() + "/" + this.GetBus("REGA.e.dec.bus").String()
 		str += "  REGB.e:" + this.GetWire("REGB.e").String() + "/" + this.GetBus("REGB.e.dec.bus").String()
 		str += "  REGB.s:" + this.GetWire("REGB.s").String() + "/" + this.GetBus("REGB.s.dec.bus").String()
-		//    $str .= "\nIO:\n"
-		//    $str .= "  IO.clks:" . $this.get("IO.clks").power()
-		//    $str .= "  IO.clke:" . $this.get("IO.clke").power()
-		//    $str .= "  IO.da:" . $this.get("IO.da").power()
-		//    $str .= "  IO.io:" . $this.get("IO.io").power() . "\n"
-		//    $str .= $this.get("IO.adapter").show()
+		str += "\nIO:"
+		str += " IO.clks:" + this.GetWire("IO.clks").String()
+		str += "  IO.clke:" + this.GetWire("IO.clke").String()
+		str += "  IO.da:" + this.GetWire("IO.da").String()
+		str += "  IO.io:" + this.GetWire("IO.io").String()
+		str += this.IOAdapter.String()
 	}
 	str += "\n"
 

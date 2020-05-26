@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
-	b "github.com/patrickleboutillier/jcscpu/pkg/board"
+	c "github.com/patrickleboutillier/jcscpu/pkg/computer"
 )
 
 func main() {
@@ -19,15 +20,15 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	a.SetArchBits(int(*bits))
 
-	BB := b.NewBreadboard()
+	C := c.NewComputer(int(*bits))
 	insts := ParseInstructions()
 	if len(insts) == 0 {
 		log.Fatal("No valid instructions provided!")
 	}
 
-	BB.Run(insts)
+	// Should be Boot...
+	C.BB.Run(insts)
 }
 
 func ParseInstructions() []int {
@@ -37,31 +38,25 @@ func ParseInstructions() []int {
 	nbline := 0
 	for scanner.Scan() {
 		nbline++
-		line := scanner.Text()
-		if line[0] == '#' {
-			continue
-		}
+		line := strings.TrimSpace(scanner.Text())
+		//if len(line) == 0 || line[0] == '#' {
+		//	continue
+		//}
 		var inst int
-		n, err := fmt.Sscanf(line, "%b", &inst)
+		_, err := fmt.Sscanf(line, "%b", &inst)
 		if err != nil {
-			log.Fatal(err)
-		}
-		if n != 1 || inst < 0 {
-			log.Fatal("Invalid instruction '%s' at line %d", line, nbline)
+			log.Fatalf("Error parsing line %d: %v", nbline, err)
 		}
 		if inst > a.GetMaxByteValue() {
-			log.Fatal("Instruction '%d' to large for architecture size at line %d", inst, nbline)
+			log.Fatal("Instruction '%b' to large for architecture size at line %d", inst, nbline)
 		}
 
 		ret = append(ret, inst)
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error parsing line %d: %v", nbline, err)
 	}
-
-	// Append HALT
-	ret = append(ret, b.HALT())
 
 	return ret
 }

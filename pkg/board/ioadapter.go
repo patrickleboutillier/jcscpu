@@ -108,7 +108,7 @@ func (this *IOAdapter) String() string {
 	str := ""
 	for j := 0; j < this.n; j++ {
 		if this.devices[j] != nil {
-			str += fmt.Sprintf("  DEV(%s, %d): %s\n", this.devices[j].name, this.devices[j].id, this.devices[j].mem)
+			str += fmt.Sprintf("  DEV(%s, %d): %s", this.devices[j].name, this.devices[j].id, this.devices[j].mem)
 		}
 	}
 
