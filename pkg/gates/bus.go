@@ -2,6 +2,7 @@ package gates
 
 import (
 	"fmt"
+	"log"
 
 	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 )

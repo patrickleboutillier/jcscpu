@@ -1,7 +1,7 @@
 package parts
 
 import (
-	"fmt"
+	"log"
 
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )

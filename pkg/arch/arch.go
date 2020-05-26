@@ -1,7 +1,7 @@
 package arch
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"strconv"
 )

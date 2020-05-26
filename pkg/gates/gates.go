@@ -1,6 +1,9 @@
 package gates
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 /*
 NAND
