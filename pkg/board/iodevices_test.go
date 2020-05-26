@@ -32,11 +32,17 @@ func TestTTYDevice(t *testing.T) {
 			tc.INST = 0b01111000 + rb
 			BB.SetReg(tc.RB, tc.DATA)
 			doInst(BB)(tc)
-			buf := make([]byte, 4)
-			rune, _, _ := buffer.ReadRune()
-			BB.Log(buf)
-			received := int(rune)
-			tm.Is(t, received, tc.DATA, fmt.Sprintf("Data %d was grabbed from the bus by device %d", received, tc.IODEV))
+
+			// We compare using runes, because the binary sequence in tc.DATA can be an invalid
+			// UTF-8 sequence
+			var expected rune
+			tbuf := fmt.Sprintf("%c", rune(tc.DATA))
+			fmt.Sscanf(tbuf, "%c", &expected)
+
+			var received rune
+			fmt.Fscanf(buffer, "%c", &received)
+
+			tm.Is(t, received, expected, fmt.Sprintf("Rune %d (%c) was grabbed from the bus by device %d", received, received, tc.IODEV))
 		},
 		func(tc ti.INSTTestCase) {
 		},
