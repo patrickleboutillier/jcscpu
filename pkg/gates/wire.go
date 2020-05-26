@@ -5,8 +5,6 @@ type prehook func(bool)
 var on *Wire = nil
 var off *Wire = nil
 
-var NbWires int
-
 type Wire struct {
 	power, soft, terminal bool
 	gates                 []*NAND
@@ -16,8 +14,7 @@ type Wire struct {
 
 func NewWire() *Wire {
 	this := &Wire{gates: make([]*NAND, 0, 2)}
-	NbWires++
-	return this ;
+	return this
 }
 
 func WireOn() *Wire {

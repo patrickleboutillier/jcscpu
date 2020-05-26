@@ -42,8 +42,9 @@ type Breadboard struct {
 	Ctmp      *p.Memory
 	IOAdapter *IOAdapter
 
-	debug int
-	CU    bool
+	debug   int
+	logWith func(msg string)
+	CU      bool
 
 	TTYWriter   io.Writer
 	RNGLast     int
@@ -88,6 +89,13 @@ func NewVanillaBreadboard() *Breadboard {
 	ores := make(map[string]*g.ORe)
 
 	this := &Breadboard{wires: wires, buses: buses, regs: regs, ores: ores}
+
+	// Default logger
+	var logger = log.New(os.Stderr, "DEBUG: ", 0)
+	// Defaut log function
+	this.logWith = func(msg string) {
+		logger.Output(1, msg)
+	}
 
 	// RAM
 	this.putBus("DATA.bus", g.NewBus())
@@ -314,8 +322,8 @@ func (this *Breadboard) Stop() {
 }
 
 // Replace logger with a new function
-func LogWith(f func(msg string)) {
-	logWith = f
+func (this *Breadboard) LogWith(f func(msg string)) {
+	this.logWith = f
 }
 
 func (this *Breadboard) Debug() {
@@ -358,7 +366,7 @@ func END() int {
 
 // Send a debug something to the debug writer
 func (this *Breadboard) Log(l interface{}) {
-	logWith(fmt.Sprintf("%+v", l))
+	this.logWith(fmt.Sprintf("%+v", l))
 }
 
 func (this *Breadboard) SetReg(reg string, data int) {

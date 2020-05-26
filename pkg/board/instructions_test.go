@@ -52,7 +52,7 @@ func TestALUInstuctionsBasic(t *testing.T) {
 
 func TestALUInstructions(t *testing.T) {
 	BB := NewInstBreadboard("ALU")
-	LogWith(func(msg string) {
+	BB.LogWith(func(msg string) {
 		t.Log(msg)
 	})
 

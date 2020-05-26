@@ -48,7 +48,7 @@ func ParseInstructions() []int {
 			log.Fatalf("Error parsing line %d: %v", nbline, err)
 		}
 		if inst > a.GetMaxByteValue() {
-			log.Fatal("Instruction '%b' to large for architecture size at line %d", inst, nbline)
+			log.Fatalf("Instruction '%b' to large for architecture size at line %d", inst, nbline)
 		}
 
 		ret = append(ret, inst)
