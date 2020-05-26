@@ -128,7 +128,7 @@ func NewANDn(bis *Bus, wo *Wire) *ANDn {
 	this := &ANDn{n, bis, wo}
 
 	if n < 2 {
-		panic(fmt.Errorf("Invalid ANDn number of inputs %d", n))
+		log.Panicf("Invalid ANDn number of inputs %d", n)
 	}
 
 	var o *Wire
@@ -166,7 +166,7 @@ func NewORn(bis *Bus, wo *Wire) *ORn {
 	this := &ORn{n, bis, wo}
 
 	if n < 2 {
-		panic(fmt.Errorf("Invalid ORn number of inputs %d", n))
+		log.Panicf("Invalid ORn number of inputs %d", n)
 	}
 
 	var o *Wire
@@ -204,7 +204,7 @@ func NewORe(wo *Wire) *ORe {
 
 func (this *ORe) AddWire(w *Wire) {
 	if this.n >= 6 {
-		panic(fmt.Errorf("Elastic OR has reached maximum capacity of 6"))
+		log.Panicf("Elastic OR has reached maximum capacity of 6")
 	}
 	NewCONN(w, this.orn.is.GetWire(this.n))
 	this.n++

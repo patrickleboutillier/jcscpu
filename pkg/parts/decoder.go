@@ -17,10 +17,10 @@ func NewDecoder(bis *g.Bus, bos *g.Bus) *Decoder {
 	ni := bis.GetSize()
 	no := bos.GetSize()
 	if ni < 2 {
-		panic(fmt.Errorf("Invalid Decoder number of inputs %d", ni))
+		log.Panicf("Invalid Decoder number of inputs %d", ni)
 	}
 	if (1 << ni) != no {
-		panic(fmt.Errorf("Invalid number of wires in Decoder output bus (%d) (2**%d is %d)", no, ni, (1 << ni)))
+		log.Panicf("Invalid number of wires in Decoder output bus (%d) (2**%d is %d)", no, ni, (1 << ni))
 	}
 
 	this := &Decoder{bis, bos}

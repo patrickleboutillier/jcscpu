@@ -17,7 +17,7 @@ func NewBus() *Bus {
 
 func NewBusN(n int) *Bus {
 	if n < 1 {
-		panic(fmt.Errorf("Bus sizes must be >= 1, not %d", n))
+		log.Panicf("Bus sizes must be >= 1, not %d", n)
 	}
 	ws := make([]*Wire, n, n)
 	for j := 0; j < n; j++ {
@@ -48,7 +48,7 @@ func CheckBusSizes(b1, b2 *Bus, msg string) {
 	n1 := b1.GetSize()
 	n2 := b2.GetSize()
 	if n1 != n2 {
-		panic(fmt.Errorf("Bus sizes (%d, %d) different for %s", n1, n2, msg))
+		log.Panicf("Bus sizes (%d, %d) different for %s", n1, n2, msg)
 	}
 }
 
@@ -91,10 +91,10 @@ func (this *Bus) String() string {
 // This is used mostly in the test suite.
 func (this *Bus) SetPower(vs int) {
 	if vs < 0 {
-		panic(fmt.Errorf("Power value for bus must be positive, not %d", vs))
+		log.Panicf("Power value for bus must be positive, not %d", vs)
 	}
 	if vs > ((1 << this.n) - 1) {
-		panic(fmt.Errorf("Power value %d too large for bus (n is %d)", vs, this.n))
+		log.Panicf("Power value %d too large for bus (n is %d)", vs, this.n)
 	}
 
 	for j := 0; j < this.n; j++ {

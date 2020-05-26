@@ -219,56 +219,56 @@ func NewVanillaBreadboard() *Breadboard {
 
 func (this *Breadboard) putWire(name string, w *g.Wire) {
 	if _, ok := this.wires[name]; ok {
-		panic(fmt.Errorf("Wire '%s' already registered with Breadboard", name))
+		log.Panicf("Wire '%s' already registered with Breadboard", name)
 	}
 	this.wires[name] = w
 }
 
 func (this *Breadboard) GetWire(name string) *g.Wire {
 	if _, ok := this.wires[name]; !ok {
-		panic(fmt.Errorf("Wire '%s' not registered with Breadboard", name))
+		log.Panicf("Wire '%s' not registered with Breadboard", name)
 	}
 	return this.wires[name]
 }
 
 func (this *Breadboard) putBus(name string, b *g.Bus) {
 	if _, ok := this.buses[name]; ok {
-		panic(fmt.Errorf("Bus '%s' already registered with Breadboard", name))
+		log.Panicf("Bus '%s' already registered with Breadboard", name)
 	}
 	this.buses[name] = b
 }
 
 func (this *Breadboard) GetBus(name string) *g.Bus {
 	if _, ok := this.buses[name]; !ok {
-		panic(fmt.Errorf("Bus '%s' not registered with Breadboard", name))
+		log.Panicf("Bus '%s' not registered with Breadboard", name)
 	}
 	return this.buses[name]
 }
 
 func (this *Breadboard) putReg(name string, r *p.Register) {
 	if _, ok := this.regs[name]; ok {
-		panic(fmt.Errorf("Register '%s' already registered with Breadboard", name))
+		log.Panicf("Register '%s' already registered with Breadboard", name)
 	}
 	this.regs[name] = r
 }
 
 func (this *Breadboard) GetReg(name string) *p.Register {
 	if _, ok := this.regs[name]; !ok {
-		panic(fmt.Errorf("Register '%s' not registered with Breadboard", name))
+		log.Panicf("Register '%s' not registered with Breadboard", name)
 	}
 	return this.regs[name]
 }
 
 func (this *Breadboard) putORe(name string, o *g.ORe) {
 	if _, ok := this.ores[name]; ok {
-		panic(fmt.Errorf("ORe '%s' already registered with Breadboard", name))
+		log.Panicf("ORe '%s' already registered with Breadboard", name)
 	}
 	this.ores[name] = o
 }
 
 func (this *Breadboard) GetORe(name string) *g.ORe {
 	if _, ok := this.ores[name]; !ok {
-		panic(fmt.Errorf("ORe '%s' not registered with Breadboard", name))
+		log.Panicf("ORe '%s' not registered with Breadboard", name)
 	}
 	return this.ores[name]
 }
@@ -279,7 +279,7 @@ func (this *Breadboard) Tick() {
 
 func (this *Breadboard) Ticks(n int) {
 	if n <= 0 {
-		panic(fmt.Errorf("Number of ticks must be >= 1, not %d", n))
+		log.Panicf("Number of ticks must be >= 1, not %d", n)
 	}
 	for j := 0; j < n; j++ {
 		this.Tick()
@@ -297,7 +297,7 @@ func (this *Breadboard) Steps(n int) {
 func (this *Breadboard) Inst() {
 	cur := this.STP.GetStep()
 	if (cur != 0) && (cur != 6) {
-		panic(fmt.Errorf("Can't Inst mid-instruction (step: %d)", cur))
+		log.Panicf("Can't Inst mid-instruction (step: %d)", cur)
 	}
 
 	this.Ticks(6)
@@ -305,7 +305,7 @@ func (this *Breadboard) Inst() {
 
 func (this *Breadboard) Insts(n int) {
 	if n <= 0 {
-		panic(fmt.Errorf("Number of insts must be >= 1, not %d", n))
+		log.Panicf("Number of insts must be >= 1, not %d", n)
 	}
 
 	for j := 0; j < n; j++ {

@@ -72,7 +72,7 @@ func (this *Clock) QTick() {
 // Manual advancing of the clock.
 func (this *Clock) Tick() {
 	if (this.qticks % 4) != 0 {
-		panic(fmt.Errorf("Can't tick mid-cycle (qticks: %d)!", this.qticks))
+		log.Panicf("Can't tick mid-cycle (qticks: %d)!", this.qticks)
 	}
 
 	for j := 0; j < 4; j++ {
