@@ -40,6 +40,17 @@ func RNGIODevice(BB *Breadboard) {
 	)
 }
 
+func ROMIODevice(BB *Breadboard) {
+	BB.IOAdapter.Register(BB, 2, "ROM",
+		func() {
+			BB.GetBus("DATA.bus").SetPower(BB.ROM[BB.ROMAddrLast])
+		},
+		func() {
+			BB.ROMAddrLast = BB.GetBus("DATA.bus").GetPower()
+		},
+	)
+}
+
 /*
 # A simulation of a Read-Only Memory module. This is where the program to be run lives.
 # It is backed by a file, and uses callback/hook on wires to perform the actions.

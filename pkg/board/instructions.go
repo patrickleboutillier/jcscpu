@@ -1,6 +1,8 @@
 package board
 
 import (
+	"log"
+
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 	p "github.com/patrickleboutillier/jcscpu/pkg/parts"
 )
@@ -135,7 +137,7 @@ func CLFInstructions(BB *Breadboard) {
 	binst := g.NewBusN(16)
 	p.NewDecoder(breg, binst)
 
-	// CLF, 0110000
+	// CLF, 01100000
 	cl1 := g.NewWire()
 	g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(0)), cl1)
 	BB.GetORe("BUS1.bit1.eor").AddWire(cl1)
@@ -151,9 +153,27 @@ func CLFInstructions(BB *Breadboard) {
 	})
 
 	// TODO:
-	// DEBUG3,2,1,0
+	// DEBUG3,2,1,0, 011010[00,01,10,11]
+	for j := 0; j < 4; j++ {
+		dbg := g.NewWire()
+		g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(8+j)), dbg)
+		d := j
+		dbg.AddPrehook(func(v bool) {
+			if v {
+				BB._debug(d)
+			}
+		})
+	}
 	// DUMP (dump RAM)
-	// END (for specifying the end of a program in ROM)
+
+	// END, 01101111 (for specifying the end of a program in ROM)
+	end1 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(15)), end1)
+	end1.AddPrehook(func(v bool) {
+		if v {
+			log.Panic("END instruction should never be executed!")
+		}
+	})
 }
 
 func IOInstructions(BB *Breadboard) {

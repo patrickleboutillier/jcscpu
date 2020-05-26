@@ -45,8 +45,10 @@ type Breadboard struct {
 	debug int
 	CU    bool
 
-	TTYWriter io.Writer
-	RNGLast   int
+	TTYWriter   io.Writer
+	RNGLast     int
+	ROMAddrLast int
+	ROM         []int
 }
 
 func NewInstProcBreadboard() *Breadboard {
@@ -332,10 +334,26 @@ func (this *Breadboard) DebugQTick() {
 	this.debug = 3
 }
 
+func (this *Breadboard) _debug(n int) {
+	if n == 0 {
+		this.DebugOff()
+	} else {
+		this.debug = n
+	}
+}
+
 func (this *Breadboard) DebugOff() {
 	// Final state.
 	this.Debug()
 	this.debug = 0
+}
+
+func HALT() int {
+	return 0b01100001
+}
+
+func END() int {
+	return 0b01101111
 }
 
 // Send a debug something to the debug writer
@@ -357,6 +375,27 @@ func (this *Breadboard) SetRAM(addr int, data int) {
 	this.GetBus("DATA.bus").SetPower(data)
 	this.GetWire("RAM.s").SetPower(true)
 	this.GetWire("RAM.s").SetPower(false)
+}
+
+// Place the instructions in RAM, starting at position 0, and Start() the computer.
+// A HALT instruction is appeneded at the end to make sure the computer stops when the program is over.
+func (this *Breadboard) Run(insts []int) {
+	insts = append(insts, HALT())
+	for addr, inst := range insts {
+		this.SetRAM(addr, inst)
+	}
+
+	//Important to reset the DATA.bus after loading RAM as it will leave data there
+	// that will mess up the rest of the instruction loading.
+	this.GetBus("DATA.bus").SetPower(0)
+
+	this.Start()
+}
+
+// Place the instructions in the ROM and calls Run() with the booloader program.
+// A HALT instruction is appeneded at the end to make sure the computer stops when the program is over.
+// An END instruction is appeneded at the end to make sure the bootloader stops knows when to stop reading the program.
+func (this *Breadboard) Boot(insts []int) {
 }
 
 func (this *Breadboard) String() string {
