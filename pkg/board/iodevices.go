@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-
-	a "github.com/patrickleboutillier/jcscpu/pkg/arch"
 )
 
 func init() {
@@ -33,8 +31,9 @@ func TTYIODevice(BB *Breadboard) {
 func RNGIODevice(BB *Breadboard) {
 	BB.IOAdapter.Register(BB, 1, "RNG",
 		func() {
-			BB.RNGLast = rand.Intn(a.GetMaxByteValue())
-			BB.GetBus("DATA.bus").SetPower(BB.RNGLast)
+			bus := BB.GetBus("DATA.bus")
+			BB.RNGLast = rand.Intn(1 << bus.GetSize())
+			bus.SetPower(BB.RNGLast)
 		},
 		nil,
 	)

@@ -21,35 +21,35 @@ func NewALU(bas *g.Bus, bbs *g.Bus, wci *g.Wire, bops *g.Bus, bcs *g.Bus, wco *g
 	bdec.GetWire(7).SetPower(false)
 	bdec.GetWire(7).SetTerminal()
 
-	bxor := g.NewBus()
+	bxor := g.NewBusN(bas.GetSize())
 	NewXORer(bas, bbs, bxor, weqo, walo)
 	NewEnabler(bxor, bdec.GetWire(6), bcs)
 
-	bor := g.NewBus()
+	bor := g.NewBusN(bas.GetSize())
 	NewORer(bas, bbs, bor)
 	NewEnabler(bor, bdec.GetWire(5), bcs)
 
-	band := g.NewBus()
+	band := g.NewBusN(bas.GetSize())
 	NewANDder(bas, bbs, band)
 	NewEnabler(band, bdec.GetWire(4), bcs)
 
-	bnot := g.NewBus()
+	bnot := g.NewBusN(bas.GetSize())
 	NewNOTter(bas, bnot)
 	NewEnabler(bnot, bdec.GetWire(3), bcs)
 
-	bshl := g.NewBus()
+	bshl := g.NewBusN(bas.GetSize())
 	woshl := g.NewWire()
 	NewShiftLeft(bas, wci, bshl, woshl)
 	g.NewAND(woshl, bdec.GetWire(2), wco)
 	NewEnabler(bshl, bdec.GetWire(2), bcs)
 
-	bshr := g.NewBus()
+	bshr := g.NewBusN(bas.GetSize())
 	woshr := g.NewWire()
 	NewShiftRight(bas, wci, bshr, woshr)
 	g.NewAND(woshr, bdec.GetWire(1), wco)
 	NewEnabler(bshr, bdec.GetWire(1), bcs)
 
-	add := NewADDer(bas, bbs, wci, g.NewBus(), g.NewWire())
+	add := NewADDer(bas, bbs, wci, g.NewBusN(bas.GetSize()), g.NewWire())
 	g.NewAND(add.co, bdec.GetWire(0), wco)
 	NewEnabler(add.cs, bdec.GetWire(0), bcs)
 
