@@ -1,8 +1,6 @@
 package board
 
 import (
-	"log"
-
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 	p "github.com/patrickleboutillier/jcscpu/pkg/parts"
 )
@@ -170,15 +168,6 @@ func CLFInstructions(BB *Breadboard) {
 	dmp1.AddPrehook(func(v bool) {
 		if v {
 			BB.Dump()
-		}
-	})
-
-	// END, 01101111 (for specifying the end of a program in ROM)
-	end1 := g.NewWire()
-	g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(15)), end1)
-	end1.AddPrehook(func(v bool) {
-		if v {
-			log.Panic("END instruction should never be executed!")
 		}
 	})
 }

@@ -104,10 +104,6 @@ func HALT() int {
 	return 0b01100001
 }
 
-func END() int {
-	return 0b01101111
-}
-
 // Send a debug something to the debug writer
 func (this *Breadboard) Log(l interface{}) {
 	this.logWith(fmt.Sprintf("%+v", l))

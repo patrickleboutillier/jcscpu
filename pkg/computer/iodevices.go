@@ -10,6 +10,7 @@ func init() {
 	iodevHandlers["TTY"] = TTYIODevice
 	iodevHandlers["RNG"] = RNGIODevice
 	iodevHandlers["ROM"] = ROMIODevice
+	iodevHandlers["ROMSize"] = ROMSizeIODevice
 }
 
 // TTY: Device 0
@@ -45,6 +46,8 @@ func RNGIODevice(C *Computer) {
 func ROMIODevice(C *Computer) {
 	C.IOAdapter.Register(C.BB, 2, "ROM",
 		func() {
+			//C.BB.Log(C.BB.ROMAddrLast)
+			//C.BB.Log(C.BB.ROM[C.BB.ROMAddrLast])
 			C.BB.GetBus("DATA.bus").SetPower(C.BB.ROM[C.BB.ROMAddrLast])
 		},
 		func() {

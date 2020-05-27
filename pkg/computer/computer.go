@@ -38,7 +38,7 @@ func NewComputer(bits int, maxinsts int) *Computer {
 // A HALT instruction is appeneded at the end to make sure the computer stops when the program is over.
 // An END instruction is appeneded at the end to make sure the bootloader stops knows when to stop reading the program.
 func (this *Computer) BootAndRun(insts []int) {
-	this.BB.ROM = append(insts, b.HALT(), b.END())
+	this.BB.ROM = append(insts, b.HALT())
 	// Install Bootloader program at the *end* of the RAM.
 	max := 1 << this.bits
 	bl := bootLoader()
@@ -61,32 +61,37 @@ func (this *Computer) BootAndRun(insts []int) {
 
 func bootLoader() []int {
 	return []int{
-		// Activate ROM
-		0b00100000, // DATA  R0, 00000010 (2)
-		0b00000010, // ...   2
-		0b01111100, // OUTA  R0
-		// R0 is our 1, R3 is our HALT instruction, R1 is our ROM address, R2 is our ROM data
-		0b00100000, // DATA  R0, 00000001 (1)
-		0b00000001, // ...   1
-		// Detect mandatory END instruction at program end
-		0b00100011, // DATA  R3, 01101111 (111)
-		0b01101111, // ...   111
-		0b00100001, // DATA  R1, 00000000 (0)
-		0b00000000, // ...   0
-		// Label 'Ask for address in R1' at position 9
-		0b01111001, // OUTD  R1
-		// Receive data in R2 and copy it to RAM at address that is in R1
-		0b01110010, // IND   R2
-		0b00010110, // ST    R1, R2
-		// IF R2 == END jump to byte 0 in RAM
-		0b11111011, // CMP   R2, R3
-		0b01010010, // JE    00000000 (0)
-		0b00000000, // ...   0
-		// Increment R1 and loop back
-		0b10000001, // ADD   R0, R1
-		0b01000000, // JMP   00001001 (9)
-		0b00001001, // ...   9
-		0b01100001, // HALT
+		// line   0, pos   0 - R0 is our ROM address, R1 is our ROM size, R2 is our 1, R3 is our ROM data
+		// line   1, pos   0 - Initialize R0 to 0
+		0b00100000, // line   2, pos   0 - DATA  R0, 00000000 (0)
+		0b00000000, // line   3, pos   1 -       00000000 (0)
+		// line   4, pos   2 - Activate ROMSize and place value in R1
+		0b00100001, // line   5, pos   2 - DATA  R1, 00000011 (3)
+		0b00000011, // line   6, pos   3 -       00000011 (3)
+		0b01111101, // line   7, pos   4 - OUTA  R1
+		0b01110001, // line   8, pos   5 - IND   R1
+		// line   9, pos   6 - Initialize R2 to 1
+		0b00100010, // line  10, pos   6 - DATA  R2, 00000001 (1)
+		0b00000001, // line  11, pos   7 -       00000001 (1)
+		// line  12, pos   8 - Activate ROM
+		0b00100011, // line  13, pos   8 - DATA  R3, 00000010 (2)
+		0b00000010, // line  14, pos   9 -       00000010 (2)
+		0b01111111, // line  15, pos  10 - OUTA  R3
+		// line  16, pos  11 - Label 'getnextinst' at pos 11
+		0b01111000, // line  17, pos  11 - OUTD  R0
+		// line  18, pos  12 - Receive data in R3 and copy it to RAM at address that is in R0
+		0b01110011, // line  19, pos  12 - IND   R3
+		0b00010011, // line  20, pos  13 - ST    R0, R3
+		// line  21, pos  14 - Increment R0
+		0b10001000, // line  22, pos  14 - ADD   R2, R0
+		// line  23, pos  15 - IF R0 == R1, jump to byte 0 in RAM
+		0b11110001, // line  24, pos  15 - CMP   R0, R1
+		0b01010010, // line  25, pos  16 - JE    00000000 (0)
+		0b00000000, // line  26, pos  17 -       00000000 (0)
+		// line  27, pos  18 - (ELSE) Loop back
+		0b01000000, // line  28, pos  18 - JMP   00001011 (11)
+		0b00001011, // line  29, pos  19 -       00001011 (11)
+		0b01100001, // line  30, pos  20 - HALT
 	}
 }
 
@@ -96,3 +101,37 @@ func (this *Computer) String() string {
 
 	return str
 }
+
+/*
+// line   0, pos   0 - R0 is our ROM address, R1 is our ROM size, R2 is our 1, R3 is our ROM data
+// line   1, pos   0 - Initialize R0 to 0
+0b00100000, // line   2, pos   0 - DATA  R0, 00000000 (0)
+0b00000000, // line   3, pos   1 -       00000000 (0)
+// line   4, pos   2 - Activate ROMSize and place value in R1
+0b00100001, // line   5, pos   2 - DATA  R1, 00000011 (3)
+0b00000011, // line   6, pos   3 -       00000011 (3)
+0b01111101, // line   7, pos   4 - OUTA  R1
+0b01110001, // line   8, pos   5 - IND   R1
+// line   9, pos   6 - Initialize R2 to 1
+0b00100010, // line  10, pos   6 - DATA  R2, 00000001 (1)
+0b00000001, // line  11, pos   7 -       00000001 (1)
+// line  12, pos   8 - Activate ROM
+0b00100011, // line  13, pos   8 - DATA  R3, 00000010 (2)
+0b00000010, // line  14, pos   9 -       00000010 (2)
+0b01111111, // line  15, pos  10 - OUTA  R3
+// line  16, pos  11 - Label 'getnextinst' at pos 11
+0b01111011, // line  17, pos  11 - OUTD  R3
+// line  18, pos  12 - Receive data in R3 and copy it to RAM at address that is in R0
+0b01110011, // line  19, pos  12 - IND   R3
+0b00010011, // line  20, pos  13 - ST    R0, R3
+// line  21, pos  14 - Increment R0
+0b10001000, // line  22, pos  14 - ADD   R2, R0
+// line  23, pos  15 - IF R0 == R1, jump to byte 0 in RAM
+0b11110001, // line  24, pos  15 - CMP   R0, R1
+0b01010010, // line  25, pos  16 - JE    00000000 (0)
+0b00000000, // line  26, pos  17 -       00000000 (0)
+// line  27, pos  18 - (ELSE) Loop back
+0b01000000, // line  28, pos  18 - JMP   00001011 (11)
+0b00001011, // line  29, pos  19 -       00001011 (11)
+0b01100001, // line  30, pos  20 - HALT
+*/
