@@ -21,7 +21,7 @@ jobs:
     - name: Run test suite
       run: |
         go build ./...
-        for b in 8 10 12 14 16 24 ; do 
+        for b in 8 16 24 ; do 
           echo ARCH_BITS=$b ; 
           go clean -testcache
           ARCH_BITS=$b go test ./...
@@ -29,6 +29,7 @@ jobs:
     - name: Run sample programs
       run: |
         go build cmd/jcscpu.go
-        for t in test/8bit/*.cpu ; do
-          cat $t | ./jcscpu --bits 8 --maxinsts 8092
-        done
+        cat test/8bit/10print.cpu | ./jcscpu --bits 8 --maxinsts 8092
+        #for t in test/8bit/*.cpu ; do
+        #  cat $t | ./jcscpu --bits 8 --maxinsts 8092
+        #done
