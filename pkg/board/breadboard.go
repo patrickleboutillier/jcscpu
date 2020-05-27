@@ -16,27 +16,26 @@ import (
 )
 
 var instHandlers = make(map[string]func(*Breadboard))
-var iodevHandlers = make(map[string]func(*Breadboard))
 
 /*
 BREADBOARD
 */
 type Breadboard struct {
-	wires     map[string]*g.Wire
-	buses     map[string]*g.Bus
-	regs      map[string]*p.Register
-	ores      map[string]*g.ORe
-	RAM       *p.RAM
-	ALU       *p.ALU
-	BUS1      *p.Bus1
-	CLK       *p.Clock
-	STP       *p.Stepper
-	Ctmp      *p.Memory
-	IOAdapter *IOAdapter
+	wires map[string]*g.Wire
+	buses map[string]*g.Bus
+	regs  map[string]*p.Register
+	ores  map[string]*g.ORe
+	RAM   *p.RAM
+	ALU   *p.ALU
+	BUS1  *p.Bus1
+	CLK   *p.Clock
+	STP   *p.Stepper
+	Ctmp  *p.Memory
 
-	debug   int
-	logWith func(msg string)
-	CU      bool
+	debug      int
+	logWith    func(msg string)
+	ExtraDebug func() string
+	CU         bool
 
 	TTYWriter   io.Writer
 	RNGLast     int
@@ -66,9 +65,6 @@ func newInstBreadboard(bits int, inst string) *Breadboard {
 func NewBreadboard(bits int) *Breadboard {
 	this := newInstImplBreadboard(bits)
 	for _, f := range instHandlers {
-		f(this)
-	}
-	for _, f := range iodevHandlers {
 		f(this)
 	}
 	return this
@@ -189,7 +185,6 @@ func newVanillaBreadboard(bits int) *Breadboard {
 	this.putWire("IO.io", g.NewWire())
 
 	this.putBus("IO.bus", g.WrapBusV(this.GetWire("IO.clks"), this.GetWire("IO.clke"), this.GetWire("IO.da"), this.GetWire("IO.io")))
-	this.IOAdapter = NewIOAdapter(this.GetBus("DATA.bus"), this.GetBus("IO.bus"))
 
 	// Hook up the FLAGS Register co output to the ALU ci, adding the AND gate described in the Errata #2
 	// Errata stuff: http://www.buthowdoitknow.com/errata.html
@@ -299,7 +294,6 @@ func (this *Breadboard) String() string {
 		str += "  IO.clke:" + this.GetWire("IO.clke").String()
 		str += "  IO.da:" + this.GetWire("IO.da").String()
 		str += "  IO.io:" + this.GetWire("IO.io").String()
-		str += this.IOAdapter.String()
 	}
 	str += "\n"
 
