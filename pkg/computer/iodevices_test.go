@@ -15,7 +15,7 @@ var nb_tests_per_ioinst = 256
 func TestTTYDevice(t *testing.T) {
 	C := NewComputer(t8.GetArchBits(), -1)
 	buffer := new(bytes.Buffer)
-	C.BB.TTYWriter = buffer
+	C.TTYWriter = buffer
 
 	ti.RunRandomINSTTests(t, nb_tests_per_ioinst, 0b0111,
 		func(tc ti.INSTTestCase) {
@@ -68,7 +68,7 @@ func TestRNGDevice(t *testing.T) {
 			// Then, get data from the device (00)
 			tc.INST = 0b01110000 + rb
 			doInst(C.BB)(tc)
-			tm.Is(t, C.BB.GetReg(tc.RB).GetPower(), C.BB.RNGLast, fmt.Sprintf("Byte received equals %d", C.BB.RNGLast))
+			tm.Is(t, C.BB.GetReg(tc.RB).GetPower(), C.RNGLast, fmt.Sprintf("Byte received equals %d", C.RNGLast))
 		},
 		func(tc ti.INSTTestCase) {
 		},
