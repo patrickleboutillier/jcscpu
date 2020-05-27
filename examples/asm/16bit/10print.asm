@@ -13,7 +13,7 @@ LABEL "a" ;
 DATA R1, 92 ;
 
 LABEL "printR1" ;
-DATA R0, DEVICES::TTY() ;
+DATA R0, TTY ;
 OUTA R0 ;
 OUTD R1 ;
 GOTO "genrand" ;
