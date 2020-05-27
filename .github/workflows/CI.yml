@@ -26,6 +26,8 @@ jobs:
           go clean -testcache
           ARCH_BITS=$b go test ./...
         done
+    - name: Run sample programs
+      run: |
         go build cmd/jcscpu.go
         for t in test/8bit/*.cpu ; do
           cat $t | timeout 5s ./jcscpu --bits 8 --maxinsts 8092
