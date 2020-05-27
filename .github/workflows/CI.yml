@@ -26,14 +26,28 @@ jobs:
           go clean -testcache
           ARCH_BITS=$b go test ./...
         done
-    - name: Run sample programs
+    - name: Run sample CPU programs
       run: |
         go build cmd/jcscpu.go
-        for t in examples/8bit/*.cpu ; do
+        for t in examples/cpu/8bit/*.cpu ; do
           cat $t | timeout 5s ./jcscpu --bits 8 --maxinsts 8092
           echo
         done
-        for t in examples/16bit/*.cpu ; do
+        for t in examples/cpu/16bit/*.cpu ; do
           cat $t | timeout 5s ./jcscpu --bits 16 --maxinsts 8092
+          echo
+        done
+        
+  perl_tests:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+    - name: Run sample ASM programs
+      run: |
+        for t in examples/asm/16bit/*.asm ; do
+          cat $t | perl tools/jcsasm.pl | timeout 5s ./jcscpu --bits 16 --maxinsts 8092
           echo
         done
