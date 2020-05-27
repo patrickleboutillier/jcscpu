@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
@@ -75,6 +76,14 @@ func NewBreadboard(bits int) *Breadboard {
 }
 
 func newVanillaBreadboard(bits int) *Breadboard {
+	max := 32
+	if strconv.IntSize < 64 {
+		max = 16
+	}
+	if (bits < 8) || (bits > max) {
+		log.Panicf("Arch bits must be between 8 and %d inclusively", max)
+	}
+
 	wires := make(map[string]*g.Wire)
 	buses := make(map[string]*g.Bus)
 	regs := make(map[string]*p.Register)
@@ -348,6 +357,14 @@ func (this *Breadboard) DebugOff() {
 	this.debug = 0
 }
 
+func (this *Breadboard) Dump() {
+	n := this.GetBus("DATA.bus").GetMaxPower()
+	for j := 0; j < n; j++ {
+		s := fmt.Sprintf("RAM[%d] = %08b", j, this.RAM.GetCellPower(j))
+		this.Log(s)
+	}
+}
+
 func HALT() int {
 	return 0b01100001
 }
@@ -377,15 +394,19 @@ func (this *Breadboard) SetRAM(addr int, data int) {
 	this.GetWire("RAM.s").SetPower(false)
 }
 
+func (this *Breadboard) SetRAMBlock(offset int, data []int) {
+	for i, d := range data {
+		this.SetRAM(offset+i, d)
+	}
+}
+
 // Place the instructions in RAM, starting at position 0, and Start() the computer.
 // A HALT instruction is appeneded at the end to make sure the computer stops when the program is over.
 func (this *Breadboard) Run(insts []int) {
 	insts = append(insts, HALT())
-	for addr, inst := range insts {
-		this.SetRAM(addr, inst)
-	}
+	this.SetRAMBlock(0, insts)
 
-	//Important to reset the DATA.bus after loading RAM as it will leave data there
+	// Important to reset the DATA.bus after loading RAM as it will leave data there
 	// that will mess up the rest of the instruction loading.
 	this.GetBus("DATA.bus").SetPower(0)
 

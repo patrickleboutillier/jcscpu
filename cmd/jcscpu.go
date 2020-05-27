@@ -27,7 +27,8 @@ func main() {
 	}
 
 	// Should be Boot...
-	C.BB.Run(insts)
+	//C.BB.Run(insts)
+	C.BootAndRun(insts)
 }
 
 func ParseInstructions(bits int) []int {

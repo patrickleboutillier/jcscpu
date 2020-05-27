@@ -152,7 +152,6 @@ func CLFInstructions(BB *Breadboard) {
 		}
 	})
 
-	// TODO:
 	// DEBUG3,2,1,0, 011010[00,01,10,11]
 	for j := 0; j < 4; j++ {
 		dbg := g.NewWire()
@@ -164,7 +163,15 @@ func CLFInstructions(BB *Breadboard) {
 			}
 		})
 	}
+
 	// DUMP (dump RAM)
+	dmp1 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(14)), dmp1)
+	dmp1.AddPrehook(func(v bool) {
+		if v {
+			BB.Dump()
+		}
+	})
 
 	// END, 01101111 (for specifying the end of a program in ROM)
 	end1 := g.NewWire()

@@ -9,6 +9,7 @@ import (
 func init() {
 	iodevHandlers["TTY"] = TTYIODevice
 	iodevHandlers["RNG"] = RNGIODevice
+	iodevHandlers["ROM"] = ROMIODevice
 }
 
 // TTY: Device 0
