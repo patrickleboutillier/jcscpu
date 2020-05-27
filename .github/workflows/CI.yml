@@ -29,8 +29,11 @@ jobs:
     - name: Run sample programs
       run: |
         go build cmd/jcscpu.go
-        #dos2unix test/8bit/10print.cpu
-        #cat test/8bit/10print.cpu | ./jcscpu --bits 8 --maxinsts 8092
-        #for t in test/8bit/*.cpu ; do
-        #  cat $t | ./jcscpu --bits 8 --maxinsts 8092
-        #done
+        for t in test/8bit/*.cpu ; do
+          cat $t | timeout 5s ./jcscpu --bits 8 --maxinsts 8092
+          echo
+        done
+        for t in test/16bit/*.cpu ; do
+          cat $t | timeout 5s ./jcscpu --bits 16 --maxinsts 8092
+          echo
+        done
