@@ -17,13 +17,13 @@ func init() {
 // An output-only TTY implementation, just grabs the ASCII code on the bus and prints
 // the corresponding character to TTYWriter
 func TTYIODevice(C *Computer) {
-	C.BB.TTYWriter = os.Stdout
+	C.TTYWriter = os.Stdout
 	C.IOAdapter.Register(C.BB, 0, "TTY",
 		nil,
 		func() {
 			byte := C.BB.GetBus("DATA.bus").GetPower()
 			rune := rune(byte)
-			fmt.Fprintf(C.BB.TTYWriter, "%c", rune)
+			fmt.Fprintf(C.TTYWriter, "%c", rune)
 		},
 	)
 }
@@ -34,8 +34,8 @@ func RNGIODevice(C *Computer) {
 	C.IOAdapter.Register(C.BB, 1, "RNG",
 		func() {
 			bus := C.BB.GetBus("DATA.bus")
-			C.BB.RNGLast = rand.Intn(1 << bus.GetSize())
-			bus.SetPower(C.BB.RNGLast)
+			C.RNGLast = rand.Intn(1 << bus.GetSize())
+			bus.SetPower(C.RNGLast)
 		},
 		nil,
 	)
@@ -46,12 +46,10 @@ func RNGIODevice(C *Computer) {
 func ROMIODevice(C *Computer) {
 	C.IOAdapter.Register(C.BB, 2, "ROM",
 		func() {
-			//C.BB.Log(C.BB.ROMAddrLast)
-			//C.BB.Log(C.BB.ROM[C.BB.ROMAddrLast])
-			C.BB.GetBus("DATA.bus").SetPower(C.BB.ROM[C.BB.ROMAddrLast])
+			C.BB.GetBus("DATA.bus").SetPower(C.ROM[C.ROMAddrLast])
 		},
 		func() {
-			C.BB.ROMAddrLast = C.BB.GetBus("DATA.bus").GetPower()
+			C.ROMAddrLast = C.BB.GetBus("DATA.bus").GetPower()
 		},
 	)
 }
@@ -61,7 +59,7 @@ func ROMIODevice(C *Computer) {
 func ROMSizeIODevice(C *Computer) {
 	C.IOAdapter.Register(C.BB, 3, "ROMSize",
 		func() {
-			C.BB.GetBus("DATA.bus").SetPower(len(C.BB.ROM))
+			C.BB.GetBus("DATA.bus").SetPower(len(C.ROM))
 		},
 		func() {
 		},

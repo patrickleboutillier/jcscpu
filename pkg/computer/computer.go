@@ -1,6 +1,8 @@
 package computer
 
 import (
+	"io"
+
 	b "github.com/patrickleboutillier/jcscpu/pkg/board"
 )
 
@@ -14,13 +16,18 @@ type Computer struct {
 	IOAdapter *IOAdapter
 	bits      int
 	maxinsts  int
+
+	TTYWriter   io.Writer
+	RNGLast     int
+	ROMAddrLast int
+	ROM         []int
 }
 
 func newVanillaComputer(bits int, maxinsts int) *Computer {
 	BB := b.NewBreadboard(bits)
 	ioa := NewIOAdapter(BB.GetBus("DATA.bus"), BB.GetBus("IO.bus"))
 
-	this := &Computer{BB, ioa, bits, maxinsts}
+	this := &Computer{BB: BB, IOAdapter: ioa, bits: bits, maxinsts: maxinsts}
 	return this
 }
 
@@ -38,7 +45,7 @@ func NewComputer(bits int, maxinsts int) *Computer {
 // A HALT instruction is appeneded at the end to make sure the computer stops when the program is over.
 // An END instruction is appeneded at the end to make sure the bootloader stops knows when to stop reading the program.
 func (this *Computer) BootAndRun(insts []int) {
-	this.BB.ROM = append(insts, b.HALT())
+	this.ROM = append(insts, b.HALT())
 	// Install Bootloader program at the *end* of the RAM.
 	max := 1 << this.bits
 	bl := bootLoader()

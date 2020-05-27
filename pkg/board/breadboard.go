@@ -5,7 +5,6 @@ package board
 // - All registers (except IAR and IR registers)
 
 import (
-	"io"
 	"log"
 	"os"
 	"strconv"
@@ -36,11 +35,6 @@ type Breadboard struct {
 	logWith    func(msg string)
 	ExtraDebug func() string
 	CU         bool
-
-	TTYWriter   io.Writer
-	RNGLast     int
-	ROMAddrLast int
-	ROM         []int
 }
 
 func newInstProcBreadboard(bits int) *Breadboard {
