@@ -40,6 +40,8 @@ func RNGIODevice(BB *Breadboard) {
 	)
 }
 
+// ROM: Device 2
+// A ROM module,
 func ROMIODevice(BB *Breadboard) {
 	BB.IOAdapter.Register(BB, 2, "ROM",
 		func() {
@@ -47,6 +49,18 @@ func ROMIODevice(BB *Breadboard) {
 		},
 		func() {
 			BB.ROMAddrLast = BB.GetBus("DATA.bus").GetPower()
+		},
+	)
+}
+
+// ROMSize: Device 3
+// The size of the ROM module
+func ROMSizeIODevice(BB *Breadboard) {
+	BB.IOAdapter.Register(BB, 3, "ROMSize",
+		func() {
+			BB.GetBus("DATA.bus").SetPower(len(BB.ROM))
+		},
+		func() {
 		},
 	)
 }

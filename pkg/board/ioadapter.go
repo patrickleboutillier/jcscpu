@@ -28,9 +28,10 @@ type IODevice struct {
 	mem  *p.Memory
 }
 
+const MaxNbIODevices int = 16
+
 func NewIOAdapter(cpu *g.Bus, io *g.Bus) *IOAdapter {
-	n := 16
-	this := &IOAdapter{n: n, cpu: cpu, devices: make([]*IODevice, n, n)}
+	this := &IOAdapter{n: MaxNbIODevices, cpu: cpu, devices: make([]*IODevice, MaxNbIODevices, MaxNbIODevices)}
 
 	// TODO: make sure n <= cpu.GetSize()
 
