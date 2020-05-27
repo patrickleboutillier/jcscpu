@@ -2,6 +2,7 @@ package computer
 
 import (
 	"io"
+	"log"
 
 	b "github.com/patrickleboutillier/jcscpu/pkg/board"
 )
@@ -50,7 +51,10 @@ func (this *Computer) BootAndRun(insts []int) {
 	max := 1 << this.bits
 	bl := bootLoader()
 	pos := max - len(bl)
-	// TODO: Warn if len(insts) > pos?
+
+	if len(insts) > pos {
+		log.Println("WARNING: Program will overwrite bootloader code!")
+	}
 
 	// Adjust jump address
 	bl[len(bl)-2] += pos

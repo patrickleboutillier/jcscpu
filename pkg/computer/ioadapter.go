@@ -34,8 +34,6 @@ const MaxNbIODevices int = 16
 func NewIOAdapter(cpu *g.Bus, io *g.Bus) *IOAdapter {
 	this := &IOAdapter{n: MaxNbIODevices, cpu: cpu, devices: make([]*IODevice, MaxNbIODevices, MaxNbIODevices)}
 
-	// TODO: make sure n <= cpu.GetSize()
-
 	// This decoder decodes the operation on the IO bus. There are only 4 wires that we are interested in:
 	bop := g.NewBus(16)
 	p.NewDecoder(io, bop)
