@@ -215,6 +215,7 @@ func TestCLFInstruction(t *testing.T) {
 	)
 }
 
+/*
 func TestIOInstruction(t *testing.T) {
 	BB := newInstBreadboard(t8.GetArchBits(), "IO")
 
@@ -260,6 +261,7 @@ func TestIOInstruction(t *testing.T) {
 		},
 	)
 }
+*/
 
 func doInst(BB *Breadboard) ti.INSTDo {
 	return func(tc ti.INSTTestCase) {

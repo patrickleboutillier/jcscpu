@@ -4,18 +4,34 @@ import (
 	b "github.com/patrickleboutillier/jcscpu/pkg/board"
 )
 
+var iodevHandlers = make(map[string]func(*Computer))
+
 /*
 COMPUTER
 */
 type Computer struct {
-	BB       *b.Breadboard
-	bits     int
-	maxinsts int
+	BB        *b.Breadboard
+	IOAdapter *IOAdapter
+	bits      int
+	maxinsts  int
+}
+
+func newVanillaComputer(bits int, maxinsts int) *Computer {
+	BB := b.NewBreadboard(bits)
+	ioa := NewIOAdapter(BB.GetBus("DATA.bus"), BB.GetBus("IO.bus"))
+
+	this := &Computer{BB, ioa, bits, maxinsts}
+	return this
 }
 
 func NewComputer(bits int, maxinsts int) *Computer {
-	BB := b.NewBreadboard(bits)
-	return &Computer{BB, bits, maxinsts}
+	this := newVanillaComputer(bits, maxinsts)
+
+	for _, f := range iodevHandlers {
+		f(this)
+	}
+
+	return this
 }
 
 // Place the instructions in the ROM and calls Run() with the booloader program.
@@ -72,4 +88,11 @@ func bootLoader() []int {
 		0b00001001, // ...   9
 		0b01100001, // HALT
 	}
+}
+
+func (this *Computer) String() string {
+	str := this.BB.String()
+	str += this.IOAdapter.String() + "\n"
+
+	return str
 }

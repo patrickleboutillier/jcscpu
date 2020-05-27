@@ -59,6 +59,10 @@ func (this *Breadboard) LogWith(f func(msg string)) {
 }
 
 func (this *Breadboard) Debug() {
+	msg := this.String()
+	if this.ExtraDebug != nil {
+		msg += this.ExtraDebug()
+	}
 	this.Log(this.String())
 }
 

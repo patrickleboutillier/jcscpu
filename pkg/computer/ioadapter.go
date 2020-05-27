@@ -1,9 +1,10 @@
-package board
+package computer
 
 import (
 	"fmt"
 	"log"
 
+	b "github.com/patrickleboutillier/jcscpu/pkg/board"
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 	p "github.com/patrickleboutillier/jcscpu/pkg/parts"
 )
@@ -72,7 +73,7 @@ func (this *IOAdapter) IsRegistered(n int) bool {
 }
 
 // Register a new device
-func (this *IOAdapter) Register(BB *Breadboard, id int, name string, in func(), out func()) {
+func (this *IOAdapter) Register(BB *b.Breadboard, id int, name string, in func(), out func()) {
 	if (id < 0) || (id >= this.n) {
 		log.Panicf("Invalid device number %d", id)
 	}
