@@ -10,11 +10,11 @@ import (
 var archBits int = defaultArchBits()
 
 func checkArchBits(n int) int {
-	max := 32
+	max := 24
 	if strconv.IntSize < 64 {
 		max = 16
 	}
-	if (n < 8) || (n > 30) {
+	if (n < 8) || (n > max) {
 		log.Panicf("Arch bits must be between 8 and %d inclusively", max)
 	}
 	return n

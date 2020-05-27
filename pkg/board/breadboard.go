@@ -76,7 +76,7 @@ func NewBreadboard(bits int) *Breadboard {
 }
 
 func newVanillaBreadboard(bits int) *Breadboard {
-	max := 32
+	max := 24
 	if strconv.IntSize < 64 {
 		max = 16
 	}

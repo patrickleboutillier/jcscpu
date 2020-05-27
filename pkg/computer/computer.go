@@ -8,13 +8,14 @@ import (
 COMPUTER
 */
 type Computer struct {
-	BB   *b.Breadboard
-	bits int
+	BB       *b.Breadboard
+	bits     int
+	maxinsts int
 }
 
-func NewComputer(bits int) *Computer {
+func NewComputer(bits int, maxinsts int) *Computer {
 	BB := b.NewBreadboard(bits)
-	return &Computer{BB, bits}
+	return &Computer{BB, bits, maxinsts}
 }
 
 // Place the instructions in the ROM and calls Run() with the booloader program.
@@ -32,6 +33,9 @@ func (this *Computer) BootAndRun(insts []int) {
 	bl[len(bl)-2] += pos
 	this.BB.SetRAMBlock(pos, bl)
 
+	if this.maxinsts > 0 {
+		this.BB.CLK.SetMaxTicks(this.maxinsts * 6)
+	}
 	this.BB.Run([]int{
 		0b01000000, // JUMP
 		pos,

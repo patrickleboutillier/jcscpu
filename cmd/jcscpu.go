@@ -14,13 +14,15 @@ import (
 func main() {
 	log.SetFlags(0)
 	var bits = flag.Uint("bits", 8, "Number of bits in the architecture (valid values are between 8 and 32 inclusively)")
+	var maxinsts = flag.Uint("maxinsts", 0, "Maximum number of instructions the computer is allowed to process before halting")
+	var debugonstop = flag.Bool("debugonstop", false, "Print a debug status at the end of the program")
 	flag.Parse()
 	if *bits < 8 || *bits > 32 {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	C := c.NewComputer(int(*bits))
+	C := c.NewComputer(int(*bits), int(*maxinsts))
 	insts := ParseInstructions(int(*bits))
 	if len(insts) == 0 {
 		log.Fatal("No valid instructions provided!")
@@ -29,6 +31,9 @@ func main() {
 	// Should be Boot...
 	//C.BB.Run(insts)
 	C.BootAndRun(insts)
+	if *debugonstop {
+		C.BB.Debug()
+	}
 }
 
 func ParseInstructions(bits int) []int {
