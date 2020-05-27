@@ -1,27 +1,27 @@
-         # line   0, pos   0 - Label 'genrand' at pos 0
-00100000 # line   1, pos   0 - DATA  R0, 00000001 (1)
-00000001 # line   2, pos   1 -       00000001 (1)
-01111100 # line   3, pos   2 - OUTA  R0
-01110000 # line   4, pos   3 - IND   R0
-         # line   5, pos   4 - Select char
-01100000 # line   6, pos   4 - CLF   
-10010000 # line   7, pos   5 - SHR   R0, R0
-01011000 # line   8, pos   6 - JC    @a (@@a)
-00001100 # line   9, pos   7 -       @a (12)
-00100001 # line  10, pos   8 - DATA  R1, 0010010101110001
+                 # line   0, pos   0 - Label 'genrand' at pos 0
+0000000000100000 # line   1, pos   0 - DATA  R0, 00000001 (1)
+0000000000000001 # line   2, pos   1 -       00000001 (1)
+0000000001111100 # line   3, pos   2 - OUTA  R0
+0000000001110000 # line   4, pos   3 - IND   R0
+                 # line   5, pos   4 - Select char
+0000000001100000 # line   6, pos   4 - CLF   
+0000000010010000 # line   7, pos   5 - SHR   R0, R0
+0000000001011000 # line   8, pos   6 - JC    @a (@@a)
+0000000000001100 # line   9, pos   7 -       @a (12)
+0000000000100001 # line  10, pos   8 - DATA  R1, 0010010101110001
 0010010101110001 # line  11, pos   9 -       0010010101110001
-         # line  12, pos  10 - GOTO  @printR1
-01000000 # line  13, pos  10 - JMP   @printR1 (@@printR1)
-00001110 # line  14, pos  11 -       @printR1 (14)
-         # line  15, pos  12 - Label 'a' at pos 12
-00100001 # line  16, pos  12 - DATA  R1, 0010010101110010 
+                 # line  12, pos  10 - GOTO  @printR1
+0000000001000000 # line  13, pos  10 - JMP   @printR1 (@@printR1)
+0000000000001110 # line  14, pos  11 -       @printR1 (14)
+                 # line  15, pos  12 - Label 'a' at pos 12
+0000000000100001 # line  16, pos  12 - DATA  R1, 0010010101110010 
 0010010101110010 # line  17, pos  13 -       0010010101110010 
-         # line  18, pos  14 - Label 'printR1' at pos 14
-00100000 # line  19, pos  14 - DATA  R0, 00000000 (0)
-00000000 # line  20, pos  15 -       00000000 (0)
-01111100 # line  21, pos  16 - OUTA  R0
-01111001 # line  22, pos  17 - OUTD  R1
-         # line  23, pos  18 - GOTO  @genrand
-01000000 # line  24, pos  18 - JMP   @genrand (@@genrand)
-00000000 # line  25, pos  19 -       @genrand (0)
-01100001 # line  26, pos  20 - HALT  (automatically inserted by jscasm)
+                 # line  18, pos  14 - Label 'printR1' at pos 14
+0000000000100000 # line  19, pos  14 - DATA  R0, 00000000 (0)
+0000000000000000 # line  20, pos  15 -       00000000 (0)
+0000000001111100 # line  21, pos  16 - OUTA  R0
+0000000001111001 # line  22, pos  17 - OUTD  R1
+                 # line  23, pos  18 - GOTO  @genrand
+0000000001000000 # line  24, pos  18 - JMP   @genrand (@@genrand)
+0000000000000000 # line  25, pos  19 -       @genrand (0)
+0000000001100001 # line  26, pos  20 - HALT  (automatically inserted by jscasm)
