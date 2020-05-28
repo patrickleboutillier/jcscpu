@@ -28,9 +28,10 @@ func main() {
 		log.Fatal("No valid instructions provided!")
 	}
 
-	// Should be Boot...
-	//C.BB.Run(insts)
-	C.BootAndRun(insts)
+	if err := C.BootAndRun(insts); err != nil {
+		log.Fatal(err)
+	}
+
 	if *debugonstop {
 		C.BB.Debug()
 	}
@@ -51,9 +52,6 @@ func ParseInstructions(bits int) []int {
 		_, err := fmt.Sscanf(line, "%b", &inst)
 		if err != nil {
 			log.Fatalf("Error parsing line %d: %v", nbline, err)
-		}
-		if inst >= (1 << bits) {
-			log.Fatalf("Instruction '%b' to large for architecture size (%d bits) at line %d", inst, bits, nbline)
 		}
 
 		ret = append(ret, inst)

@@ -1,8 +1,8 @@
 package computer
 
 import (
+	"fmt"
 	"io"
-	"log"
 
 	b "github.com/patrickleboutillier/jcscpu/pkg/board"
 )
@@ -45,7 +45,7 @@ func NewComputer(bits int, maxinsts int) *Computer {
 // Place the instructions in the ROM and calls Run() with the booloader program.
 // A HALT instruction is appeneded at the end to make sure the computer stops when the program is over.
 // An END instruction is appeneded at the end to make sure the bootloader stops knows when to stop reading the program.
-func (this *Computer) BootAndRun(insts []int) {
+func (this *Computer) BootAndRun(insts []int) error {
 	this.ROM = append(insts, b.HALT())
 	// Install Bootloader program at the *end* of the RAM.
 	max := 1 << this.bits
@@ -53,7 +53,13 @@ func (this *Computer) BootAndRun(insts []int) {
 	pos := max - len(bl)
 
 	if len(insts) > pos {
-		log.Println("WARNING: Program will overwrite bootloader code!")
+		return fmt.Errorf("Program will overwrite bootloader code!")
+	}
+
+	for i, inst := range insts {
+		if inst >= (1 << this.bits) {
+			return fmt.Errorf("Instruction #%d, '%b', is too large for architecture size (%d bits)", i+1, inst, this.bits)
+		}
 	}
 
 	// Adjust jump address
@@ -68,6 +74,8 @@ func (this *Computer) BootAndRun(insts []int) {
 		pos,
 		b.HALT(),
 	})
+
+	return nil
 }
 
 func bootLoader() []int {
