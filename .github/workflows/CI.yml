@@ -18,26 +18,41 @@ jobs:
     - uses: actions/checkout@v2
     - name: Setup Go environment
       uses: actions/setup-go@v2.0.3
-    - name: Run test suite
+
+    - name: Build
       run: |
         go build ./...
+        go build cmd/jcscpu.go
+
+    - name: Run "classic" test suite
+      run: |
+        go clean -testcache
+        RAM_MODE=classic go test ./...
+        
+    - name: Run "fast" test suite
+      run: |
         for b in 8 16 24 ; do 
           echo ARCH_BITS=$b ; 
           go clean -testcache
           ARCH_BITS=$b go test ./...
         done
-    - name: Run sample CPU programs
+        
+    - name: Run sample 8-bit CPU programs
       run: |
         go build cmd/jcscpu.go
         for t in examples/cpu/8bit/*.cpu ; do
           cat $t | timeout 5s ./jcscpu --bits 8 --maxinsts 8092
           echo
         done
+
+    - name: Run sample 16-bit CPU programs
+      run: |
         for t in examples/cpu/16bit/*.cpu ; do
           cat $t | timeout 5s ./jcscpu --bits 16 --maxinsts 8092
           echo
         done
-    - name: Run sample ASM programs
+        
+    - name: Run sample 16-bit ASM programs
       run: |
         for t in examples/asm/16bit/*.asm ; do
           cat $t | perl tools/jcsasm.pl | timeout 5s ./jcscpu --bits 16 --maxinsts 8092
