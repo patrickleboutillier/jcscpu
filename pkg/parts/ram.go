@@ -2,6 +2,8 @@ package parts
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 )
@@ -21,12 +23,13 @@ type RAM struct {
 	powers []int
 }
 
+// Always fast mode, except if classic mode requested by an env var.
 func NewRAM(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {
-	// Use classic RAM circuit if we are using an 8 bit architecture
-	if bas.GetSize() > 8 {
-		return NewRAMFast(bas, wsa, bio, ws, we)
+	env := os.Getenv("RAM_MODE")
+	if (strings.ToUpper(env) == "CLASSIC") && (bas.GetSize() == 8) {
+		return NewRAMClassic(bas, wsa, bio, ws, we)
 	}
-	return NewRAMClassic(bas, wsa, bio, ws, we)
+	return NewRAMFast(bas, wsa, bio, ws, we)
 }
 
 func NewRAMFast(bas *g.Bus, wsa *g.Wire, bio *g.Bus, ws *g.Wire, we *g.Wire) *RAM {

@@ -53,7 +53,7 @@ func ParseInstructions(bits int) []int {
 			log.Fatalf("Error parsing line %d: %v", nbline, err)
 		}
 		if inst >= (1 << bits) {
-			log.Fatalf("Instruction '%b' to large for architecture size at line %d", inst, nbline)
+			log.Fatalf("Instruction '%b' to large for architecture size (%d bits) at line %d", inst, bits, nbline)
 		}
 
 		ret = append(ret, inst)
