@@ -76,6 +76,8 @@ func (this *Computer) BootAndRun(insts []int) error {
 	this.BB.GetBus("DATA.bus").SetPower(0)
 	this.BB.Start()
 
+	// Now reset the clock (to help with debugging and instruction counting) and run the user program.
+
 	// Run bootloader code, which stop after the program is loaded in RAM.
 	this.BB.Run([]int{
 		0b01000000, // JUMP
