@@ -52,6 +52,10 @@ func (this *Computer) BootAndRun(insts []int) error {
 	bl := bootLoader()
 	pos := max - len(bl)
 
+	if len(insts) == 0 {
+		return fmt.Errorf("No valid instructions provided!")
+	}
+
 	if len(insts) > pos {
 		return fmt.Errorf("Program will overwrite bootloader code!")
 	}
