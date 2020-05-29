@@ -66,9 +66,22 @@ func (this *Computer) BootAndRun(insts []int) error {
 		}
 	}
 
-	// Adjust jump address
-	bl[len(bl)-2] += pos
+	// Install bootloader code at address pos.
 	this.BB.SetRAMBlock(pos, bl)
+	// Install initial "JUMP to pos" at end of RAM
+	this.BB.SetRAMBlock(max-2, []int{0b01000000, pos})
+	// Set IAR to max-2
+	this.BB.SetReg("IAR", max-2)
+	// Clear the bus and Start the computer, which will stop right after the bootloader has run.
+	this.BB.GetBus("DATA.bus").SetPower(0)
+	this.BB.Start()
+
+	// Run bootloader code, which stop after the program is loaded in RAM.
+	this.BB.Run([]int{
+		0b01000000, // JUMP
+		pos,
+		b.HALT(),
+	})
 
 	if this.maxinsts > 0 {
 		this.BB.CLK.SetMaxTicks(this.maxinsts * 6)
@@ -112,8 +125,11 @@ func bootLoader() []int {
 		0b01010010, // line  25, pos  16 - JE    00000000 (0)
 		0b00000000, // line  26, pos  17 -       00000000 (0)
 		// line  27, pos  18 - (ELSE) Loop back
-		0b01000000, // line  28, pos  18 - JMP   00001011 (11)
-		0b00001011, // line  29, pos  19 -       00001011 (11)
+		// Normally the bootloader code would jump directly to RAM 0 here that start the program, but
+		// we want to take the opportunity to reset the clock after de bootloader has run to help
+		// with debugging.
+		// 0b01000000, // line  28, pos  18 - JMP   00001011 (11)
+		// 0b00001011, // line  29, pos  19 -       00001011 (11)
 		0b01100001, // line  30, pos  20 - HALT
 	}
 }

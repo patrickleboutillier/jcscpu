@@ -23,11 +23,16 @@ func NewClock(wclk *g.Wire, wclke *g.Wire, wclks *g.Wire) *Clock {
 	g.NewOR(wclk, wclkd, wclke)
 	g.NewAND(wclk, wclkd, wclks)
 
-	return &Clock{wclk, wclkd, wclke, wclks, 0, -1}
+	return &Clock{wclk, wclkd, wclke, wclks, 0, 0}
 }
 
 func (this *Clock) Clkd() *g.Wire {
 	return this.clkd
+}
+
+func (this *Clock) Reset() {
+	this.qticks = 0
+	this.maxticks = 0
 }
 
 func (this *Clock) SetMaxTicks(n int) {
@@ -48,7 +53,7 @@ func (this *Clock) Stop() {
 }
 
 func (this *Clock) Start() int {
-	for (this.maxticks < 0) || (this.GetTicks() < this.maxticks) {
+	for (this.maxticks <= 0) || (this.GetTicks() < this.maxticks) {
 		this.Tick()
 	}
 
