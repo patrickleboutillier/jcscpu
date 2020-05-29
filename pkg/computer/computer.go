@@ -29,6 +29,8 @@ func newVanillaComputer(bits int, maxinsts int) *Computer {
 	ioa := NewIOAdapter(BB.GetBus("DATA.bus"), BB.GetBus("IO.bus"))
 
 	this := &Computer{BB: BB, IOAdapter: ioa, bits: bits, maxinsts: maxinsts}
+	BB.ExtraDebug = this.IOAdapter.String
+
 	return this
 }
 
@@ -50,7 +52,7 @@ func (this *Computer) BootAndRun(insts []int) error {
 	// Install Bootloader program at the *end* of the RAM.
 	max := 1 << this.bits
 	bl := bootLoader()
-	pos := max - len(bl)
+	pos := max - (len(bl) + 2)
 
 	if len(insts) == 0 {
 		return fmt.Errorf("No valid instructions provided!")
@@ -66,33 +68,42 @@ func (this *Computer) BootAndRun(insts []int) error {
 		}
 	}
 
+	// Adjust jump addresses
+	bl[len(bl)-2] += pos
+	bl[len(bl)-4] += pos
+	this.BB.Debug()
+
 	// Install bootloader code at address pos.
 	this.BB.SetRAMBlock(pos, bl)
 	// Install initial "JUMP to pos" at end of RAM
 	this.BB.SetRAMBlock(max-2, []int{0b01000000, pos})
 	// Set IAR to max-2
 	this.BB.SetReg("IAR", max-2)
-	// Clear the bus and Start the computer, which will stop right after the bootloader has run.
+	// Clear the bus and start the computer, which will stop right after the bootloader has run.
 	this.BB.GetBus("DATA.bus").SetPower(0)
 	this.BB.Start()
 
-	// Now reset the clock (to help with debugging and instruction counting) and run the user program.
-
-	// Run bootloader code, which stop after the program is loaded in RAM.
-	this.BB.Run([]int{
-		0b01000000, // JUMP
-		pos,
-		b.HALT(),
-	})
-
+	this.BB.SetReg("RAM.MAR", 0)
+	this.BB.SetReg("IAR", 0)
+	this.BB.SetReg("IR", 0)
+	this.BB.SetReg("FLAGS", 0)
+	this.BB.GetWire("BUS1.bit1").SetPower(false)
+	this.BB.SetReg("TMP", 0)
+	this.BB.SetReg("ACC", 0)
+	this.BB.SetReg("R0", 0)
+	this.BB.SetReg("R1", 0)
+	this.BB.SetReg("R2", 0)
+	this.BB.SetReg("R3", 0)
+	this.BB.GetBus("DATA.bus").SetPower(0)
+	this.BB.CLK.Reset()
 	if this.maxinsts > 0 {
 		this.BB.CLK.SetMaxTicks(this.maxinsts * 6)
 	}
-	this.BB.Run([]int{
-		0b01000000, // JUMP
-		pos,
-		b.HALT(),
-	})
+
+	this.BB.Debug()
+	// this.BB.DebugInst()
+	this.BB.Start()
+	//this.BB.Log(this.String())
 
 	return nil
 }
@@ -124,14 +135,14 @@ func bootLoader() []int {
 		0b10001000, // line  22, pos  14 - ADD   R2, R0
 		// line  23, pos  15 - IF R0 == R1, jump to byte 0 in RAM
 		0b11110001, // line  24, pos  15 - CMP   R0, R1
-		0b01010010, // line  25, pos  16 - JE    00000000 (0)
-		0b00000000, // line  26, pos  17 -       00000000 (0)
-		// line  27, pos  18 - (ELSE) Loop back
 		// Normally the bootloader code would jump directly to RAM 0 here that start the program, but
 		// we want to take the opportunity to reset the clock after de bootloader has run to help
-		// with debugging.
-		// 0b01000000, // line  28, pos  18 - JMP   00001011 (11)
-		// 0b00001011, // line  29, pos  19 -       00001011 (11)
+		// with debugging, so we jump to the HALT at pos 20 instead
+		0b01010010, // line  25, pos  16 - JE    00010100 (20)
+		0b00010100, // line  26, pos  17 -       00010100 (20)
+		// line  27, pos  18 - (ELSE) Loop back
+		0b01000000, // line  28, pos  18 - JMP   00001011 (11)
+		0b00001011, // line  29, pos  19 -       00001011 (11)
 		0b01100001, // line  30, pos  20 - HALT
 	}
 }
