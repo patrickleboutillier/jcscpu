@@ -65,7 +65,6 @@ func ParseJSONInstructions(input io.Reader) ([]int, error) {
 func RunProgram(jsonio bool, bits int, maxinsts int, debugonstop bool, input io.Reader, output io.Writer) error {
 	var insts []int
 	var err error
-
 	if jsonio {
 		if insts, err = ParseJSONInstructions(input); err != nil {
 			return err
@@ -88,6 +87,11 @@ func RunProgram(jsonio bool, bits int, maxinsts int, debugonstop bool, input io.
 		C.TTYWriter = FuncWriter{func(msg []byte) {
 			out = append(out, Output{TTY: string(msg)})
 		}}
+	} else {
+		C.BB.LogWith(func(msg string) {
+			fmt.Fprint(output, "DEBUG: "+msg)
+		})
+		C.TTYWriter = output
 	}
 
 	if err := C.BootAndRun(insts); err != nil {
@@ -99,11 +103,11 @@ func RunProgram(jsonio bool, bits int, maxinsts int, debugonstop bool, input io.
 	}
 
 	if jsonio {
-		bytes, err := json.MarshalIndent(out, "", "  ")
+		bytes, err := json.Marshal(out)
 		if err != nil {
 			log.Panic(err)
 		}
-		fmt.Fprintln(output, string(bytes))
+		fmt.Fprint(output, string(bytes))
 	}
 
 	return nil
