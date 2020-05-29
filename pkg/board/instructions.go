@@ -143,7 +143,7 @@ func CLFInstructions(BB *Breadboard) {
 
 	// HALT, 01100001
 	hlt1 := g.NewWire()
-	g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(1)), hlt1)
+	g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(5), binst.GetWire(1)), hlt1)
 	hlt1.AddPrehook(func(v bool) {
 		if v {
 			BB.Stop()
