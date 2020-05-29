@@ -49,10 +49,6 @@ func (this *Breadboard) Start() {
 	this.CLK.Start()
 }
 
-func (this *Breadboard) Stop() {
-	this.CLK.Stop()
-}
-
 // Replace logger with a new function
 func (this *Breadboard) LogWith(f func(msg string)) {
 	this.logWith = f
@@ -63,7 +59,7 @@ func (this *Breadboard) Debug() {
 	if this.ExtraDebug != nil {
 		msg += this.ExtraDebug()
 	}
-	this.Log(this.String())
+	this.Log(msg)
 }
 
 func (this *Breadboard) DebugInst() {
@@ -94,7 +90,7 @@ func (this *Breadboard) DebugOff() {
 
 func (this *Breadboard) Dump() {
 	n := this.GetBus("DATA.bus").GetMaxPower()
-	for j := 0; j < n; j++ {
+	for j := 0; j <= n; j++ {
 		s := fmt.Sprintf("RAM[%d] = %08b", j, this.RAM.GetCellPower(j))
 		this.Log(s)
 	}

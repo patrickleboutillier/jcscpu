@@ -16,8 +16,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	req := j.Request{insts}
-	bytes, err := json.MarshalIndent(req, "", "  ")
+	bytes, err := json.Marshal(insts)
 	fmt.Println(string(bytes))
-
 }

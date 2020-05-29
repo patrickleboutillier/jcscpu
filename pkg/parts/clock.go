@@ -30,6 +30,11 @@ func (this *Clock) Clkd() *g.Wire {
 	return this.clkd
 }
 
+func (this *Clock) Reset() {
+	this.qticks = 0
+	this.maxticks = -1
+}
+
 func (this *Clock) SetMaxTicks(n int) {
 	this.maxticks = n
 }
@@ -45,6 +50,11 @@ func (this *Clock) GetTicks() int {
 // Stop the clock on the next tick
 func (this *Clock) Stop() {
 	this.maxticks = this.GetTicks()
+}
+
+// Stop the clock in n ticks
+func (this *Clock) StopIn(ticks int) {
+	this.maxticks = this.GetTicks() + ticks
 }
 
 func (this *Clock) Start() int {
@@ -82,6 +92,6 @@ func (this *Clock) Tick() {
 }
 
 func (this *Clock) String() string {
-	return fmt.Sprintf("CLK(@%d.%d[%d]): clk:%s  clkd:%s  clke:%s  clks:%s", this.GetTicks(), (this.qticks % 4), this.qticks,
-		this.clk.String(), this.clkd.String(), this.clke.String(), this.clks.String())
+	return fmt.Sprintf("CLK(@%d.%d[%d]): clk:%s  clkd:%s  clke:%s  clks:%s  maxticks:%d", this.GetTicks(), (this.qticks % 4), this.qticks,
+		this.clk.String(), this.clkd.String(), this.clke.String(), this.clks.String(), this.maxticks)
 }

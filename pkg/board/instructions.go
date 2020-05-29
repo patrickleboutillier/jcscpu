@@ -146,7 +146,8 @@ func CLFInstructions(BB *Breadboard) {
 	g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(5), binst.GetWire(1)), hlt1)
 	hlt1.AddPrehook(func(v bool) {
 		if v {
-			BB.Stop()
+			// Make sure we complete the instruction before halting.
+			BB.CLK.StopIn(1)
 		}
 	})
 

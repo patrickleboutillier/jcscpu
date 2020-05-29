@@ -29,6 +29,8 @@ func newVanillaComputer(bits int, maxinsts int) *Computer {
 	ioa := NewIOAdapter(BB.GetBus("DATA.bus"), BB.GetBus("IO.bus"))
 
 	this := &Computer{BB: BB, IOAdapter: ioa, bits: bits, maxinsts: maxinsts}
+	BB.ExtraDebug = this.IOAdapter.String
+
 	return this
 }
 
@@ -50,7 +52,7 @@ func (this *Computer) BootAndRun(insts []int) error {
 	// Install Bootloader program at the *end* of the RAM.
 	max := 1 << this.bits
 	bl := bootLoader()
-	pos := max - len(bl)
+	pos := max - (len(bl) + 2)
 
 	if len(insts) == 0 {
 		return fmt.Errorf("No valid instructions provided!")
@@ -66,18 +68,28 @@ func (this *Computer) BootAndRun(insts []int) error {
 		}
 	}
 
-	// Adjust jump address
-	bl[len(bl)-2] += pos
-	this.BB.SetRAMBlock(pos, bl)
+	// Adjust jump relative addresses
+	bl[len(bl)-4] += pos
+	bl[len(bl)-6] += pos
 
+	// Install bootloader code at address pos.
+	this.BB.SetRAMBlock(pos, bl)
+	// Install initial "JUMP to pos" at end of RAM
+	this.BB.SetRAMBlock(max-2, []int{0b01000000, pos})
+	// Set IAR to max-2
+	this.BB.SetReg("IAR", max-2)
+	// Clear the bus and start the computer, which will stop right after the bootloader has run.
+	this.BB.GetBus("DATA.bus").SetPower(0)
+	this.BB.Start()
+
+	// Boot loader is done, reset the clock and restart
+	this.BB.CLK.Reset()
 	if this.maxinsts > 0 {
-		this.BB.CLK.SetMaxTicks(this.maxinsts * 6)
+		// Use maxinsts + 1 to account for the forst JUMP instruction
+		this.BB.CLK.SetMaxTicks((this.maxinsts + 1) * 6)
 	}
-	this.BB.Run([]int{
-		0b01000000, // JUMP
-		pos,
-		b.HALT(),
-	})
+
+	this.BB.Start()
 
 	return nil
 }
@@ -109,12 +121,17 @@ func bootLoader() []int {
 		0b10001000, // line  22, pos  14 - ADD   R2, R0
 		// line  23, pos  15 - IF R0 == R1, jump to byte 0 in RAM
 		0b11110001, // line  24, pos  15 - CMP   R0, R1
-		0b01010010, // line  25, pos  16 - JE    00000000 (0)
-		0b00000000, // line  26, pos  17 -       00000000 (0)
+		// Normally the bootloader code would jump directly to RAM 0 here that start the program, but
+		// we want to take the opportunity to reset the clock after de bootloader has run to help
+		// with debugging, so we jump to the HALT at pos 20 instead
+		0b01010010, // line  25, pos  16 - JE    00010100 (20)
+		0b00010100, // line  26, pos  17 -       00010100 (20)
 		// line  27, pos  18 - (ELSE) Loop back
 		0b01000000, // line  28, pos  18 - JMP   00001011 (11)
 		0b00001011, // line  29, pos  19 -       00001011 (11)
 		0b01100001, // line  30, pos  20 - HALT
+		0b01000000, // line  28, pos  18 - JMP   00001011 (11)
+		0b00000000, // line  29, pos  19 -       00001011 (11)
 	}
 }
 

@@ -2,39 +2,59 @@
 package function
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
+
+	j "github.com/patrickleboutillier/jcscpu/internal/jcscpu"
 )
 
 func JCSCPU8(w http.ResponseWriter, r *http.Request) {
 	JCSCPU(8, 8092, w, r)
 }
 
-/*
-	Here's what we need to do here:
-	- Get the instructions in a JSON POST
-	- Create the computer
-	- fiddle BB Logger and TTYWriter to be able to capture there output and add it to a JSON structure (or stream it?)
-	- Feed it the instructions
-	- return 40X error is anythig goes wrong anywhere above
-	- return 50X error if a panic is thrown (dev error)
-*/
 func JCSCPU(bits int, maxinsts int, w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		insts []int
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err == nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, err)
-		return
-	}
-
-	/*
-		C := c.NewComputer(bits, maxinsts)
-		insts := ParseInstructions(bits)
-		if len(insts) == 0 {
-			log.Fatal("No valid instructions provided!")
+	switch r.Method {
+	case "GET":
+		req := strings.Replace(r.URL.RawQuery, ";", "\n", -1)
+		w.Header().Set("Content-Type", "text/plain")
+		err := j.RunProgram(false, bits, maxinsts, false, strings.NewReader(req), w)
+		if err != nil {
+			fmt.Println(err)
 		}
-	*/
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println(err)
+			}
+		}()
+	case "POST":
+		switch r.Header.Get("Content-Type") {
+		case "application/json":
+			w.Header().Set("Content-Type", "application/json")
+			err := j.RunProgram(true, bits, maxinsts, false, r.Body, w)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+			}
+			defer func() {
+				if r := recover(); r != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+			}()
+		case "text/plain":
+			w.Header().Set("Content-Type", "text/plain")
+			err := j.RunProgram(false, bits, maxinsts, false, r.Body, w)
+			if err != nil {
+				fmt.Fprintln(w, err)
+			}
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Fprintln(w, err)
+				}
+			}()
+		default:
+			http.Error(w, r.Method, http.StatusBadRequest)
+		}
+	default:
+		http.Error(w, "Bad Content-Type", http.StatusMethodNotAllowed)
+	}
 }
