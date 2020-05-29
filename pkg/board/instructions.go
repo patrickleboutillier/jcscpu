@@ -147,7 +147,7 @@ func CLFInstructions(BB *Breadboard) {
 	hlt1.AddPrehook(func(v bool) {
 		if v {
 			// Make sure we complete the instruction before halting.
-			BB.CLK.StopIn(2)
+			BB.CLK.StopIn(1)
 		}
 	})
 

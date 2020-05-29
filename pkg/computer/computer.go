@@ -68,10 +68,9 @@ func (this *Computer) BootAndRun(insts []int) error {
 		}
 	}
 
-	// Adjust jump addresses
-	bl[len(bl)-2] += pos
+	// Adjust jump relative addresses
 	bl[len(bl)-4] += pos
-	this.BB.Debug()
+	bl[len(bl)-6] += pos
 
 	// Install bootloader code at address pos.
 	this.BB.SetRAMBlock(pos, bl)
@@ -83,27 +82,14 @@ func (this *Computer) BootAndRun(insts []int) error {
 	this.BB.GetBus("DATA.bus").SetPower(0)
 	this.BB.Start()
 
-	this.BB.SetReg("RAM.MAR", 0)
-	this.BB.SetReg("IAR", 0)
-	this.BB.SetReg("IR", 0)
-	this.BB.SetReg("FLAGS", 0)
-	this.BB.GetWire("BUS1.bit1").SetPower(false)
-	this.BB.SetReg("TMP", 0)
-	this.BB.SetReg("ACC", 0)
-	this.BB.SetReg("R0", 0)
-	this.BB.SetReg("R1", 0)
-	this.BB.SetReg("R2", 0)
-	this.BB.SetReg("R3", 0)
-	this.BB.GetBus("DATA.bus").SetPower(0)
+	// Boot loader is done, reset the clock and restart
 	this.BB.CLK.Reset()
 	if this.maxinsts > 0 {
-		this.BB.CLK.SetMaxTicks(this.maxinsts * 6)
+		// Use maxinsts + 1 to account for the forst JUMP instruction
+		this.BB.CLK.SetMaxTicks((this.maxinsts + 1) * 6)
 	}
 
-	this.BB.Debug()
-	// this.BB.DebugInst()
 	this.BB.Start()
-	//this.BB.Log(this.String())
 
 	return nil
 }
@@ -144,6 +130,8 @@ func bootLoader() []int {
 		0b01000000, // line  28, pos  18 - JMP   00001011 (11)
 		0b00001011, // line  29, pos  19 -       00001011 (11)
 		0b01100001, // line  30, pos  20 - HALT
+		0b01000000, // line  28, pos  18 - JMP   00001011 (11)
+		0b00000000, // line  29, pos  19 -       00001011 (11)
 	}
 }
 
