@@ -22,7 +22,7 @@ jobs:
     - name: Build
       run: |
         go build ./...
-        go build cmd/jcscpu.go
+        go build cmd/jcscpu/jcscpu.go
 
     - name: Run "classic" test suite
       run: |
@@ -39,7 +39,6 @@ jobs:
         
     - name: Run sample 8-bit CPU programs
       run: |
-        go build cmd/jcscpu/jcscpu.go
         for t in examples/cpu/8bit/*.cpu ; do
           cat $t | timeout 5s ./jcscpu --bits 8 --maxinsts 8092
           echo
