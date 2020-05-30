@@ -2,6 +2,7 @@ package function
 
 import (
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -13,10 +14,11 @@ func TestJCSCPU8(t *testing.T) {
 		url    string
 		ctype  string
 		body   string
+		code   int
 		want   string
 	}{
-		{method: "POST", url: "/", ctype: "application/json", body: `[32,20,33,22,129,32,0,124,121,97]`, want: `[{"TTY":"*"}]`},
-		{method: "POST", url: "/", ctype: "text/plain", body: `00100000 # DATA  R0, 00010100 (20)
+		{method: "POST", url: "/8", ctype: "application/json", body: `[32,20,33,22,129,32,0,124,121,97]`, want: `[{"TTY":"*"}]`, code: http.StatusOK},
+		{method: "POST", url: "/8", ctype: "text/plain", body: `00100000 # DATA  R0, 00010100 (20)
 00010100 # ...   20
 00100001 # DATA  R1, 00010110 (22)
 00010110 # ...   22
@@ -25,8 +27,9 @@ func TestJCSCPU8(t *testing.T) {
 00000000 # ...   0
 01111100 # OUTA  R0
 01111001 # OUTD  R1
-01100001 # HALT`, want: `*`},
-		{method: "GET", url: "/?00100000;00010100;00100001;00010110;10000001;00100000;00000000;01111100;01111001;01100001", ctype: "", body: ``, want: `*`},
+01100001 # HALT`, want: `*`, code: http.StatusOK},
+		{method: "GET", url: "/8?00100000;00010100;00100001;00010110;10000001;00100000;00000000;01111100;01111001;01100001", ctype: "", body: ``, want: `*`, code: http.StatusOK},
+		{method: "GET", url: "/", ctype: "", body: ``, want: `*`, code: http.StatusNotFound},
 	}
 
 	for _, test := range tests {
@@ -40,10 +43,15 @@ func TestJCSCPU8(t *testing.T) {
 		}
 
 		rr := httptest.NewRecorder()
-		JCSCPU8(rr, req)
+		JCSCPU(rr, req)
 
-		if got := rr.Body.String(); got != test.want {
-			t.Errorf("JCSCPU8(%q) = %q, want %q", test.body, got, test.want)
+		if rr.Code != test.code {
+			t.Errorf("JCSCPU8(%q) = %d, want %d", test.body, rr.Code, test.code)
+		}
+		if rr.Code == http.StatusOK {
+			if got := rr.Body.String(); got != test.want {
+				t.Errorf("JCSCPU8(%q) = %q, want %q", test.body, got, test.want)
+			}
 		}
 	}
 }

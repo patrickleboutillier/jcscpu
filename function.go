@@ -2,59 +2,53 @@
 package function
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
 	j "github.com/patrickleboutillier/jcscpu/internal/jcscpu"
 )
 
-func JCSCPU8(w http.ResponseWriter, r *http.Request) {
-	JCSCPU(8, 8092, w, r)
+func JCSCPU(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/8", func(w http.ResponseWriter, r *http.Request) {
+		jcscpu(8, 8092, w, r)
+	})
+	mux.HandleFunc("/16", func(w http.ResponseWriter, r *http.Request) {
+		jcscpu(16, 8092, w, r)
+	})
+	mux.ServeHTTP(w, r)
 }
 
-func JCSCPU(bits int, maxinsts int, w http.ResponseWriter, r *http.Request) {
+func jcscpu(bits int, maxinsts int, w http.ResponseWriter, r *http.Request) {
+
+	defer func() {
+		if e := recover(); e != nil {
+			http.Error(w, e.(error).Error(), http.StatusInternalServerError)
+		}
+	}()
+
+	var err error
 	switch r.Method {
 	case "GET":
 		req := strings.Replace(r.URL.RawQuery, ";", "\n", -1)
 		w.Header().Set("Content-Type", "text/plain")
-		err := j.RunProgram(false, bits, maxinsts, false, strings.NewReader(req), w)
-		if err != nil {
-			fmt.Println(err)
-		}
-		defer func() {
-			if r := recover(); r != nil {
-				fmt.Println(err)
-			}
-		}()
+		err = j.RunProgram(false, bits, maxinsts, false, strings.NewReader(req), w)
 	case "POST":
 		switch r.Header.Get("Content-Type") {
 		case "application/json":
 			w.Header().Set("Content-Type", "application/json")
-			err := j.RunProgram(true, bits, maxinsts, false, r.Body, w)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-			}
-			defer func() {
-				if r := recover(); r != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-			}()
+			err = j.RunProgram(true, bits, maxinsts, false, r.Body, w)
 		case "text/plain":
 			w.Header().Set("Content-Type", "text/plain")
-			err := j.RunProgram(false, bits, maxinsts, false, r.Body, w)
-			if err != nil {
-				fmt.Fprintln(w, err)
-			}
-			defer func() {
-				if r := recover(); r != nil {
-					fmt.Fprintln(w, err)
-				}
-			}()
+			err = j.RunProgram(false, bits, maxinsts, false, r.Body, w)
 		default:
 			http.Error(w, r.Method, http.StatusBadRequest)
 		}
 	default:
-		http.Error(w, "Bad Content-Type", http.StatusMethodNotAllowed)
+		http.Error(w, "Unsupported method "+r.Method, http.StatusMethodNotAllowed)
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 }
