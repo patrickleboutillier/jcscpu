@@ -21,5 +21,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	j.RunProgram(*jsonio, int(*bits), int(*maxinsts), *debugonstop, os.Stdin, os.Stdout)
+	err := j.RunProgram(*jsonio, int(*bits), int(*maxinsts), *debugonstop, os.Stdin, os.Stdout)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

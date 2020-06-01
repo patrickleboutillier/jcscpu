@@ -89,7 +89,7 @@ func RunProgram(jsonio bool, bits int, maxinsts int, debugonstop bool, input io.
 		}}
 	} else {
 		C.BB.LogWith(func(msg string) {
-			fmt.Fprint(output, "DEBUG: "+msg)
+			fmt.Fprint(output, "DEBUG: "+msg+"\n")
 		})
 		C.TTYWriter = output
 	}

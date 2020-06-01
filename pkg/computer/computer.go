@@ -46,13 +46,14 @@ func NewComputer(bits int, maxinsts int) *Computer {
 
 // Place the instructions in the ROM and calls Run() with the booloader program.
 // A HALT instruction is appeneded at the end to make sure the computer stops when the program is over.
-// An END instruction is appeneded at the end to make sure the bootloader stops knows when to stop reading the program.
 func (this *Computer) BootAndRun(insts []int) error {
 	this.ROM = append(insts, b.HALT())
 	// Install Bootloader program at the *end* of the RAM.
 	max := 1 << this.bits
-	bl := bootLoader()
-	pos := max - (len(bl) + 2)
+	// We want to keep the last 6 bytes of RAM uninitialized, as they may be used by higher-level
+	// mechanisms lie a program stack.
+	slack := 6
+	pos, start, bl := bootLoader(max, slack)
 
 	if len(insts) == 0 {
 		return fmt.Errorf("No valid instructions provided!")
@@ -68,16 +69,10 @@ func (this *Computer) BootAndRun(insts []int) error {
 		}
 	}
 
-	// Adjust jump relative addresses
-	bl[len(bl)-4] += pos
-	bl[len(bl)-6] += pos
-
 	// Install bootloader code at address pos.
 	this.BB.SetRAMBlock(pos, bl)
-	// Install initial "JUMP to pos" at end of RAM
-	this.BB.SetRAMBlock(max-2, []int{0b01000000, pos})
-	// Set IAR to max-2
-	this.BB.SetReg("IAR", max-2)
+	// Set IAR to start
+	this.BB.SetReg("IAR", start)
 	// Clear the bus and start the computer, which will stop right after the bootloader has run.
 	this.BB.GetBus("DATA.bus").SetPower(0)
 	this.BB.Start()
@@ -94,8 +89,8 @@ func (this *Computer) BootAndRun(insts []int) error {
 	return nil
 }
 
-func bootLoader() []int {
-	return []int{
+func bootLoader(max int, slack int) (int, int, []int) {
+	ret := []int{
 		// line   0, pos   0 - R0 is our ROM address, R1 is our ROM size, R2 is our 1, R3 is our ROM data
 		// line   1, pos   0 - Initialize R0 to 0
 		0b00100000, // line   2, pos   0 - DATA  R0, 00000000 (0)
@@ -130,9 +125,21 @@ func bootLoader() []int {
 		0b01000000, // line  28, pos  18 - JMP   00001011 (11)
 		0b00001011, // line  29, pos  19 -       00001011 (11)
 		0b01100001, // line  30, pos  20 - HALT
-		0b01000000, // line  28, pos  18 - JMP   00001011 (11)
-		0b00000000, // line  29, pos  19 -       00001011 (11)
+		0b01000000, // line  31, pos  21 - JMP   00000000 (00)
+		0b00000000, // line  32, pos  22 -       00000000 (00)
+		// Initial jump to boot loader start
+		0b01000000, // line  33, pos  23 - JMP   00000000 (00)
+		0b00000000, // line  34, pos  24 -       00000000 (00)
 	}
+
+	pos := max - (len(ret) + slack)
+
+	// Adjust jump relative addresses
+	ret[len(ret)-1] += pos
+	ret[len(ret)-6] += pos
+	ret[len(ret)-8] += pos
+
+	return pos, max - (2 + slack), ret
 }
 
 func (this *Computer) String() string {

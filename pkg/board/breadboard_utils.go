@@ -91,7 +91,7 @@ func (this *Breadboard) DebugOff() {
 func (this *Breadboard) Dump() {
 	n := this.GetBus("DATA.bus").GetMaxPower()
 	for j := 0; j <= n; j++ {
-		s := fmt.Sprintf("RAM[%d] = %08b", j, this.RAM.GetCellPower(j))
+		s := fmt.Sprintf("RAM[%d/%08b] = %d/%08b", j, j, this.RAM.GetCellPower(j), this.RAM.GetCellPower(j))
 		this.Log(s)
 	}
 }
