@@ -141,8 +141,20 @@ func JUMPInstructions(BB *Breadboard) {
 	// JUMPR
 	jr1 := g.NewWire()
 	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(3), binst.GetWire(0)), jr1)
-	BB.GetORe("REGB.ena.eor").AddWire(jr1)
-	BB.GetORe("IAR.set.eor").AddWire(jr1)
+	BB.GetORe("IAR.ena.eor").AddWire(jr1)
+	BB.GetORe("RAM.MAR.set.eor").AddWire(jr1)
+	BB.GetORe("BUS1.bit1.eor").AddWire(jr1)
+	BB.GetORe("ACC.set.eor").AddWire(jr1)
+
+	jr2 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(3), binst.GetWire(0)), jr2)
+	BB.GetORe("ACC.ena.eor").AddWire(jr2)
+	BB.GetORe("LR.set.eor").AddWire(jr2)
+
+	jr3 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(5), BB.GetBus("INST.bus").GetWire(3), binst.GetWire(0)), jr3)
+	BB.GetORe("REGB.ena.eor").AddWire(jr3)
+	BB.GetORe("IAR.set.eor").AddWire(jr3)
 
 	// PTRR
 	ptr1 := g.NewWire()

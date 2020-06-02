@@ -216,6 +216,7 @@ func TestJMPRInstruction(t *testing.T) {
 		},
 		func(tc ti.INSTTestCase) {
 			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.ADDR, fmt.Sprintf("IAR is now %d", tc.ADDR))
+			tm.Is(t, BB.GetReg("LR").GetPower(), tc.IADDR+2, fmt.Sprintf("LR set to the next instruction at tc.IADDR+2"))
 		},
 	)
 }
