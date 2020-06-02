@@ -115,6 +115,18 @@ func newVanillaBreadboard(bits int) *Breadboard {
 	this.putBus("TMP.bus", g.NewBus(bits))
 	this.putWire("BUS1.bit1", g.NewWire())
 	this.putBus("BUS1.bus", g.NewBus(bits))
+	this.putWire("LR.s", g.NewWire())
+	this.putWire("LR.e", g.NewWire())
+	this.putWire("PTR.s", g.NewWire())
+	this.putWire("PTR.e", g.NewWire())
+	this.putWire("T0.s", g.NewWire())
+	this.putWire("T0.e", g.NewWire())
+	this.putWire("T1.s", g.NewWire())
+	this.putWire("T1.e", g.NewWire())
+	this.putWire("T2.s", g.NewWire())
+	this.putWire("T2.e", g.NewWire())
+	this.putWire("T3.s", g.NewWire())
+	this.putWire("T3.e", g.NewWire())
 
 	this.putReg("R0", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("R0.s"), this.GetWire("R0.e"), this.GetBus("DATA.bus"), "R0"))
 	this.putReg("R1", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("R1.s"), this.GetWire("R1.e"), this.GetBus("DATA.bus"), "R1"))
@@ -122,6 +134,12 @@ func newVanillaBreadboard(bits int) *Breadboard {
 	this.putReg("R3", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("R3.s"), this.GetWire("R3.e"), this.GetBus("DATA.bus"), "R3"))
 	this.putReg("TMP", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("TMP.s"), this.GetWire("TMP.e"), this.GetBus("TMP.bus"), "TMP"))
 	this.BUS1 = p.NewBus1(this.GetBus("TMP.bus"), this.GetWire("BUS1.bit1"), this.GetBus("BUS1.bus"))
+	this.putReg("LR", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("LR.s"), this.GetWire("LR.e"), this.GetBus("DATA.bus"), "LR"))
+	this.putReg("PTR", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("PTR.s"), this.GetWire("PTR.e"), this.GetBus("DATA.bus"), "PTR"))
+	this.putReg("T0", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("T0.s"), this.GetWire("T0.e"), this.GetBus("DATA.bus"), "T0"))
+	this.putReg("T1", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("T1.s"), this.GetWire("T1.e"), this.GetBus("DATA.bus"), "T1"))
+	this.putReg("T2", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("T2.s"), this.GetWire("T2.e"), this.GetBus("DATA.bus"), "T2"))
+	this.putReg("T3", p.NewRegister(this.GetBus("DATA.bus"), this.GetWire("T3.s"), this.GetWire("T3.e"), this.GetBus("DATA.bus"), "T3"))
 
 	// ALU
 	this.putWire("ACC.s", g.NewWire())
@@ -267,7 +285,13 @@ func (this *Breadboard) String() string {
 	str += this.CLK.String() + "  " + this.STP.String() + "\n"
 	str += "BUS:" + this.GetBus("DATA.bus").String() + "  "
 	str += strings.Join([]string{this.GetReg("TMP").String(), this.BUS1.String(), this.GetReg("ACC").String(), this.GetReg("FLAGS").String(),
-		this.GetReg("R0").String(), this.GetReg("R1").String(), this.GetReg("R2").String(), this.GetReg("R3").String()}, "  ") + "\n"
+		this.GetReg("LR").String(),
+	}, "  ") + "\n"
+	str += "  " + strings.Join([]string{this.GetReg("R0").String(), this.GetReg("R1").String(), this.GetReg("R2").String(), this.GetReg("R3").String(),
+		this.GetReg("PTR").String(),
+	}, "  ") + "\n"
+	str += "  " + strings.Join([]string{this.GetReg("T0").String(), this.GetReg("T1").String(), this.GetReg("T2").String(), this.GetReg("T3").String()}, "  ") + "\n"
+
 	var ctmp string
 	if this.Ctmp.GetM() {
 		ctmp = "1"

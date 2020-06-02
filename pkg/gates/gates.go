@@ -201,13 +201,15 @@ type ORe struct {
 	n   int
 }
 
+var OReSize int = 12
+
 func NewORe(wo *Wire) *ORe {
-	return &ORe{NewORn(NewBus(6), wo), wo, 0}
+	return &ORe{NewORn(NewBus(OReSize), wo), wo, 0}
 }
 
 func (this *ORe) AddWire(w *Wire) {
-	if this.n >= 6 {
-		log.Panicf("Elastic OR has reached maximum capacity of 6")
+	if this.n >= OReSize {
+		log.Panicf("Elastic OR has reached maximum capacity of OReSize")
 	}
 	NewCONN(w, this.orn.is.GetWire(this.n))
 	this.n++

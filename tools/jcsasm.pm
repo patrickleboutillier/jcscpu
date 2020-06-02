@@ -3,9 +3,10 @@ use strict ;
 use Carp ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
-our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD ST DATA JMPR JMP CLF JC JA JE JZ 
-    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL GOTO HALT DEBUG0 DEBUG1 DEBUG2 DEBUG3) ;
+our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD PTRLD ST PTRST DATA PTR SAVE RSTR JMPR PTRR JMP CLF JC JA JE JZ 
+    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL GOTO HALT DEBUG0 DEBUG1 DEBUG2 DEBUG3 DUMP) ;
 
+$jcsasm::ARCH_BITS = 8 ;
 
 my $HALT  = "01100001" ;
 
@@ -150,8 +151,22 @@ sub LD($$) {
 }
 
 
+sub PTRLD($) {
+    my ($rb) = _check_proto("R", @_) ;
+
+    add_inst(sprintf("001010%s", $rb->{v}), sprintf("PTRLD %s", $rb->{n})) ;
+}
+
+
 sub ST($$) {
     _reg_reg("0001", "ST", @_) ;
+}
+
+
+sub PTRST($) {
+    my ($rb) = _check_proto("R", @_) ;
+
+    add_inst(sprintf("001011%s", $rb->{v}), sprintf("PTRST %s", $rb->{n})) ;
 }
 
 
@@ -160,10 +175,34 @@ sub DATA($$) {
 }
 
 
+sub PTR($) {
+    my ($byte) = _check_proto("A", @_) ;
+
+    my $bin = undef ;
+    if ($byte =~ /^\@/){
+        $bin = $byte ;
+        $byte = "\@$bin" ;
+    }
+    else {
+        $bin = sprintf("%08b", $byte) ;
+    }
+
+    add_inst("00100100", sprintf("PTR   %s (%s)", $bin, $byte)) ;
+    add_inst($bin, sprintf("      %s (%s)", $bin, $byte)) ;
+}
+
+
 sub JMPR($) {
     my ($rb) = _check_proto("R", @_) ;
 
     add_inst(sprintf("001100%s", $rb->{v}), sprintf("JMPR  %s", $rb->{n})) ;
+}
+
+
+sub PTRR($) {
+    my ($rb) = _check_proto("R", @_) ;
+
+    add_inst(sprintf("001101%s", $rb->{v}), sprintf("PTRR  %s", $rb->{n})) ;
 }
 
 
@@ -180,6 +219,18 @@ sub HALT(;$) {
     add_inst($HALT, "HALT  " . $_[0]) ;
 }
 
+
+sub SAVE($) {
+    my ($rb) = _check_proto("R", @_) ;
+
+    add_inst(sprintf("011001%s", $rb->{v}), sprintf("SAVE  %s", $rb->{n})) ;
+}
+
+sub RSTR($) {
+    my ($rb) = _check_proto("R", @_) ;
+
+    add_inst(sprintf("011010%s", $rb->{v}), sprintf("SAVE  %s", $rb->{n})) ;
+}
 
 sub JMP($) {
     my ($byte) = _check_proto("A", @_) ;
@@ -283,40 +334,37 @@ sub OUTA($) {
 }
 
 
-sub DEBUG($) {
-    my $perl = shift ;
+sub DEBUG0() {
+    _check_proto("", @_) ;
 
-    $perl =~ s/[\r\n]//g ;
-
-    push @LINES, "#DEBUG $perl" ;
-    $NB_REM++ ;
+    add_inst("01101100", "DEBUG 0 (off)") ;
 }
 
 sub DEBUG1() {
     _check_proto("", @_) ;
 
-    add_inst("01101001", "DEBUG 1 (inst)") ;
+    add_inst("01101101", "DEBUG 1 (inst)") ;
 }
 
 
 sub DEBUG2() {
     _check_proto("", @_) ;
 
-    add_inst("01101010", "DEBUG 2 (tick)") ;
+    add_inst("01101110", "DEBUG 2 (tick)") ;
 }
 
 
 sub DEBUG3() {
     _check_proto("", @_) ;
 
-    add_inst("01101011", "DEBUG 3 (qtick)") ;
+    add_inst("01101111", "DEBUG 3 (qtick)") ;
 }
 
 
-sub DEBUG0() {
+sub DUMP() {
     _check_proto("", @_) ;
 
-    add_inst("01101000", "DEBUG 9 (off)") ;
+    add_inst("01100010", "DUMP") ;
 }
 
 
@@ -355,7 +403,7 @@ sub _valid_dec {
 
     if ($d =~ /^(0d)?(\d+)$/){
         $d = $2 ;
-        croak("JCSASM: Decimal value '$d' to large") unless $d < 256 ;   
+        croak("JCSASM: Decimal value '$d' to large") unless $d < (1 << $jcsasm::ARCH_BITS) ;   
         return $d ;
     }
 

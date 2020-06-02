@@ -1,6 +1,8 @@
 package board
 
 import (
+	"fmt"
+
 	g "github.com/patrickleboutillier/jcscpu/pkg/gates"
 	p "github.com/patrickleboutillier/jcscpu/pkg/parts"
 )
@@ -67,41 +69,104 @@ func LDSTInstructions(BB *Breadboard) {
 }
 
 func DATAInstructions(BB *Breadboard) {
+	// Use bits 3-4 of the DATA instruction for M* instructions.
+	breg := g.WrapBusV(BB.GetBus("IR.bus").GetWire(4), BB.GetBus("IR.bus").GetWire(5))
+	binst := g.NewBus(4)
+	p.NewDecoder(breg, binst)
+
 	d1 := g.NewWire()
-	g.NewAND(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(2), d1)
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(2), binst.GetWire(0)), d1)
 	BB.GetORe("BUS1.bit1.eor").AddWire(d1)
 	BB.GetORe("IAR.ena.eor").AddWire(d1)
 	BB.GetORe("RAM.MAR.set.eor").AddWire(d1)
 	BB.GetORe("ACC.set.eor").AddWire(d1)
 
 	d2 := g.NewWire()
-	g.NewAND(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(2), d2)
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(2), binst.GetWire(0)), d2)
 	BB.GetORe("RAM.ena.eor").AddWire(d2)
 	BB.GetORe("REGB.set.eor").AddWire(d2)
 
 	d3 := g.NewWire()
-	g.NewAND(BB.GetBus("STP.bus").GetWire(5), BB.GetBus("INST.bus").GetWire(2), d3)
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(5), BB.GetBus("INST.bus").GetWire(2), binst.GetWire(0)), d3)
 	BB.GetORe("ACC.ena.eor").AddWire(d3)
 	BB.GetORe("IAR.set.eor").AddWire(d3)
+
+	// PTR, 001001XX,
+	pt1 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(2), binst.GetWire(1)), pt1)
+	BB.GetORe("BUS1.bit1.eor").AddWire(pt1)
+	BB.GetORe("IAR.ena.eor").AddWire(pt1)
+	BB.GetORe("RAM.MAR.set.eor").AddWire(pt1)
+	BB.GetORe("ACC.set.eor").AddWire(pt1)
+
+	pt2 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(2), binst.GetWire(1)), pt2)
+	BB.GetORe("RAM.ena.eor").AddWire(pt2)
+	BB.GetORe("PTR.set.eor").AddWire(pt2)
+
+	pt3 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(5), BB.GetBus("INST.bus").GetWire(2), binst.GetWire(1)), pt3)
+	BB.GetORe("ACC.ena.eor").AddWire(pt3)
+	BB.GetORe("IAR.set.eor").AddWire(pt3)
+
+	// PTRLD, 001010rb, load RB from RAM address in PTR
+	ptl1 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(2), binst.GetWire(2)), ptl1)
+	BB.GetORe("PTR.ena.eor").AddWire(ptl1)
+	BB.GetORe("RAM.MAR.set.eor").AddWire(ptl1)
+
+	ptl2 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(2), binst.GetWire(2)), ptl2)
+	BB.GetORe("RAM.ena.eor").AddWire(ptl2)
+	BB.GetORe("REGB.set.eor").AddWire(ptl2)
+
+	// PTRST, 001011rb, store RB to RAM address in PTR
+	pts1 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(2), binst.GetWire(3)), pts1)
+	BB.GetORe("PTR.ena.eor").AddWire(pts1)
+	BB.GetORe("RAM.MAR.set.eor").AddWire(pts1)
+
+	pts2 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(2), binst.GetWire(3)), pts2)
+	BB.GetORe("REGB.ena.eor").AddWire(pts2)
+	BB.GetORe("RAM.set.eor").AddWire(pts2)
 }
 
 func JUMPInstructions(BB *Breadboard) {
+	// Use bits 3-4 of the JUMPR instruction for PTRR instruction.
+	breg := g.WrapBusV(BB.GetBus("IR.bus").GetWire(4), BB.GetBus("IR.bus").GetWire(5))
+	binst := g.NewBus(4)
+	p.NewDecoder(breg, binst)
+
 	// JUMPR
 	jr1 := g.NewWire()
-	g.NewAND(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(3), jr1)
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(3), binst.GetWire(0)), jr1)
 	BB.GetORe("REGB.ena.eor").AddWire(jr1)
 	BB.GetORe("IAR.set.eor").AddWire(jr1)
+
+	// PTRR
+	ptr1 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(3), binst.GetWire(1)), ptr1)
+	BB.GetORe("REGB.ena.eor").AddWire(ptr1)
+	BB.GetORe("PTR.set.eor").AddWire(ptr1)
 
 	// JUMP
 	j1 := g.NewWire()
 	g.NewAND(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(4), j1)
 	BB.GetORe("IAR.ena.eor").AddWire(j1)
 	BB.GetORe("RAM.MAR.set.eor").AddWire(j1)
+	BB.GetORe("BUS1.bit1.eor").AddWire(j1)
+	BB.GetORe("ACC.set.eor").AddWire(j1)
 
 	j2 := g.NewWire()
 	g.NewAND(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(4), j2)
-	BB.GetORe("RAM.ena.eor").AddWire(j2)
-	BB.GetORe("IAR.set.eor").AddWire(j2)
+	BB.GetORe("ACC.ena.eor").AddWire(j2)
+	BB.GetORe("LR.set.eor").AddWire(j2)
+
+	j3 := g.NewWire()
+	g.NewAND(BB.GetBus("STP.bus").GetWire(5), BB.GetBus("INST.bus").GetWire(4), j3)
+	BB.GetORe("RAM.ena.eor").AddWire(j3)
+	BB.GetORe("IAR.set.eor").AddWire(j3)
 
 	// JUMPIF
 	ji1 := g.NewWire()
@@ -151,10 +216,35 @@ func CLFInstructions(BB *Breadboard) {
 		}
 	})
 
+	// DUMP (dump RAM), 01100010
+	dmp1 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(2)), dmp1)
+	dmp1.AddPrehook(func(v bool) {
+		if v {
+			BB.Dump()
+		}
+	})
+
+	// SAVE Rx, 011001[00,01,10,11]
+	for j := 0; j < 4; j++ {
+		svn := g.NewWire()
+		g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(4+j)), svn)
+		BB.GetORe("REGB.ena.eor").AddWire(svn)
+		BB.GetORe(fmt.Sprintf("T%d.set.eor", j)).AddWire(svn)
+	}
+
+	// RSTR Rx, 011010[00,01,10,11]
+	for j := 0; j < 4; j++ {
+		rstr := g.NewWire()
+		g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(8+j)), rstr)
+		BB.GetORe(fmt.Sprintf("T%d.ena.eor", j)).AddWire(rstr)
+		BB.GetORe("REGB.set.eor").AddWire(rstr)
+	}
+
 	// DEBUG3,2,1,0, 011010[00,01,10,11]
 	for j := 0; j < 4; j++ {
 		dbg := g.NewWire()
-		g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(8+j)), dbg)
+		g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(12+j)), dbg)
 		d := j
 		dbg.AddPrehook(func(v bool) {
 			if v {
@@ -163,14 +253,6 @@ func CLFInstructions(BB *Breadboard) {
 		})
 	}
 
-	// DUMP (dump RAM)
-	dmp1 := g.NewWire()
-	g.NewANDn(g.WrapBusV(BB.GetBus("INST.bus").GetWire(6), BB.GetBus("STP.bus").GetWire(3), binst.GetWire(14)), dmp1)
-	dmp1.AddPrehook(func(v bool) {
-		if v {
-			BB.Dump()
-		}
-	})
 }
 
 func IOInstructions(BB *Breadboard) {

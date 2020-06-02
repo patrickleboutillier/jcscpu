@@ -136,10 +136,69 @@ func TestDATAInstruction(t *testing.T) {
 	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0010,
 		func(tc ti.INSTTestCase) {
 		},
-		doInst(BB),
+		func(tc ti.INSTTestCase) {
+			// Make sure instruction is a DATA (001000XX)
+			tc.INST = 0b11110011 & tc.INST
+			doInst(BB)(tc)
+		},
 		func(tc ti.INSTTestCase) {
 			tm.Is(t, BB.GetReg(tc.RB).GetPower(), tc.IDATA, fmt.Sprintf("%d copied from program (RAM@%d) to %s", tc.IDATA, tc.IDADDR, tc.RB))
 			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IADDR+2, fmt.Sprintf("IAR has advanced to the next instruction at tc.IADDR+2"))
+		},
+	)
+}
+
+func TestPTRInstruction(t *testing.T) {
+	BB := newInstBreadboard(t8.GetArchBits(), "DATA")
+	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0010,
+		func(tc ti.INSTTestCase) {
+		},
+		func(tc ti.INSTTestCase) {
+			// Make sure instruction is a PTR (001001XX)
+			tc.INST = 0b00100100 // (0b11110011 & tc.INST) + 4
+			doInst(BB)(tc)
+		},
+		func(tc ti.INSTTestCase) {
+			tm.Is(t, BB.GetReg("PTR").GetPower(), tc.IDATA, fmt.Sprintf("%d copied to PTR", tc.IDATA))
+			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IADDR+2, fmt.Sprintf("IAR has advanced to the next instruction at tc.IADDR+2"))
+		},
+	)
+}
+
+func TestPTRLDInstruction(t *testing.T) {
+	BB := newInstBreadboard(t8.GetArchBits(), "DATA")
+	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0010,
+		func(tc ti.INSTTestCase) {
+			BB.SetRAM(tc.ADDR, tc.DATA)
+			BB.SetReg("PTR", tc.ADDR)
+		},
+		func(tc ti.INSTTestCase) {
+			// Make sure instruction is a MLD (001010XX)
+			tc.INST = (0b11110011 & tc.INST) + 8
+			doInst(BB)(tc)
+		},
+		func(tc ti.INSTTestCase) {
+			tm.Is(t, BB.GetReg(tc.RB).GetPower(), tc.DATA, fmt.Sprintf("%d loaded from RAM@PTR to %s", tc.DATA, tc.RB))
+			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IADDR+1, fmt.Sprintf("IAR has advanced to the next instruction at tc.IADDR+1"))
+		},
+	)
+}
+
+func TestPTRSTInstruction(t *testing.T) {
+	BB := newInstBreadboard(t8.GetArchBits(), "DATA")
+	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0010,
+		func(tc ti.INSTTestCase) {
+			BB.SetReg(tc.RB, tc.DATA)
+			BB.SetReg("PTR", tc.ADDR)
+		},
+		func(tc ti.INSTTestCase) {
+			// Make sure instruction is a MST (001011XX)
+			tc.INST = (0b11110011 & tc.INST) + 12
+			doInst(BB)(tc)
+		},
+		func(tc ti.INSTTestCase) {
+			tm.Is(t, BB.RAM.GetCellPower(tc.ADDR), tc.DATA, fmt.Sprintf("%d stored to RAM@PTR from %s", tc.DATA, tc.RB))
+			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IADDR+1, fmt.Sprintf("IAR has advanced to the next instruction at tc.IADDR+1"))
 		},
 	)
 }
@@ -150,9 +209,30 @@ func TestJMPRInstruction(t *testing.T) {
 		func(tc ti.INSTTestCase) {
 			BB.SetReg(tc.RB, tc.ADDR)
 		},
-		doInst(BB),
+		func(tc ti.INSTTestCase) {
+			// Make sure instruction is a JMPR (001100XX)
+			tc.INST = 0b11110011 & tc.INST
+			doInst(BB)(tc)
+		},
 		func(tc ti.INSTTestCase) {
 			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.ADDR, fmt.Sprintf("IAR is now %d", tc.ADDR))
+		},
+	)
+}
+
+func TestPTRRInstruction(t *testing.T) {
+	BB := newInstBreadboard(t8.GetArchBits(), "JUMP")
+	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0011,
+		func(tc ti.INSTTestCase) {
+			BB.SetReg(tc.RB, tc.ADDR)
+		},
+		func(tc ti.INSTTestCase) {
+			// Make sure instruction is a PTRR (001101XX)
+			tc.INST = (0b11110011 & tc.INST) + 4
+			doInst(BB)(tc)
+		},
+		func(tc ti.INSTTestCase) {
+			tm.Is(t, BB.GetReg("PTR").GetPower(), tc.ADDR, fmt.Sprintf("PTR is now %d", tc.ADDR))
 		},
 	)
 }
@@ -214,54 +294,6 @@ func TestCLFInstruction(t *testing.T) {
 		},
 	)
 }
-
-/*
-func TestIOInstruction(t *testing.T) {
-	BB := newInstBreadboard(t8.GetArchBits(), "IO")
-
-	received := -1
-	sent := -1
-	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0111,
-		func(tc ti.INSTTestCase) {
-			if !BB.IOAdapter.IsRegistered(tc.IODEV) {
-				BB.IOAdapter.Register(BB, tc.IODEV, fmt.Sprintf("dummy-%d", tc.IODEV),
-					func() {
-						// Simulate data being placed on the bus by the device
-						sent = rand.Intn(BB.GetBus("DATA.bus").GetMaxPower())
-						BB.GetBus("DATA.bus").SetPower(sent)
-					},
-					func() {
-						// Data was made available to our device on the DATA.bus.
-						// Let's grab it and put it in a local var.
-						received = BB.GetBus("DATA.bus").GetPower()
-					},
-				)
-			}
-		},
-		func(tc ti.INSTTestCase) {
-			// First, activate the device (11)
-			rb := tc.INST % 4
-			tc.INST = 0b01111100 + rb
-			BB.SetReg(tc.RB, tc.IODEV)
-			doInst(BB)(tc)
-			tm.Is(t, BB.IOAdapter.IsActive(tc.IODEV), true, fmt.Sprintf("Adapter %d is active", tc.IODEV))
-
-			// Then, send data to the device (10)
-			tc.INST = 0b01111000 + rb
-			BB.SetReg(tc.RB, tc.DATA)
-			doInst(BB)(tc)
-			tm.Is(t, received, tc.DATA, fmt.Sprintf("Data %d was grabbed from the bus by device %d", received, tc.IODEV))
-
-			// Then, ask for data from the device (00)
-			tc.INST = 0b01110000 + rb
-			doInst(BB)(tc)
-			tm.Is(t, BB.GetReg(tc.RB).GetPower(), sent, fmt.Sprintf("Data %d was grabbed from the bus by device %d", received, tc.IODEV))
-		},
-		func(tc ti.INSTTestCase) {
-		},
-	)
-}
-*/
 
 func doInst(BB *Breadboard) ti.INSTDo {
 	return func(tc ti.INSTTestCase) {

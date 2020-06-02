@@ -21,7 +21,7 @@ func InstProc(this *Breadboard) {
 	this.putReg("IR", p.NewRegister(dbs, this.GetWire("IR.s"), this.GetWire("IR.e"), this.GetBus("IR.bus"), "IR"))
 
 	// ALL ENABLES
-	for _, e := range []string{"IAR", "RAM", "ACC"} {
+	for _, e := range []string{"IAR", "RAM", "ACC", "PTR", "T0", "T1", "T2", "T3"} {
 		w := g.NewWire()
 		g.NewAND(this.GetWire("CLK.clke"), w, this.GetWire(fmt.Sprintf("%s.e", e)))
 		this.putORe(fmt.Sprintf("%s.ena.eor", e), g.NewORe(w))
@@ -29,7 +29,7 @@ func InstProc(this *Breadboard) {
 	this.putORe("BUS1.bit1.eor", g.NewORe(this.GetWire("BUS1.bit1")))
 
 	// ALL SETS
-	for _, s := range []string{"IR", "RAM.MAR", "IAR", "ACC", "RAM", "TMP", "FLAGS"} {
+	for _, s := range []string{"IR", "RAM.MAR", "IAR", "ACC", "RAM", "TMP", "FLAGS", "LR", "PTR", "T0", "T1", "T2", "T3"} {
 		w := g.NewWire()
 		g.NewAND(this.GetWire("CLK.clks"), w, this.GetWire(fmt.Sprintf("%s.s", s)))
 		this.putORe(fmt.Sprintf("%s.set.eor", s), g.NewORe(w))

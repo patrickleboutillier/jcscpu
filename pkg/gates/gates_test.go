@@ -199,7 +199,7 @@ func TestORn(t *testing.T) {
 func TestGateErrors(t *testing.T) {
 	tm.TPanic(t, func() {
 		o := NewORe(NewWire())
-		for j := 0; j < 6; j++ {
+		for j := 0; j < OReSize; j++ {
 			o.AddWire(NewWire())
 		}
 		o.AddWire(NewWire())
