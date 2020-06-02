@@ -180,6 +180,7 @@ func JUMPInstructions(BB *Breadboard) {
 	g.NewAND(BB.GetBus("STP.bus").GetWire(4), BB.GetBus("INST.bus").GetWire(5), ji2)
 	BB.GetORe("ACC.ena.eor").AddWire(ji2)
 	BB.GetORe("IAR.set.eor").AddWire(ji2)
+	BB.GetORe("LR.set.eor").AddWire(ji2)
 
 	ji3 := g.NewWire()
 	flago := g.NewWire()

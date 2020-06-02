@@ -245,6 +245,7 @@ func TestJMPInstruction(t *testing.T) {
 		doInst(BB),
 		func(tc ti.INSTTestCase) {
 			tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IDATA, fmt.Sprintf("IAR is now %d", tc.IDATA))
+			tm.Is(t, BB.GetReg("LR").GetPower(), tc.IADDR+2, fmt.Sprintf("LR set to the next instruction at tc.IADDR+2"))
 		},
 	)
 }
@@ -265,6 +266,7 @@ func TestJMPIFInstruction(t *testing.T) {
 			jump := (tc.FLAGS & tc.IFLAGS) > 0
 			if jump {
 				tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IDATA, fmt.Sprintf("IAR is now %d", tc.IDATA))
+				tm.Is(t, BB.GetReg("LR").GetPower(), tc.IADDR+2, fmt.Sprintf("LR set to the next instruction at tc.IADDR+2"))
 			} else {
 				tm.Is(t, BB.GetReg("IAR").GetPower(), tc.IADDR+2, fmt.Sprintf("IAR has advanced to the next instruction at tc.IADDR+2"))
 			}
