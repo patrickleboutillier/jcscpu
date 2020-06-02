@@ -52,7 +52,7 @@ func (this *Computer) BootAndRun(insts []int) error {
 	max := 1 << this.bits
 	// We want to keep the last 6 bytes of RAM uninitialized, as they may be used by higher-level
 	// mechanisms lie a program stack.
-	slack := 6
+	slack := 1
 	pos, start, bl := bootLoader(max, slack)
 
 	if len(insts) == 0 {

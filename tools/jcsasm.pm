@@ -4,9 +4,9 @@ use Carp ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
 our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD PTRLD ST PTRST DATA PTR SAVE RSTR JMPR PTRR JMP CLF JC JA JE JZ 
-    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL GOTO HALT DEBUG0 DEBUG1 DEBUG2 DEBUG3 DUMP) ;
+    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL LR GOTO CALL HALT DEBUG0 DEBUG1 DEBUG2 DEBUG3 DUMP) ;
 
-$jcsasm::ARCH_BITS = 8 ;
+$jcsasm::ARCH_BITS = $ENV{ARCH_BITS} ||  8 ;
 
 my $HALT  = "01100001" ;
 
@@ -206,6 +206,13 @@ sub PTRR($) {
 }
 
 
+sub LR($) {
+    my ($rb) = _check_proto("R", @_) ;
+
+    add_inst(sprintf("001110%s", $rb->{v}), sprintf("LR    %s", $rb->{n})) ;
+}
+
+
 sub CLF() {
     _check_proto("", @_) ;
 
@@ -255,6 +262,15 @@ sub GOTO($) {
     croak("JCSASM: Invalid label '$label'") unless $label =~ /^\w+$/ ;
     REM("GOTO  \@$label") ;
     JMP("\@$label") ;
+}
+
+
+sub CALL($) {
+    my $label = shift ;
+    
+    croak("JCSASM: Invalid label '$label'") unless $label =~ /^\w+$/ ;
+    REM("CALL  \@$label") ;
+    JMP("\@$label") ;    
 }
 
 

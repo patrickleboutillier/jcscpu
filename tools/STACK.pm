@@ -11,13 +11,7 @@ our @EXPORT = qw(PUSH POP) ;
 my $MINUS1 = (1 << $jcsasm::ARCH_BITS) - 1 ; 
 my $MINUS2 = $MINUS1 - 1 ;
 my $LAST_RAM = $MINUS1 ; 
-my $TMP = $LAST_RAM ;
-my $TMP0 = $LAST_RAM ;
-my $TMP1 = $LAST_RAM - 1 ;
-my $TMP2 = $LAST_RAM - 2 ;
-my $TMP3 = $LAST_RAM - 3 ;
-my $SP = $LAST_RAM - 4 ; # 251
-my $STACK = $LAST_RAM - 5 ; # 250
+my $SP = $LAST_RAM ; # 255
 my $SP_INIT = $SP ;
 
 
