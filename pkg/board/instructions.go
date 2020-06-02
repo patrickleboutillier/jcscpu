@@ -162,6 +162,12 @@ func JUMPInstructions(BB *Breadboard) {
 	BB.GetORe("REGB.ena.eor").AddWire(ptr1)
 	BB.GetORe("PTR.set.eor").AddWire(ptr1)
 
+	// LR
+	lr1 := g.NewWire()
+	g.NewANDn(g.WrapBusV(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(3), binst.GetWire(2)), lr1)
+	BB.GetORe("LR.ena.eor").AddWire(lr1)
+	BB.GetORe("REGB.set.eor").AddWire(lr1)
+
 	// JUMP
 	j1 := g.NewWire()
 	g.NewAND(BB.GetBus("STP.bus").GetWire(3), BB.GetBus("INST.bus").GetWire(4), j1)

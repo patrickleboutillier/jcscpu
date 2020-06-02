@@ -238,6 +238,23 @@ func TestPTRRInstruction(t *testing.T) {
 	)
 }
 
+func TestLRInstruction(t *testing.T) {
+	BB := newInstBreadboard(t8.GetArchBits(), "JUMP")
+	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0011,
+		func(tc ti.INSTTestCase) {
+			BB.SetReg("LR", tc.ADDR)
+		},
+		func(tc ti.INSTTestCase) {
+			// Make sure instruction is a PTRR (001110XX)
+			tc.INST = (0b11110011 & tc.INST) + 8
+			doInst(BB)(tc)
+		},
+		func(tc ti.INSTTestCase) {
+			tm.Is(t, BB.GetReg(tc.RB).GetPower(), tc.ADDR, fmt.Sprintf("%s is now %d", tc.RB, tc.ADDR))
+		},
+	)
+}
+
 func TestJMPInstruction(t *testing.T) {
 	BB := newInstBreadboard(t8.GetArchBits(), "JUMP")
 	ti.RunRandomINSTTests(t, nb_tests_per_inst, 0b0100,

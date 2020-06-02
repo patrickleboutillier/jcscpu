@@ -3,3 +3,5 @@
 - Add PTRST (001010rb): Store RB to RAM address in PTR
 - Add PTRLD (001011rb): Load RB from RAM address in PTR
 - Add PTRR  (001101rb): Copy contents of RB to PTR 
+
+- How to access LR to do a subroutine return?
