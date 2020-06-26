@@ -1,0 +1,11 @@
+// `define INLEN 3
+// `define OUTLEN 1
+// jorN #(`INLEN) x(in[0:`INLEN-1], out[0]) ;
+000_0
+001_1
+010_1
+011_1
+100_1
+101_1
+110_1
+111_1

@@ -4,7 +4,7 @@
 
 	reg reset ;
 	reg [31:0] tv, errors ; // bookkeeping variables
-	reg [`OUTLEN+`INLEN-1:0] tvs[0:`NBLINES-1] ; // array of testvectors
+	reg [0:`OUTLEN+`INLEN-1] tvs[0:`NBLINES-1] ; // array of testvectors
 	initial // Will execute at the beginning once
 		begin
 			$readmemb(`TVFILE, tvs) ; // Read vectors
@@ -45,7 +45,7 @@
 					if (tvs[tv][0] === 1'bx)
 						begin
 							bang = (errors == 0) ? "" : "!!!" ;
-							$display("%d tests completed with %d errors %s", tv, errors, bang) ;
+							$display("%d/%d tests completed with %d errors %s", tv, `NBLINES, errors, bang) ;
 							$finish; // End simulation
 						end
 			end

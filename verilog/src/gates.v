@@ -24,6 +24,37 @@ module jconn(input wa, output wb) ;
 	jand x(wa, wa, wb) ;
 endmodule
 
+module jandN #(parameter N=2) (input [N-1:0] bis, output wo) ;
+	wire [N-2:0] os ;
+	
+	jand and0(bis[0], bis[1], os[0]) ;
+
+	genvar j ;
+	generate
+		for (j = 0; j < (N - 2); j = j + 1) begin
+			jand andj(os[j], bis[j+2], os[j+1]) ;
+		end
+	endgenerate
+
+	assign wo = os[N-2] ;
+endmodule
+
+module jorN #(parameter N=2) (input [N-1:0] bis, output wo) ;
+	wire [N-2:0] os ;
+	
+	jor or0(bis[0], bis[1], os[0]) ;
+
+	genvar j ;
+	generate
+		for (j = 0; j < (N - 2); j = j + 1) begin
+			jor orj(os[j], bis[j+2], os[j+1]) ;
+		end
+	endgenerate
+
+	assign wo = os[N-2] ;
+endmodule
+
+
 /*
 XOR
 
@@ -42,81 +73,6 @@ func NewXOR(wa *Wire, wb *Wire, wc *Wire) *XOR {
 	NewNAND(wic, wb, wie)
 	NewNAND(wa, wid, wif)
 	NewNAND(wie, wif, wc)
-	return this
-}
-
-/*
-ANDn
-
-type ANDn struct {
-	n  int
-	is *Bus
-	o  *Wire
-}
-
-func NewANDn(bis *Bus, wo *Wire) *ANDn {
-	n := bis.GetSize()
-	this := &ANDn{n, bis, wo}
-
-	if n < 2 {
-		log.Panicf("Invalid ANDn number of inputs %d", n)
-	}
-
-	var o *Wire
-	if n == 2 {
-		o = wo
-	} else {
-		o = NewWire()
-	}
-	last := NewAND(bis.GetWire(0), bis.GetWire(1), o)
-	for j := 0; j < (n - 2); j++ {
-		var o *Wire
-		if n == (j + 3) {
-			o = wo
-		} else {
-			o = NewWire()
-		}
-		next := NewAND(last.c, bis.GetWire(j+2), o)
-		last = next
-	}
-
-	return this
-}
-
-/*
-ORn
-
-type ORn struct {
-	n  int
-	is *Bus
-	o  *Wire
-}
-
-func NewORn(bis *Bus, wo *Wire) *ORn {
-	n := bis.GetSize()
-	this := &ORn{n, bis, wo}
-
-	if n < 2 {
-		log.Panicf("Invalid ORn number of inputs %d", n)
-	}
-
-	var o *Wire
-	if n == 2 {
-		o = wo
-	} else {
-		o = NewWire()
-	}
-	last := NewOR(bis.GetWire(0), bis.GetWire(1), o)
-	for j := 0; j < (n - 2); j++ {
-		if n == (j + 3) {
-			o = wo
-		} else {
-			o = NewWire()
-		}
-		next := NewOR(last.c, bis.GetWire(j+2), o)
-		last = next
-	}
-
 	return this
 }
 

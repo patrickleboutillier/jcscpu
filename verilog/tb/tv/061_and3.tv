@@ -1,0 +1,11 @@
+// `define INLEN 3
+// `define OUTLEN 1
+// jandN #(`INLEN) x(in[0:`INLEN-1], out[0]) ;
+000_0
+001_0
+010_0
+011_0
+100_0
+101_0
+110_0
+111_1
