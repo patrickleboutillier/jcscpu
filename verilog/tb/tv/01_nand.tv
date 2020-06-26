@@ -1,0 +1,7 @@
+// `define INLEN 2
+// `define OUTLEN 1
+// jnand x(in[0], in[1], out[0]) ;
+00_1
+01_1
+10_1
+11_0

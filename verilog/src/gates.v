@@ -10,110 +10,19 @@ endmodule
 module jand(input wa, input wb, output wc) ;
 	wire w ;
 	jnand x(wa, wb, w) ;
-	jnot y (w, wc) ;
+	jnot y(w, wc) ;
 endmodule
 
-module gates_test() ;
-	reg a ;
-	reg b ;
-	wire got ;
-
-	jnand x(a, b, got) ;
-
-	// generate clock
-	reg clk ;
-	always // no sensitivity list, so it always executes
-		begin
-			clk = 1; #5; clk = 0; #5; // 10ns period
-		end
-
-	reg reset ;
-	reg [31:0] tv, errors ; 			// bookkeeping variables
-	reg [3:0] tvs[0:1024] ; // array of testvectors
-	initial // Will execute at the beginning once
-		begin
-			$readmemb("src/nand.tv", tvs, 0, 3) ; // Read vectors
-			tv = 0; errors = 0; // Initialize
-			reset = 1; #27; reset = 0; // Apply reset wait
-		end
-
-	// apply test vectors on rising edge of clk
-	always @(posedge clk)
-		begin
-			#1; {a, b, expected} = tvs[tv] ;
-		end
-
-	// check results on falling edge of clk
-	reg expected ;
-	always @(negedge clk)
-		if (~reset) // skip during reset
-			begin
-				if (got !== expected)
-					begin
-						$display("Error: inputs = %b, outputs = %b (%b expected)", {a, b}, got, expected) ;
-						errors = errors + 1 ;
-					end
-
-					// increment array index and read next testvector
-					tv = tv + 1 ;
-					if (tvs[tv] === 4'bx)
-						begin
-							$display("%d tests completed with %d errors", tv, errors);
-							$finish; // End simulation
-						end
-				end
+module jor(input wa, input wb, output wc) ;
+	wire wic, wid ;
+	jnot n1 (wa, wic) ;
+	jnot n2 (wb, wid) ;
+	jnand x(wic, wid, wc) ;
 endmodule
 
-
-/*
-type CONN struct {
-	a, b *Wire
-}
-
-func NewCONN(wa *Wire, wb *Wire) *CONN {
-	this := &CONN{wa, wb}
-	NewAND(wa, wa, wb)
-	return this
-}
-
-/*
-AND
-type AND struct {
-	a, b, c *Wire
-}
-
-func NewAND(wa *Wire, wb *Wire, wc *Wire) *AND {
-	this := &AND{wa, wb, wc}
-	w := NewWire()
-	NewNAND(wa, wb, w)
-	NewNOT(w, wc)
-	return this
-}
-
-func (this *AND) String() string {
-	return fmt.Sprintf("AND[%s/%s/%s]", this.a.String(), this.b.String(), this.c.String())
-}
-
-/*
-OR
-
-type OR struct {
-	a, b, c *Wire
-}
-
-func NewOR(wa *Wire, wb *Wire, wc *Wire) *OR {
-	this := &OR{wa, wb, wc}
-	wic := NewWire()
-	wid := NewWire()
-	NewNOT(wa, wic)
-	NewNOT(wb, wid)
-	NewNAND(wic, wid, wc)
-	return this
-}
-
-func (this *OR) String() string {
-	return fmt.Sprintf(" OR[%s/%s/%s]", this.a.String(), this.b.String(), this.c.String())
-}
+module jconn(input wa, output wb) ;
+	jand x(wa, wa, wb) ;
+endmodule
 
 /*
 XOR

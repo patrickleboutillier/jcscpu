@@ -1,0 +1,5 @@
+// `define INLEN 1
+// `define OUTLEN 1
+// jconn x(in[0], out[0]) ;
+0_0
+1_1

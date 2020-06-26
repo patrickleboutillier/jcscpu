@@ -1,0 +1,5 @@
+// `define INLEN 1
+// `define OUTLEN 1
+// jnot x(in[0], out[0]) ;
+0_1
+1_0
