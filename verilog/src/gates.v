@@ -1,17 +1,22 @@
+`include "src/defs.v"
+
 
 module jnand(input wa, input wb, output wc) ;
 	nand x(wc, wa, wb) ;
 endmodule
 
+
 module jnot(input wa, output wb) ;
 	jnand x(wa, wa, wb) ;
 endmodule
+
 
 module jand(input wa, input wb, output wc) ;
 	wire w ;
 	jnand x(wa, wb, w) ;
 	jnot y(w, wc) ;
 endmodule
+
 
 module jor(input wa, input wb, output wc) ;
 	wire wic, wid ;
@@ -20,9 +25,16 @@ module jor(input wa, input wb, output wc) ;
 	jnand x(wic, wid, wc) ;
 endmodule
 
+
 module jconn(input wa, output wb) ;
 	jand x(wa, wa, wb) ;
 endmodule
+
+
+module jbuf(input wa, output wb) ;
+	jconn x(wa, wb) ;
+endmodule
+
 
 module jandN #(parameter N=2) (input [N-1:0] bis, output wo) ;
 	wire [N-2:0] os ;
@@ -38,6 +50,7 @@ module jandN #(parameter N=2) (input [N-1:0] bis, output wo) ;
 
 	assign wo = os[N-2] ;
 endmodule
+
 
 module jorN #(parameter N=2) (input [N-1:0] bis, output wo) ;
 	wire [N-2:0] os ;
