@@ -28,8 +28,10 @@
 	reg [3*8:0] bang ;
 	always @(negedge clk)
 		if (~reset) begin
-			// $display("inputs = %b, outputs = %b (%b expected)", 
-			//	in[0:`INLEN-1], out[0:`OUTLEN-1], expected[0:`OUTLEN-1]) ;
+			if (`VERBOSE == 1) begin
+				 $display("inputs = %b, outputs = %b (%b expected)", 
+					in[0:`INLEN-1], out[0:`OUTLEN-1], expected[0:`OUTLEN-1]) ;
+			end
 			if (out[0:`OUTLEN-1] !== expected[0:`OUTLEN-1]) begin
 				$display("Error: line = %d, inputs = %b, outputs = %b (%b expected)", tv+1, 
 					in[0:`INLEN-1], out[0:`OUTLEN-1], expected[0:`OUTLEN-1]) ;

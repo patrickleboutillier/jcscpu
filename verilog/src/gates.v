@@ -26,6 +26,16 @@ module jor(input wa, input wb, output wc) ;
 endmodule
 
 
+module jxor(input wa, input wb, output wc) ;
+	wire wic, wid, wie, wif ;
+	jnot not1(wa, wic) ;
+	jnot not2(wb, wid) ;
+	jnand nand1(wic, wb, wie) ;
+	jnand nand2(wa, wid, wif) ;
+	jnand nand3(wie, wif, wc) ;
+endmodule
+
+
 module jconn(input wa, output wb) ;
 	jand x(wa, wa, wb) ;
 endmodule
@@ -67,27 +77,6 @@ module jorN #(parameter N=2) (input [N-1:0] bis, output wo) ;
 	assign wo = os[N-2] ;
 endmodule
 
-
-/*
-XOR
-
-type XOR struct {
-	a, b, c *Wire
-}
-
-func NewXOR(wa *Wire, wb *Wire, wc *Wire) *XOR {
-	this := &XOR{wa, wb, wc}
-	wic := NewWire()
-	wid := NewWire()
-	wie := NewWire()
-	wif := NewWire()
-	NewNOT(wa, wic)
-	NewNOT(wb, wid)
-	NewNAND(wic, wb, wie)
-	NewNAND(wa, wid, wif)
-	NewNAND(wie, wif, wc)
-	return this
-}
 
 /*
 ORe

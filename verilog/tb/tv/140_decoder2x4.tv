@@ -1,0 +1,8 @@
+// `define INLEN 2
+// `define OUTLEN 4
+// jdecoder #(`INLEN, `OUTLEN) x(in[0:`INLEN-1], out[0:`OUTLEN-1]) ;
+
+00_0001
+01_0010
+10_0100
+11_1000
