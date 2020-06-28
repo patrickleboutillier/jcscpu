@@ -36,6 +36,16 @@ module jxor(input wa, input wb, output wc) ;
 endmodule
 
 
+module jadd(input wa, input wb, input wci, output wc, output wco) ;
+	wire wi, wcoa, wcob ;
+	jxor xor1(wa, wb, wi) ;
+	jxor xor2(wi, wci, wc) ;
+	jand and1(wci, wi, wcoa) ;
+	jand and2(wa, wb, wcob) ;
+	jor or1(wcoa, wcob, wco) ;
+endmodule
+
+
 module jconn(input wa, output wb) ;
 	jand x(wa, wa, wb) ;
 endmodule
