@@ -2,31 +2,40 @@
 	reg [0:`INLEN-1] in ;
 	wire [0:`OUTLEN-1] out ;
 
-	reg reset ;
 	reg [31:0] tv, errors ; // bookkeeping variables
 	reg [0:`OUTLEN+`INLEN-1] tvs[0:`NBLINES-1] ; // array of testvectors
 
 	initial begin // Will execute at the beginning once
 		$readmemb(`TVFILE, tvs) ; // Read vectors
 		tv = 0; errors = 0; // Initialize
-		reset = 1; #27; reset = 0; 
+		reset = 1; #97; reset = 0; 
 	end
 
-	// generate clock
-	reg clk ;
+	// generate test clock
+	reg tclk ;
 	always begin 
-		clk = 1; #5; clk = 0; #5; // 10ns period
+		tclk = 1; #10; tclk = 0; #10; // 20ns period
 	end
 
-	// apply test vectors on rising edge of clk
+	// generate system clock
+	always begin
+		sclk = 1 ;
+		#5 ;
+		sclk = 0 ;
+		#20 ;
+		sclk = 1 ;
+		#15 ; // 40ns period
+	end
+
+	// apply test vectors on rising edge of tclk
 	reg [0:`OUTLEN-1] expected ;
-	always @(posedge clk) begin
+	always @(posedge tclk) begin
 		#1; {in[0:`INLEN-1], expected[0:`OUTLEN-1]} = tvs[tv] ;
 	end
 
-	// check results on falling edge of clk
+	// check results on falling edge of tclk
 	reg [3*8:0] bang ;
-	always @(negedge clk)
+	always @(negedge tclk)
 		if (~reset) begin
 			if (`VERBOSE == 1) begin
 				 $display("inputs = %b, outputs = %b (%b expected)", 
