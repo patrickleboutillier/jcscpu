@@ -1,0 +1,9 @@
+nand		0
+not			1
+and			2
+and8		3
+mem			4
+byte		5
+ena			6
+reg			7
+dec3		8

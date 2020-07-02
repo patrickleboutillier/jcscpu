@@ -6,7 +6,7 @@ else
 	VERBOSE=0
 fi
 
-for f in tb/comb/tv/*.tv ; do
+for f in tb/tv/*.tv ; do
 	g=`basename $f .tv`
 	{
 		echo "module test() ;"
@@ -17,6 +17,6 @@ for f in tb/comb/tv/*.tv ; do
 		echo ' `define TVFILE "'$f'"'
 		NBLINES=$(grep ^[01xz] $f | wc -l)
 		echo ' `define NBLINES '$NBLINES
-		cat tb/comb/tools/template.v
-	} > tb/comb/out/${g}.v
+		cat tb/tools/template.v
+	} > tb/out/${g}.v
 done

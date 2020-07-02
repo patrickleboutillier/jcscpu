@@ -1,12 +1,12 @@
 
 clean:
-	rm -f tb/comb/out/* tb/seq/out/*
+	rm -f tb/out/* out/*
 
 test: clean
-	./tb/comb/tools/gentests.sh
-	./tb/comb/tools/buildtests.sh
-	./tb/comb/tools/runtests.sh
+	./tb/tools/gentests.sh
+	./tb/tools/buildtests.sh
+	./tb/tools/runtests.sh
 
-	#./tb/seq/tools/gentests.sh
-	#./tb/seq/tools/buildtests.sh
-	#./tb/seq/tools/runtests.sh
+demo: clean
+	iverilog -o out/demo.vvp src/demo/*.v src/demo.v || exit 1
+	

@@ -38,7 +38,7 @@
 	always @(negedge tclk)
 		if (~reset) begin
 			if (`VERBOSE == 1) begin
-				 $display("inputs = %b, outputs = %b (%b expected)", 
+				$display("inputs = %b, outputs = %b (%b expected)", 
 					in[0:`INLEN-1], out[0:`OUTLEN-1], expected[0:`OUTLEN-1]) ;
 			end
 			if (out[0:`OUTLEN-1] !== expected[0:`OUTLEN-1]) begin
