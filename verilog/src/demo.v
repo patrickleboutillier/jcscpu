@@ -1,8 +1,10 @@
 
 module demo ;
 
-	wire next_btn ;
+	wire mode_btn_src, mode_btn_deb ;
 	wire [27:0] leds ;
+
+	debounce mode_deb(clk, mode_btn_src, mode_btn_deb) ;
 
 	// Word display
 	reg [31:0] word ;
@@ -10,7 +12,7 @@ module demo ;
 
 	reg cnt = 0 ;
 	reg max = 1 ;
-	always @(posedge next_btn) begin
+	always @(posedge mode_btn_deb) begin
 		case(cnt)
 			0: word = " and" ;
 			1: word = " not" ;
