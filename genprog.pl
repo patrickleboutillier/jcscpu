@@ -37,7 +37,7 @@ sub gen_test_prog {
 	$RAM->[249] = $r1 ;
 	$RAM->[250] = $r2 ;
  	$RAM->[251] = $r3 ;
-	foreach my $i (0..3) {
+	for (my $i = 0 ; $i < 4 ; $i++){
 	    DATA(R1, 248+$i) ;
     	DATA(R0, $r[$i]) ;
 	    ST(R1, R0) ;
@@ -57,7 +57,7 @@ sub gen_test_prog {
 	$RAM->[253] = $a ;
 	$RAM->[254] = $e ;
 	$RAM->[255] = $z ;
-	foreach my $i (0..3) {
+	for (my $i = 0 ; $i < 4 ; $i++){
 	    DATA(R1, 252+$i) ;
     	DATA(R0, $flags[$i]) ;
 	    ST(R1, R0) ;
@@ -68,7 +68,7 @@ sub gen_test_prog {
 
 
 	# Load the registers just before running the instruction
-	foreach my $i (0..3) {
+	for (my $i = 0 ; $i < 4 ; $i++){
 	    DATA($rmap[$i], $r[$i]) ;
 	}
 	$RAM->[$r0] = $r0 ;
@@ -76,7 +76,7 @@ sub gen_test_prog {
 	$RAM->[$r2] = $r2 ;
 	$RAM->[$r3] = $r3 ;
 	# Generate the equivalent instructions
-	foreach my $i (0..3) {
+	for (my $i = 0 ; $i < 4 ; $i++){
 		ST($rmap[$i], $rmap[$i]) ;
 	}
 
@@ -86,7 +86,7 @@ sub gen_test_prog {
 	my $ra = int(rand(3)) ;
 	my $rb = int(rand(3)) ;
 	my $rx = undef ;
-	foreach my $i (0..3) {
+	for (my $i = 0 ; $i < 4 ; $i++){
 		if (($i != $ra)&&($i != $rb)){
 			$rx = $i ;
 			last ;
@@ -98,8 +98,8 @@ sub gen_test_prog {
 	# simulate instruction and update RAM
 	my @alu = (1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111, 110) ;
 	my @bus = (0, 1, 10) ;
-	my @jmp = (11) ;
-	my @insts = (@jmp) ; # @alu, @bus) ;
+	my @jmp = (11, 100) ;
+	my @insts = (@bus, @jmp, @alu) ;
 	my $inst = $insts[int(rand(scalar(@insts)))] ;
 	my $jinst = int(rand(16)) ;
 	warn "inst is $inst\n" ;
@@ -108,15 +108,15 @@ sub gen_test_prog {
 
 
 	# Now that the instruction is done, we need to save the register and flags state to RAM.
-	foreach my $r ($ra, $rb) {
-      	DATA($rmap[$rx], 248+$r) ;
-      	ST($rmap[$rx], $rmap[$r]) ;
-	}
+   	DATA($rmap[$rx], 248+$ra) ;
+   	ST($rmap[$rx], $rmap[$ra]) ;
+   	DATA($rmap[$rx], 248+$rb) ;
+   	ST($rmap[$rx], $rmap[$rb]) ;
 
 	# Now we need to store the resulting flags to RAM.
 	# Start by setting all the flags locations
     DATA(R0, 1) ;
-	foreach my $i (0..3) {
+	for (my $i = 0 ; $i < 4 ; $i++){
 	    DATA(R1, 252+$i) ;
 	    ST(R1, R0) ;
 	}
@@ -324,59 +324,59 @@ sub do_instruction {
 	my $data = shift ;
 
 	if ($inst == 0){ 		# LD
-		LD($rmap{$ra}, $rmap{$rb}) ;
+		LD($rmap[$ra], $rmap[$rb]) ;
 	}
 	elsif ($inst == 1){ 	# ST
-		ST($rmap{$ra}, $rmap{$rb}) ;
+		ST($rmap[$ra], $rmap[$rb]) ;
 	}
 	elsif ($inst == 10){ 	# DATA
-		DATA($rmap{$rb}, $data) ;
+		DATA($rmap[$rb], $data) ;
 	}
 	elsif ($inst == 11){ 	# JMPR
 		my $addr = jcsasm::nb_lines() + 4 ;
-		DATA($rmap{$rx}, $addr) ;
-		JMPR($rmap{$rx}) ;
+		DATA($rmap[$rx], $addr) ;
+		JMPR($rmap[$rx]) ;
 		# Create a side-effect if the jump is not performed
-		ST($rmap{$ra}, $rmap{$rb}) ;
+		ST($rmap[$ra], $rmap[$rb]) ;
 	}
 	elsif ($inst == 100){ 	# JMP
 		JMP(jcsasm::nb_lines() + 3) ;
 		# Create a side-effect if the jump is not performed
-		ST($rmap{$ra}, $rmap{$rb}) ;
+		ST($rmap[$ra], $rmap[$rb]) ;
 	}
 	elsif ($inst == 101){ 	# JXXX
 		my $addr = jcsasm::nb_lines() + 3 ;
 		jcsasm::add_inst("0101$flags") ;
 		jcsasm::add_inst(sprintf("%08b", $addr)) ;
 		# Create a side-effect if the jump is not performed
-		ST($rmap{$ra}, $rmap{$rb}) ;
+		ST($rmap[$ra], $rmap[$rb]) ;
 	}
 	elsif ($inst == 110){ 	# CLF
 		CLF() ;
 	}
 	elsif ($inst == 1000){ 	# ADD
-		ADD($rmap{$ra}, $rmap{$rb}) ;
+		ADD($rmap[$ra], $rmap[$rb]) ;
 	}
 	elsif ($inst == 1001){ 	# SHR
-		SHR($rmap{$ra}, $rmap{$rb}) ;
+		SHR($rmap[$ra], $rmap[$rb]) ;
 	}
 	elsif ($inst == 1010){ 	# SHL
-		SHL($rmap{$ra}, $rmap{$rb}) ;
+		SHL($rmap[$ra], $rmap[$rb]) ;
 	}
 	elsif ($inst == 1011){ 	# NOT
-		NOT($rmap{$ra}, $rmap{$rb}) ;
+		NOT($rmap[$ra], $rmap[$rb]) ;
 	}
 	elsif ($inst == 1100){ 	# AND
-		AND($rmap{$ra}, $rmap{$rb}) ;
+		AND($rmap[$ra], $rmap[$rb]) ;
 	}
 	elsif ($inst == 1101){	# OR
-		OR($rmap{$ra}, $rmap{$rb}) ;
+		OR($rmap[$ra], $rmap[$rb]) ;
 	}
 	elsif ($inst == 1110){	# XOR
-		XOR($rmap{$ra}, $rmap{$rb}) ;
+		XOR($rmap[$ra], $rmap[$rb]) ;
 	}
 	elsif ($inst == 1111){	# CMP
-		CMP($rmap{$ra}, $rmap{$rb}) ;
+		CMP($rmap[$ra], $rmap[$rb]) ;
 	}
 }
 
@@ -422,68 +422,4 @@ sub install_bootloader {
     $RAM->[247] = oct("0b00000000") ;
 }
 
-
-__DATA__
-DEBUG: RAM[229/11100101] = oct/01111101
-
-  byte ra = random(0, 3) ;
-  byte rb = random(0, 3) ;
-  
-  // Generate flags, repeat until we have a valid value as A and E cannot be true at the same time.
-  byte flags = random(0, 16) ;
-  while ((flags & B0110) == B0110)){
-    flags = random(0, 16) ;
-  }
-  byte c = (flags & B1000) >> 3 ;
-  byte a = (flags & B0100) >> 2 ;
-  byte e = (flags & B0010) >> 1 ;
-  byte z = flags & B0001 ;
-  RAM[252] = c ;
-  RAM[253] = a ;
-  RAM[254] = e ;
-  RAM[255] = z ;
-  
-  
-  // Setup state
-  /*
-    // Insert instructions here to set FLAGS properly
-    DATA(R0, v1)
-    DATA(R1, v2)
-    CLF
-    OP(R0, R1)
-    DATA(R0, r0)
-    DATA(R1, r1)
-    DATA(R2, r2)
-    DATA(R3, r3)
-    // ...
-    // Save used registers to RAM
-V   for (rx in (ra, rb)
-      DATA(rx, 248+rx)
-      ST(Rx, R0)
-    
-    // Save flags to RAM
-    DATA(R0, 1)
-    DATA(R1, 252)
-    ST(R1, R0)
-    DATA(R1, 253)
-    ST(R1, R0)
-    DATA(R1, 254)
-    ST(R1, R0)
-    DATA(R1, 255)
-    ST(R1, R0)
-    DATA(R0, 0)
-    JC(idx+5)
-    DATA(R1, 252)
-    ST(R1, R0)
-    JA(idx+5)
-    DATA(R1, 253)
-    ST(R1, R0)
-    JE(idx+5)
-    DATA(R1, 254)
-    ST(R1, R0)
-    JZ(idx+5)
-    DATA(R1, 255)
-    ST(R1, R0)
-    HALT
-}
 
