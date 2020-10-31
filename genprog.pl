@@ -21,11 +21,12 @@ sub gen_test_prog {
 	# Above 64 to ensure we don't write over our program
 	# Below 225 to leave place at the end to store our state
 	my $minval = 128 ;
-	my $maxval = 225 ;
+	my $maxval = 248 ;
 	my $r0 = $minval + int(rand($maxval - $minval)) ;
 	my $r1 = $minval + int(rand($maxval - $minval)) ;
 	my $r2 = $minval + int(rand($maxval - $minval)) ;
 	my $r3 = $minval + int(rand($maxval - $minval)) ;
+	my $data = $minval + int(rand($maxval - $minval)) ;
 	my @r = ($r0, $r1, $r2, $r3) ;
 	warn join(", ", @r) ;
 
@@ -42,13 +43,14 @@ sub gen_test_prog {
 	    ST(R1, R0) ;
 	}
 
-
 	# Generate random flag values (C, A, E, Z)
 	my $c = int(rand(2)) ;
 	my $a = int(rand(2)) ;
 	my $e = int(rand(2)) ;
+	$e = 0 if ($a && $e) ;
 	my $z = int(rand(2)) ;
 	my @flags = ($c, $a, $e, $z) ;
+	warn join(", ", @flags) ;
 
 	# Store them in the proper reserved slots.
 	$RAM->[252] = $c ;
@@ -63,13 +65,25 @@ sub gen_test_prog {
 	    ST(R1, R0) ;
 	}
 
-	# TODO: run the instructions to set the FLAGS properly
+	# Run the instructions to set the FLAGS properly
+	prime_flags(join('', @flags)) ;
+
 
 	# Load the registers just before running the instruction
 	foreach my $i (0..3) {
 	    DATA($rmap{$i}, $r[$i]) ;
 	}
-	
+
+	$RAM->[$r0] = $r0 ;
+	$RAM->[$r1] = $r1 ;
+	$RAM->[$r2] = $r2 ;
+	$RAM->[$r3] = $r3 ;
+
+	# Generate the equivalent instructions
+	foreach my $i (0..3) {
+		ST($rmap{$i}, $rmap{$i}) ;
+	}
+
 
 	# So now the initial state is set. The next step is to generate a random test instruction
 	# Pick 2 registers at random to use in the instruction. Also choose an unused register.
@@ -86,13 +100,14 @@ sub gen_test_prog {
 
 	
 	# simulate instruction and update RAM
-	my @insts = (1010, 1011, 1100, 1101, 1110, 1111) ;
+	my @alu = (1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111, 110) ;
+	my @bus = (0, 1, 10) ;
+	my @insts = (@alu, @bus) ;
 	my $inst = $insts[int(rand(scalar(@insts)))] ;
 	warn "inst is $inst\n" ;
-	simulate_instruction($RAM, $inst, $ra, $rb, 0) ;
-	do_instruction($inst, $ra, $rb) ;
-	# ...
-	#
+	simulate_instruction($RAM, $inst, $ra, $rb, $data, $c) ;
+	do_instruction($inst, $ra, $rb, $data) ;
+
 
 	# Now that the instruction is done, we need to save the register and flags state to RAM.
 	foreach my $r ($ra, $rb) {
@@ -142,26 +157,117 @@ sub gen_test_prog {
 } ;
 
 
+sub prime_flags {
+	my $flags = shift ;
+
+	if ($flags eq '0000'){
+		CLF() ;
+	}
+	elsif ($flags eq '1000'){
+		DATA(R0, 100) ;
+		DATA(R1, 200) ;
+		ADD(R0, R1) ;
+	}
+	elsif ($flags eq '0100'){
+		DATA(R0, 6) ;
+		DATA(R1, 2) ;
+		AND(R0, R1) ;
+	}
+	elsif ($flags eq '0010'){
+		DATA(R0, 1) ;
+		DATA(R1, 1) ;
+		AND(R0, R1) ;
+	}
+	elsif ($flags eq '0001'){
+		DATA(R0, 1) ;
+		DATA(R1, 2) ;
+		AND(R0, R1) ;
+	}
+	elsif ($flags eq '1100'){
+		DATA(R0, 200) ;
+		DATA(R1, 100) ;
+		ADD(R0, R1) ;
+	}
+	elsif ($flags eq '1010'){
+		DATA(R0, 200) ;
+		DATA(R1, 200) ;
+		ADD(R0, R1) ;
+	}
+	elsif ($flags eq '1001'){
+		DATA(R0, 127) ;
+		DATA(R1, 129) ;
+		ADD(R0, R1) ;
+	}
+	elsif ($flags eq '0101'){
+		DATA(R0, 2) ;
+		DATA(R1, 1) ;
+		AND(R0, R1) ;
+	}
+	elsif ($flags eq '0011'){
+		DATA(R0, 1) ;
+		DATA(R1, 1) ;
+		XOR(R0, R1) ;
+	}
+	elsif ($flags eq '1101'){
+		DATA(R0, 129) ;
+		DATA(R1, 127) ;
+		ADD(R0, R1) ;
+	}
+	elsif ($flags eq '1011'){
+		DATA(R0, 128) ;
+		DATA(R1, 128) ;
+		ADD(R0, R1) ;
+	}
+	else {
+		die("Invalid flag combination $flags!\n") ;
+	}
+}
+
+
 sub simulate_instruction {
 	my $RAM = shift ;
 	my $inst = shift ;
 	my $ra = shift ;
 	my $rb = shift ;
+	my $data = shift ;
 	my $ci = shift ;
-
-	# Clear flags
-	$RAM->[252] = 0 ;
-	$RAM->[253] = 0 ;
-	$RAM->[254] = 0 ; 
-	$RAM->[255] = 0 ;
 
 	my $flags = 0 ;
 	my $c = 0 ;
 	my $a = $RAM->[248+$ra] > $RAM->[248+$rb] ;
 	my $e = $RAM->[248+$ra] == $RAM->[248+$rb] ;
-	if ($inst == 1010){ 	# SHL
+	my $z = -1 ;
+
+	if ($inst == 0){ 		 	# LD
+		$RAM->[248+$rb] = $RAM->[$RAM->[248+$ra]] ;
+	}
+	elsif ($inst == 1){ 		# ST
+		$RAM->[$RAM->[248+$ra]] = $RAM->[248+$rb] ;
+	}
+	elsif ($inst == 10){ 		# DATA
+		$RAM->[248+$rb] = $data ;
+	}
+	elsif ($inst == 110){ 		# CLF
+		$c = 0 ;
+		$a = 0 ;
+		$e = 0 ;
+		$z = 0 ;
+		$flags = 1 ;
+	}
+	elsif ($inst == 1000){ 	# ADD
+		my $sum = $RAM->[248+$ra] + $RAM->[248+$rb] + $ci ;
+		$c = $sum > 255 ;
+		$RAM->[248+$rb] = $sum % 256 ;
+		$flags = 1 ;
+	}
+	elsif ($inst == 1001){ 	# SHR
+		$c = $RAM->[248+$ra] % 2 ;
+		$RAM->[248+$rb] = ($RAM->[248+$ra] + 256*$ci) >> 1 ;
+		$flags = 1 ;
+	}
+	elsif ($inst == 1010){ 	# SHL
 		$c = $RAM->[248+$ra] >= 128 ;
-		$RAM->[248+$rb] = ($RAM->[248+$ra] << 1) % 256 ;
+		$RAM->[248+$rb] = (($RAM->[248+$ra] << 1) % 256) + $ci ;
 		$flags = 1 ;
 	}
 	elsif ($inst == 1011){ 	# NOT
@@ -184,11 +290,11 @@ sub simulate_instruction {
 		$flags = -1 ;
 	}
 
-	$RAM->[252] = $c ;
 	if ($flags){
+		$RAM->[252] = $c ;
 		$RAM->[253] = $a ;
 		$RAM->[254] = $e ;
-		$RAM->[255] = ! $RAM->[248+$rb] ;
+		$RAM->[255] = (($z != -1) ? $z : ! $RAM->[248+$rb]) ;
 		if ($flags == -1){
 			$RAM->[255] = 1 ;
 		}
@@ -200,10 +306,27 @@ sub do_instruction {
 	my $inst = shift ;
 	my $ra = shift ;
 	my $rb = shift ;
+	my $data = shift ;
 
-	CLF() ;
-
-	if ($inst == 1010){ 	# SHL
+	if ($inst == 0){ 		# LD
+		LD($rmap{$ra}, $rmap{$rb}) ;
+	}
+	elsif ($inst == 1){ 	# ST
+		ST($rmap{$ra}, $rmap{$rb}) ;
+	}
+	elsif ($inst == 10){ 	# DATA
+		DATA($rmap{$rb}, $data) ;
+	}
+	elsif ($inst == 110){ 	# CLF
+		CLF() ;
+	}
+	elsif ($inst == 1000){ 	# ADD
+		ADD($rmap{$ra}, $rmap{$rb}) ;
+	}
+	elsif ($inst == 1001){ 	# SHR
+		SHR($rmap{$ra}, $rmap{$rb}) ;
+	}
+	elsif ($inst == 1010){ 	# SHL
 		SHL($rmap{$ra}, $rmap{$rb}) ;
 	}
 	elsif ($inst == 1011){ 	# NOT
