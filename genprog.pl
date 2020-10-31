@@ -1,11 +1,12 @@
 #!/usr/bin/perl
 
+
 use strict ;
 use lib "/home/patrickl/GIT/jcscpu/perl/lib" ;
 use jcsasm ;
 
 
-my %rmap = (0 => R0, 1 => R1, 2 => R2, 3 => R3) ;
+my @rmap = (R0, R1, R2, R3) ;
 
 my @RAM = () ;
 gen_test_prog(\@RAM) ;
@@ -28,15 +29,14 @@ sub gen_test_prog {
 	my $r3 = $minval + int(rand($maxval - $minval)) ;
 	my $data = $minval + int(rand($maxval - $minval)) ;
 	my @r = ($r0, $r1, $r2, $r3) ;
-	warn join(", ", @r) ;
+	warn "$r0, $r1, $r2, $r3" ;
 
-	# Store these values in RAM in the proper reserved slots.
+	# Store these values in RAM in the proper reserved slots, and generate the equivalent 
+	# instructions
 	$RAM->[248] = $r0 ;
 	$RAM->[249] = $r1 ;
 	$RAM->[250] = $r2 ;
  	$RAM->[251] = $r3 ;
-
-	# Generate the equivalent instructions
 	foreach my $i (0..3) {
 	    DATA(R1, 248+$i) ;
     	DATA(R0, $r[$i]) ;
@@ -52,13 +52,11 @@ sub gen_test_prog {
 	my @flags = ($c, $a, $e, $z) ;
 	warn join(", ", @flags) ;
 
-	# Store them in the proper reserved slots.
+	# Store them in the proper reserved slots and generate the equivalent instructions.
 	$RAM->[252] = $c ;
 	$RAM->[253] = $a ;
 	$RAM->[254] = $e ;
 	$RAM->[255] = $z ;
-
-	# Generate the equivalent instructions
 	foreach my $i (0..3) {
 	    DATA(R1, 252+$i) ;
     	DATA(R0, $flags[$i]) ;
@@ -66,22 +64,20 @@ sub gen_test_prog {
 	}
 
 	# Run the instructions to set the FLAGS properly
-	prime_flags(join('', @flags)) ;
+	set_flags(join('', @flags)) ;
 
 
 	# Load the registers just before running the instruction
 	foreach my $i (0..3) {
-	    DATA($rmap{$i}, $r[$i]) ;
+	    DATA($rmap[$i], $r[$i]) ;
 	}
-
 	$RAM->[$r0] = $r0 ;
 	$RAM->[$r1] = $r1 ;
 	$RAM->[$r2] = $r2 ;
 	$RAM->[$r3] = $r3 ;
-
 	# Generate the equivalent instructions
 	foreach my $i (0..3) {
-		ST($rmap{$i}, $rmap{$i}) ;
+		ST($rmap[$i], $rmap[$i]) ;
 	}
 
 
@@ -102,17 +98,19 @@ sub gen_test_prog {
 	# simulate instruction and update RAM
 	my @alu = (1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111, 110) ;
 	my @bus = (0, 1, 10) ;
-	my @insts = (@alu, @bus) ;
+	my @jmp = (11) ;
+	my @insts = (@jmp) ; # @alu, @bus) ;
 	my $inst = $insts[int(rand(scalar(@insts)))] ;
+	my $jinst = int(rand(16)) ;
 	warn "inst is $inst\n" ;
-	simulate_instruction($RAM, $inst, $ra, $rb, $data, $c) ;
-	do_instruction($inst, $ra, $rb, $data) ;
+	simulate_instruction($RAM, $inst, $jinst, join('', @flags), $ra, $rb, $rx, $data, $c) ;
+	do_instruction($inst, $jinst, join('', @flags), $ra, $rb, $rx, $data) ;
 
 
 	# Now that the instruction is done, we need to save the register and flags state to RAM.
 	foreach my $r ($ra, $rb) {
-      	DATA($rmap{$rx}, 248+$r) ;
-      	ST($rmap{$rx}, $rmap{$r}) ;
+      	DATA($rmap[$rx], 248+$r) ;
+      	ST($rmap[$rx], $rmap[$r]) ;
 	}
 
 	# Now we need to store the resulting flags to RAM.
@@ -122,24 +120,7 @@ sub gen_test_prog {
 	    DATA(R1, 252+$i) ;
 	    ST(R1, R0) ;
 	}
-	# Insert a series of jump instructions that will set the flags on the correct location.
-    DATA(R0, 0) ;
-    JC('@JA') ;
-    DATA(R1, 252) ;
-    ST(R1, R0) ;
-	LABEL('JA') ;
-    JA('@JE') ;
-    DATA(R1, 253) ;
-    ST(R1, R0) ;
-	LABEL('JE') ;
-    JE('@JZ') ;
-    DATA(R1, 254) ;
-    ST(R1, R0) ;
-	LABEL('JZ') ;
-    JZ('@END') ;
-    DATA(R1, 255) ;
-    ST(R1, R0) ;
-	LABEL('END') ;
+	store_flags() ;
 	DUMP() ;
 	HALT() ;
 
@@ -157,7 +138,7 @@ sub gen_test_prog {
 } ;
 
 
-sub prime_flags {
+sub set_flags {
 	my $flags = shift ;
 
 	if ($flags eq '0000'){
@@ -224,11 +205,32 @@ sub prime_flags {
 }
 
 
+sub store_flags {
+	# Insert a series of jump instructions that will set the flags on the correct location.
+    DATA(R0, 0) ;
+    JC(jcsasm::nb_lines() + 5) ;
+    DATA(R1, 252) ;
+    ST(R1, R0) ;
+    JA(jcsasm::nb_lines() + 5) ;
+    DATA(R1, 253) ;
+    ST(R1, R0) ;
+    JE(jcsasm::nb_lines() + 5) ;
+    DATA(R1, 254) ;
+    ST(R1, R0) ;
+    JZ(jcsasm::nb_lines() + 5) ;
+    DATA(R1, 255) ;
+    ST(R1, R0) ;
+}
+
+
 sub simulate_instruction {
 	my $RAM = shift ;
 	my $inst = shift ;
+	my $jinst = shift ;
+	my $flags = shift ;
 	my $ra = shift ;
 	my $rb = shift ;
+	my $rx = shift ;
 	my $data = shift ;
 	my $ci = shift ;
 
@@ -246,6 +248,16 @@ sub simulate_instruction {
 	}
 	elsif ($inst == 10){ 		# DATA
 		$RAM->[248+$rb] = $data ;
+	}
+	elsif ($inst == 11){ 		# JMPR
+		# No nothing, as the JUMP has no effect if performed.
+	}
+	elsif ($inst == 100){ 		# JMP
+		# No nothing, as the JUMP has no effect if performed.
+	}
+	elsif ($inst == 101){ 		# JXXX
+		# We need to figure out if we will jump or not, base in $jinst and $flags
+		# In NOT, we must produce the proper side-effect.
 	}
 	elsif ($inst == 110){ 		# CLF
 		$c = 0 ;
@@ -304,8 +316,11 @@ sub simulate_instruction {
 
 sub do_instruction {
 	my $inst = shift ;
+	my $jinst = shift ;
+	my $flags = shift ;
 	my $ra = shift ;
 	my $rb = shift ;
+	my $rx = shift ;
 	my $data = shift ;
 
 	if ($inst == 0){ 		# LD
@@ -316,6 +331,25 @@ sub do_instruction {
 	}
 	elsif ($inst == 10){ 	# DATA
 		DATA($rmap{$rb}, $data) ;
+	}
+	elsif ($inst == 11){ 	# JMPR
+		my $addr = jcsasm::nb_lines() + 4 ;
+		DATA($rmap{$rx}, $addr) ;
+		JMPR($rmap{$rx}) ;
+		# Create a side-effect if the jump is not performed
+		ST($rmap{$ra}, $rmap{$rb}) ;
+	}
+	elsif ($inst == 100){ 	# JMP
+		JMP(jcsasm::nb_lines() + 3) ;
+		# Create a side-effect if the jump is not performed
+		ST($rmap{$ra}, $rmap{$rb}) ;
+	}
+	elsif ($inst == 101){ 	# JXXX
+		my $addr = jcsasm::nb_lines() + 3 ;
+		jcsasm::add_inst("0101$flags") ;
+		jcsasm::add_inst(sprintf("%08b", $addr)) ;
+		# Create a side-effect if the jump is not performed
+		ST($rmap{$ra}, $rmap{$rb}) ;
 	}
 	elsif ($inst == 110){ 	# CLF
 		CLF() ;
