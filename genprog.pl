@@ -49,8 +49,9 @@ sub gen_test_prog {
 	my $e = int(rand(2)) ;
 	$e = 0 if ($a && $e) ;
 	my $z = int(rand(2)) ;
-	my @flags = ($c, $a, $e, $z) ;
-	warn join(", ", @flags) ;
+	my @f = ($c, $a, $e, $z) ;
+	my $flags = ($c << 3) | ($a << 2) | ($e << 1) | $z ;
+	warn "$c, $a, $e, $z" ;
 
 	# Store them in the proper reserved slots and generate the equivalent instructions.
 	$RAM->[252] = $c ;
@@ -59,12 +60,12 @@ sub gen_test_prog {
 	$RAM->[255] = $z ;
 	for (my $i = 0 ; $i < 4 ; $i++){
 	    DATA(R1, 252+$i) ;
-    	DATA(R0, $flags[$i]) ;
+    	DATA(R0, $f[$i]) ;
 	    ST(R1, R0) ;
 	}
 
 	# Run the instructions to set the FLAGS properly
-	set_flags(join('', @flags)) ;
+	set_flags($flags) ;
 
 
 	# Load the registers just before running the instruction
@@ -96,15 +97,15 @@ sub gen_test_prog {
 
 	
 	# simulate instruction and update RAM
-	my @alu = (1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111, 110) ;
-	my @bus = (0, 1, 10) ;
-	my @jmp = (11, 100) ;
+	my @alu = (0b1000, 0b1001, 0b1010, 0b1011, 0b1100, 0b1101, 0b1110, 0b1111, 0b0110) ;
+	my @bus = (0b0000, 0b0001, 0b0010) ;
+	my @jmp = (0b0011, 0b0100) ;
 	my @insts = (@bus, @jmp, @alu) ;
 	my $inst = $insts[int(rand(scalar(@insts)))] ;
 	my $jinst = int(rand(16)) ;
-	warn "inst is $inst\n" ;
-	simulate_instruction($RAM, $inst, $jinst, join('', @flags), $ra, $rb, $rx, $data, $c) ;
-	do_instruction($inst, $jinst, join('', @flags), $ra, $rb, $rx, $data) ;
+	warn "inst is " . sprintf("%08b", $inst) . "\n" ;
+	simulate_instruction($RAM, $inst, $jinst, $flags, $ra, $rb, $rx, $data, $c) ;
+	do_instruction($inst, $jinst, $flags, $ra, $rb, $rx, $data) ;
 
 
 	# Now that the instruction is done, we need to save the register and flags state to RAM.
@@ -141,66 +142,63 @@ sub gen_test_prog {
 sub set_flags {
 	my $flags = shift ;
 
-	if ($flags eq '0000'){
+	if ($flags == 0b0000){
 		CLF() ;
 	}
-	elsif ($flags eq '1000'){
+	elsif ($flags == 0b1000){
 		DATA(R0, 100) ;
 		DATA(R1, 200) ;
 		ADD(R0, R1) ;
 	}
-	elsif ($flags eq '0100'){
+	elsif ($flags == 0b0100){
 		DATA(R0, 6) ;
 		DATA(R1, 2) ;
 		AND(R0, R1) ;
 	}
-	elsif ($flags eq '0010'){
+	elsif ($flags == 0b0010){
 		DATA(R0, 1) ;
 		DATA(R1, 1) ;
 		AND(R0, R1) ;
 	}
-	elsif ($flags eq '0001'){
+	elsif ($flags == 0b0001){
 		DATA(R0, 1) ;
 		DATA(R1, 2) ;
 		AND(R0, R1) ;
 	}
-	elsif ($flags eq '1100'){
+	elsif ($flags == 0b1100){
 		DATA(R0, 200) ;
 		DATA(R1, 100) ;
 		ADD(R0, R1) ;
 	}
-	elsif ($flags eq '1010'){
+	elsif ($flags == 0b1010){
 		DATA(R0, 200) ;
 		DATA(R1, 200) ;
 		ADD(R0, R1) ;
 	}
-	elsif ($flags eq '1001'){
+	elsif ($flags == 0b1001){
 		DATA(R0, 127) ;
 		DATA(R1, 129) ;
 		ADD(R0, R1) ;
 	}
-	elsif ($flags eq '0101'){
+	elsif ($flags == 0b0101){
 		DATA(R0, 2) ;
 		DATA(R1, 1) ;
 		AND(R0, R1) ;
 	}
-	elsif ($flags eq '0011'){
+	elsif ($flags == 0b0011){
 		DATA(R0, 1) ;
 		DATA(R1, 1) ;
 		XOR(R0, R1) ;
 	}
-	elsif ($flags eq '1101'){
+	elsif ($flags == 0b1101){
 		DATA(R0, 129) ;
 		DATA(R1, 127) ;
 		ADD(R0, R1) ;
 	}
-	elsif ($flags eq '1011'){
+	elsif ($flags == 0b1011){
 		DATA(R0, 128) ;
 		DATA(R1, 128) ;
 		ADD(R0, R1) ;
-	}
-	else {
-		die("Invalid flag combination $flags!\n") ;
 	}
 }
 
@@ -234,80 +232,80 @@ sub simulate_instruction {
 	my $data = shift ;
 	my $ci = shift ;
 
-	my $flags = 0 ;
+	my $set_flags = 0 ;
 	my $c = 0 ;
 	my $a = $RAM->[248+$ra] > $RAM->[248+$rb] ;
 	my $e = $RAM->[248+$ra] == $RAM->[248+$rb] ;
 	my $z = -1 ;
 
-	if ($inst == 0){ 		 	# LD
+	if ($inst == 0b0000){ 		 	# LD
 		$RAM->[248+$rb] = $RAM->[$RAM->[248+$ra]] ;
 	}
-	elsif ($inst == 1){ 		# ST
+	elsif ($inst == 0b0001){ 		# ST
 		$RAM->[$RAM->[248+$ra]] = $RAM->[248+$rb] ;
 	}
-	elsif ($inst == 10){ 		# DATA
+	elsif ($inst == 0b0010){ 		# DATA
 		$RAM->[248+$rb] = $data ;
 	}
-	elsif ($inst == 11){ 		# JMPR
+	elsif ($inst == 0b0011){ 		# JMPR
 		# No nothing, as the JUMP has no effect if performed.
 	}
-	elsif ($inst == 100){ 		# JMP
+	elsif ($inst == 0b0100){ 		# JMP
 		# No nothing, as the JUMP has no effect if performed.
 	}
-	elsif ($inst == 101){ 		# JXXX
-		# We need to figure out if we will jump or not, base in $jinst and $flags
+	elsif ($inst == 0b0101){ 		# JXXX
+		# We need to figure out if we will jump or not, base on $jinst and $flags
 		# In NOT, we must produce the proper side-effect.
 	}
-	elsif ($inst == 110){ 		# CLF
+	elsif ($inst == 0b0110){ 		# CLF
 		$c = 0 ;
 		$a = 0 ;
 		$e = 0 ;
 		$z = 0 ;
-		$flags = 1 ;
+		$set_flags = 1 ;
 	}
-	elsif ($inst == 1000){ 	# ADD
+	elsif ($inst == 0b1000){ 	# ADD
 		my $sum = $RAM->[248+$ra] + $RAM->[248+$rb] + $ci ;
 		$c = $sum > 255 ;
 		$RAM->[248+$rb] = $sum % 256 ;
-		$flags = 1 ;
+		$set_flags = 1 ;
 	}
-	elsif ($inst == 1001){ 	# SHR
+	elsif ($inst == 0b1001){ 	# SHR
 		$c = $RAM->[248+$ra] % 2 ;
 		$RAM->[248+$rb] = ($RAM->[248+$ra] + 256*$ci) >> 1 ;
-		$flags = 1 ;
+		$set_flags = 1 ;
 	}
-	elsif ($inst == 1010){ 	# SHL
+	elsif ($inst == 0b1010){ 	# SHL
 		$c = $RAM->[248+$ra] >= 128 ;
 		$RAM->[248+$rb] = (($RAM->[248+$ra] << 1) % 256) + $ci ;
-		$flags = 1 ;
+		$set_flags = 1 ;
 	}
-	elsif ($inst == 1011){ 	# NOT
+	elsif ($inst == 0b1011){ 	# NOT
 		$RAM->[248+$rb] = (~ $RAM->[248+$ra]) % 256 ;
-		$flags = 1 ;
+		$set_flags = 1 ;
 	}
-	elsif ($inst == 1100){ 	# AND
+	elsif ($inst == 0b1100){ 	# AND
 		$RAM->[248+$rb] = $RAM->[248+$ra] & $RAM->[248+$rb] ;
-		$flags = 1 ;
+		$set_flags = 1 ;
 	}
-	elsif ($inst == 1101){	# OR
+	elsif ($inst == 0b1101){	# OR
 		$RAM->[248+$rb] = $RAM->[248+$ra] | $RAM->[248+$rb] ;
-		$flags = 1 ;
+		$set_flags = 1 ;
 	}
-	elsif ($inst == 1110){	# XOR
+	elsif ($inst == 0b1110){	# XOR
 		$RAM->[248+$rb] = $RAM->[248+$ra] ^ $RAM->[248+$rb] ;
-		$flags = 1 ;
+		$set_flags = 1 ;
 	}
-	elsif ($inst == 1111){	# CMP
-		$flags = -1 ;
+	elsif ($inst == 0b1111){	# CMP
+		$set_flags = -1 ;
 	}
 
-	if ($flags){
+	if ($set_flags){
 		$RAM->[252] = $c ;
 		$RAM->[253] = $a ;
 		$RAM->[254] = $e ;
 		$RAM->[255] = (($z != -1) ? $z : ! $RAM->[248+$rb]) ;
-		if ($flags == -1){
+		if ($set_flags == -1){
 			$RAM->[255] = 1 ;
 		}
 	}
@@ -323,59 +321,59 @@ sub do_instruction {
 	my $rx = shift ;
 	my $data = shift ;
 
-	if ($inst == 0){ 		# LD
+	if ($inst == 0b0000){ 		# LD
 		LD($rmap[$ra], $rmap[$rb]) ;
 	}
-	elsif ($inst == 1){ 	# ST
+	elsif ($inst == 0b0001){ 	# ST
 		ST($rmap[$ra], $rmap[$rb]) ;
 	}
-	elsif ($inst == 10){ 	# DATA
+	elsif ($inst == 0b0010){ 	# DATA
 		DATA($rmap[$rb], $data) ;
 	}
-	elsif ($inst == 11){ 	# JMPR
+	elsif ($inst == 0b0011){ 	# JMPR
 		my $addr = jcsasm::nb_lines() + 4 ;
 		DATA($rmap[$rx], $addr) ;
 		JMPR($rmap[$rx]) ;
 		# Create a side-effect if the jump is not performed
 		ST($rmap[$ra], $rmap[$rb]) ;
 	}
-	elsif ($inst == 100){ 	# JMP
+	elsif ($inst == 0b0100){ 	# JMP
 		JMP(jcsasm::nb_lines() + 3) ;
 		# Create a side-effect if the jump is not performed
 		ST($rmap[$ra], $rmap[$rb]) ;
 	}
-	elsif ($inst == 101){ 	# JXXX
+	elsif ($inst == 0b0101){ 	# JXXX
 		my $addr = jcsasm::nb_lines() + 3 ;
-		jcsasm::add_inst("0101$flags") ;
+		jcsasm::add_inst(sprintf("%08b", 0b01010000 | $flags)) ;
 		jcsasm::add_inst(sprintf("%08b", $addr)) ;
 		# Create a side-effect if the jump is not performed
 		ST($rmap[$ra], $rmap[$rb]) ;
 	}
-	elsif ($inst == 110){ 	# CLF
+	elsif ($inst == 0b0110){ 	# CLF
 		CLF() ;
 	}
-	elsif ($inst == 1000){ 	# ADD
+	elsif ($inst == 0b1000){ 	# ADD
 		ADD($rmap[$ra], $rmap[$rb]) ;
 	}
-	elsif ($inst == 1001){ 	# SHR
+	elsif ($inst == 0b1001){ 	# SHR
 		SHR($rmap[$ra], $rmap[$rb]) ;
 	}
-	elsif ($inst == 1010){ 	# SHL
+	elsif ($inst == 0b1010){ 	# SHL
 		SHL($rmap[$ra], $rmap[$rb]) ;
 	}
-	elsif ($inst == 1011){ 	# NOT
+	elsif ($inst == 0b1011){ 	# NOT
 		NOT($rmap[$ra], $rmap[$rb]) ;
 	}
-	elsif ($inst == 1100){ 	# AND
+	elsif ($inst == 0b1100){ 	# AND
 		AND($rmap[$ra], $rmap[$rb]) ;
 	}
-	elsif ($inst == 1101){	# OR
+	elsif ($inst == 0b1101){	# OR
 		OR($rmap[$ra], $rmap[$rb]) ;
 	}
-	elsif ($inst == 1110){	# XOR
+	elsif ($inst == 0b1110){	# XOR
 		XOR($rmap[$ra], $rmap[$rb]) ;
 	}
-	elsif ($inst == 1111){	# CMP
+	elsif ($inst == 0b1111){	# CMP
 		CMP($rmap[$ra], $rmap[$rb]) ;
 	}
 }
