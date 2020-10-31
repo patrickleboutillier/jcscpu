@@ -4,10 +4,11 @@ use Carp ;
 require Exporter ;
 our @ISA = qw(Exporter) ;
 our @EXPORT = qw(R0 R1 R2 R3 REM ADD SHR SHL NOT AND OR XOR CMP LD ST DATA JMPR JMP CLF JC JA JE JZ 
-    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL GOTO HALT DEBUG ASM) ;
+    JCA JCE JCZ JAE JAZ JEZ JCAE JCAZ JCEZ JAEZ JCAEZ INA IND OUTA OUTD LABEL GOTO HALT DEBUG DUMP ASM) ;
 
 
 my $HALT  = "01100001" ;
+my $DUMP  = "01101110" ;
 
 my $PRINT = 1 ;
 my @LINES = () ;
@@ -185,6 +186,13 @@ sub HALT(;$) {
     _check_proto("", @_) ;
 
     add_inst($HALT, "HALT  " . $_[0]) ;
+}
+
+
+sub DUMP(;$) {
+    _check_proto("", @_) ;
+
+    add_inst($DUMP, "DUMP  " . $_[0]) ;
 }
 
 
