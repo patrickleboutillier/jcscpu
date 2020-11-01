@@ -11,18 +11,19 @@ done_error(){
 
 nb=0
 while /bin/true ; do
-	rm -f RAM_CPU.txt RAM_SIM.txt
+	# rm -f RAM_CPU.txt RAM_SIM.txt
 	./genprog.pl 2>CASE.txt | ./jcscpu > RAM_CPU.txt
 	# grep "^DEBUG: RAM" OUT_CPU.txt > RAM_CPU.txt
 	# grep -v "^DEBUG: RAM" OUT_CPU.txt >> CASE.txt
-	if [ -s RAM_SIM.txt -a -s RAM_CPU.txt ] ; then
-		if ! diff RAM_SIM.txt RAM_CPU.txt ; then
+	if ! cmp RAM_SIM.txt RAM_CPU.txt > /dev/null ; then
+		if [ -s RAM_SIM.txt -a -s RAM_CPU.txt ] ; then
+			diff RAM_SIM.txt RAM_CPU.txt 
+			done_error
+			break 
+		else 
 			done_error
 			break 
 		fi
-	else 
-		done_error
-		break 
 	fi
 	nb=$((nb + 1))
 done

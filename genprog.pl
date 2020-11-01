@@ -84,8 +84,8 @@ sub gen_test_prog {
 
 	# So now the initial state is set. The next step is to generate a random test instruction
 	# Pick 2 registers at random to use in the instruction. Also choose an unused register.
-	my $ra = int(rand(3)) ;
-	my $rb = int(rand(3)) ;
+	my $ra = int(rand(4)) ;
+	my $rb = int(rand(4)) ;
 	my $rx = undef ;
 	for (my $i = 0 ; $i < 4 ; $i++){
 		if (($i != $ra)&&($i != $rb)){
