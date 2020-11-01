@@ -2,7 +2,7 @@
 
 
 use strict ;
-use lib "/home/patrickl/GIT/jcscpu/perl/lib" ;
+use lib "/home/patrickl/GIT/jcscpu/tools" ;
 use jcsasm ;
 
 
@@ -99,11 +99,12 @@ sub gen_test_prog {
 	# simulate instruction and update RAM
 	my @alu = (0b1000, 0b1001, 0b1010, 0b1011, 0b1100, 0b1101, 0b1110, 0b1111, 0b0110) ;
 	my @bus = (0b0000, 0b0001, 0b0010) ;
-	my @jmp = (0b0011, 0b0100) ;
+	my @jmp = (0b0011, 0b0100, 0b0101) ;
 	my @insts = (@bus, @jmp, @alu) ;
 	my $inst = $insts[int(rand(scalar(@insts)))] ;
-	my $jinst = int(rand(16)) ;
-	warn "inst is " . sprintf("%08b", $inst) . "\n" ;
+	my $jinst = int(rand(15)) + 1 ;
+	warn "inst is " . sprintf("%04b", $inst) . "\n" ;
+	warn "jinst is " . sprintf("%04b", $jinst) . "\n" ;
 	simulate_instruction($RAM, $inst, $jinst, $flags, $ra, $rb, $rx, $data, $c) ;
 	do_instruction($inst, $jinst, $flags, $ra, $rb, $rx, $data) ;
 
@@ -200,6 +201,8 @@ sub set_flags {
 		DATA(R1, 128) ;
 		ADD(R0, R1) ;
 	}
+
+	# DEBUG1() ;
 }
 
 
@@ -255,7 +258,15 @@ sub simulate_instruction {
 	}
 	elsif ($inst == 0b0101){ 		# JXXX
 		# We need to figure out if we will jump or not, base on $jinst and $flags
-		# In NOT, we must produce the proper side-effect.
+		# If NOT, we must produce the proper side-effect.
+		if ($jinst & $flags){
+			# Jump, do nothing
+			warn "jumped"
+		}
+		else {
+			# No jump, produce side-effect.
+			$RAM->[$RAM->[248+$ra]] = $RAM->[248+$rb] ;
+		}
 	}
 	elsif ($inst == 0b0110){ 		# CLF
 		$c = 0 ;
@@ -344,7 +355,8 @@ sub do_instruction {
 	}
 	elsif ($inst == 0b0101){ 	# JXXX
 		my $addr = jcsasm::nb_lines() + 3 ;
-		jcsasm::add_inst(sprintf("%08b", 0b01010000 | $flags)) ;
+		warn sprintf("flags: %04b", $flags) ;
+		jcsasm::add_inst(sprintf("%08b", 0b01010000 | $jinst)) ;
 		jcsasm::add_inst(sprintf("%08b", $addr)) ;
 		# Create a side-effect if the jump is not performed
 		ST($rmap[$ra], $rmap[$rb]) ;
